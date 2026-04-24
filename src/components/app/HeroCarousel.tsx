@@ -13,7 +13,6 @@ export function HeroCarousel({
 }) {
   const [idx, setIdx] = useState(0);
   const n = slides.length;
-  const s = slides[idx];
 
   useEffect(() => {
     if (n <= 1) return;
@@ -25,29 +24,43 @@ export function HeroCarousel({
 
   return (
     <div className="relative w-full aspect-[15/11] bg-ink overflow-hidden">
-      <Image
-        src={s.src}
-        alt={s.title}
-        fill
-        priority
-        className="object-cover"
-        sizes="(max-width: 480px) 100vw, 428px"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-      <div className="absolute top-10 left-5 right-5 text-white">
-        {s.subtitle && (
-          <div className="text-[13px] font-bold mb-2 opacity-90">
-            {s.subtitle}
+      {slides.map((slide, i) => {
+        const active = i === idx;
+        return (
+          <div
+            key={i}
+            aria-hidden={!active}
+            className={`absolute inset-0 transition-opacity duration-[700ms] ease-in-out ${
+              active ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <Image
+              src={slide.src}
+              alt={slide.title}
+              fill
+              priority={i === 0}
+              className="object-cover"
+              sizes="(max-width: 480px) 100vw, 428px"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+            <div className="absolute top-10 left-5 right-5 text-white">
+              {slide.subtitle && (
+                <div className="text-[13px] font-bold mb-2 opacity-90">
+                  {slide.subtitle}
+                </div>
+              )}
+              <div
+                className="ww-disp"
+                style={{ fontSize: 30, lineHeight: 1.1, letterSpacing: "-0.03em" }}
+              >
+                {slide.title}
+              </div>
+            </div>
           </div>
-        )}
-        <div
-          className="ww-disp"
-          style={{ fontSize: 30, lineHeight: 1.1, letterSpacing: "-0.03em" }}
-        >
-          {s.title}
-        </div>
-      </div>
-      <div className="absolute bottom-3 left-5 bg-black/45 text-white text-[11px] font-semibold px-2 py-[3px] rounded-full ww-num">
+        );
+      })}
+
+      <div className="absolute bottom-3 left-5 bg-black/45 text-white text-[11px] font-semibold px-2 py-[3px] rounded-full ww-num pointer-events-none">
         {idx + 1} / {n}
       </div>
       <div className="absolute bottom-3 right-5 flex gap-[6px]">
