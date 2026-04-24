@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { IconArrow, IconHelp, IconMsg } from "@/components/icons";
+import { auth } from "@/auth";
+
+export const dynamic = "force-dynamic";
 
 const FAQS = [
   {
@@ -16,7 +19,13 @@ const FAQS = [
   },
 ];
 
-export default function SupportPage() {
+export default async function SupportPage() {
+  const session = await auth();
+  const loggedIn = !!session?.user;
+  const chatHref = loggedIn
+    ? "/app/support"
+    : "/app/login?callbackUrl=%2Fapp%2Fsupport";
+
   return (
     <div className="mx-auto max-w-site px-5 md:px-10 py-16 md:py-20">
       <div className="mb-12 max-w-[640px]">
@@ -38,15 +47,49 @@ export default function SupportPage() {
             <IconMsg size={20} stroke={1.8} />
           </div>
           <div className="text-[18px] font-extrabold mb-2">1:1 문의</div>
-          <div className="text-[13px] text-slate leading-[1.6] mb-5">
-            앱 내 채팅으로 상담사와 바로 대화. 24시간 접수됩니다.
+          <div className="text-[13px] text-slate leading-[1.6] mb-4">
+            상담사와 실시간 채팅으로 문의하세요. 평일 10–19시 빠른 답변.
           </div>
+          {!loggedIn && (
+            <div className="inline-flex items-center gap-[6px] text-[11px] font-semibold text-accent bg-accent/10 rounded-full px-[10px] py-[4px] mb-4">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <rect
+                  x="2.5"
+                  y="5"
+                  width="7"
+                  height="5.5"
+                  rx="1"
+                  stroke="currentColor"
+                  strokeWidth="1.2"
+                />
+                <path
+                  d="M4 5V3.5a2 2 0 014 0V5"
+                  stroke="currentColor"
+                  strokeWidth="1.2"
+                  fill="none"
+                />
+              </svg>
+              회원 전용 · 문의 내역 보관·답변 알림
+            </div>
+          )}
           <Link
-            href="/app/support"
+            href={chatHref}
             className="inline-flex items-center gap-[6px] text-[13px] font-bold text-accent"
           >
-            채팅 시작 <IconArrow size={12} stroke={2.5} />
+            {loggedIn ? "채팅 시작" : "로그인하고 채팅 시작"}
+            <IconArrow size={12} stroke={2.5} />
           </Link>
+          {!loggedIn && (
+            <div className="text-[11px] text-slate mt-3 leading-[1.6]">
+              계정이 없으신가요?{" "}
+              <Link
+                href="/app/login?callbackUrl=%2Fapp%2Fsupport"
+                className="font-semibold text-ink underline"
+              >
+                3초 회원가입
+              </Link>
+            </div>
+          )}
         </div>
         <div className="bg-paper rounded-[20px] p-8">
           <div className="w-11 h-11 rounded-full bg-ink text-white flex items-center justify-center mb-5">
