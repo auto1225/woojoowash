@@ -4,8 +4,10 @@ import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import { IconCar, IconPin, IconSearch } from "@/components/icons";
 import { HeroCarousel } from "@/components/app/HeroCarousel";
-import { POPULAR_MARKET_ITEMS } from "@/lib/market";
-import { getActiveHeroes } from "@/lib/queries/content";
+import {
+  getActiveHeroes,
+  getActiveMarketProducts,
+} from "@/lib/queries/content";
 import { ServiceIllust } from "@/components/illustrations/ServiceIllust";
 import { Card } from "@/components/ui/Card";
 import { auth } from "@/auth";
@@ -46,8 +48,9 @@ const FALLBACK_HERO = [
 
 export default async function AppHomePage() {
   const session = await auth();
-  const [heroes, nearby, myCar, lastDone] = await Promise.all([
+  const [heroes, marketItems, nearby, myCar, lastDone] = await Promise.all([
     getActiveHeroes(),
+    getActiveMarketProducts(6),
     listStoresWithMinPrice(),
     session?.user
       ? db.car.findFirst({
@@ -202,7 +205,7 @@ export default async function AppHomePage() {
         </div>
         <div className="overflow-x-auto ww-scroll-x">
           <div className="flex gap-3 pl-5 pr-5 pb-1">
-            {POPULAR_MARKET_ITEMS.map((m) => (
+            {marketItems.map((m) => (
               <Link
                 key={m.id}
                 href="/app/market"
@@ -210,7 +213,7 @@ export default async function AppHomePage() {
               >
                 <div className="relative w-[132px] h-[132px] rounded-[14px] overflow-hidden bg-cloud">
                   <Image
-                    src={m.image}
+                    src={m.imageUrl}
                     alt={m.name}
                     fill
                     className="object-cover"

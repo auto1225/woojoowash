@@ -27,3 +27,11 @@ export async function getPublishedNotices(limit = 10) {
     take: limit,
   });
 }
+
+export async function getActiveMarketProducts(limit?: number) {
+  return db.marketProduct.findMany({
+    where: { active: true },
+    orderBy: { order: "asc" },
+    take: limit,
+  });
+}

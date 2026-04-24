@@ -323,6 +323,65 @@ async function main() {
     });
   }
 
+  // 마켓 상품
+  if ((await db.marketProduct.count()) === 0) {
+    await db.marketProduct.createMany({
+      data: [
+        {
+          name: "폼 샴푸 1L",
+          price: 19800,
+          tag: "BEST",
+          category: "세정제",
+          imageUrl:
+            "https://images.unsplash.com/photo-1607008829749-c0f284a49841?auto=format&fit=crop&w=600&q=80",
+          order: 0,
+        },
+        {
+          name: "극세사 타올 3종",
+          price: 12900,
+          tag: "BEST",
+          category: "용품",
+          imageUrl:
+            "https://images.unsplash.com/photo-1622644078843-0b48d5d18b10?auto=format&fit=crop&w=600&q=80",
+          order: 1,
+        },
+        {
+          name: "유리 발수 코팅제",
+          price: 24000,
+          category: "코팅",
+          imageUrl:
+            "https://images.unsplash.com/photo-1558449907-8b82b0264682?auto=format&fit=crop&w=600&q=80",
+          order: 2,
+        },
+        {
+          name: "세차용 폼건",
+          price: 89000,
+          tag: "NEW",
+          category: "장비",
+          imageUrl:
+            "https://images.unsplash.com/photo-1621972750749-0fbb1abb7736?auto=format&fit=crop&w=600&q=80",
+          order: 3,
+        },
+        {
+          name: "프리미엄 왁스",
+          price: 34000,
+          category: "왁스",
+          imageUrl:
+            "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?auto=format&fit=crop&w=600&q=80",
+          order: 4,
+        },
+        {
+          name: "타이어 광택제",
+          price: 16500,
+          category: "용품",
+          imageUrl:
+            "https://images.unsplash.com/photo-1600661653561-629509216228?auto=format&fit=crop&w=600&q=80",
+          order: 5,
+        },
+      ],
+    });
+  }
+
   // 게시판 샘플
   if ((await db.post.count()) === 0) {
     await db.post.createMany({

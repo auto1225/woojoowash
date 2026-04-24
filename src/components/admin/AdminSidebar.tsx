@@ -41,6 +41,13 @@ const GROUPS: Group[] = [
     ],
   },
   {
+    id: "shop",
+    label: "쇼핑",
+    items: [
+      { label: "상품 관리", href: "/admin/shop/products" },
+    ],
+  },
+  {
     id: "community",
     label: "커뮤니티",
     items: [

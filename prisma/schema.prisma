@@ -406,6 +406,25 @@ model Post {
   @@map("posts")
 }
 
+model MarketProduct {
+  id          String   @id @default(cuid())
+  name        String
+  price       Int
+  imageUrl    String
+  tag         String?  // BEST / NEW / HOT
+  category    String?
+  description String?  @db.Text
+  stock       Int?
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([order])
+  @@index([active])
+  @@map("market_products")
+}
+
 model SiteEvent {
   id        String   @id @default(cuid())
   kind      String   // 'page_view' | 'signup' | 'reservation' | 'inquiry'
