@@ -186,7 +186,6 @@ function Services() {
       name: "손세차",
       desc: "전문 디테일러가 책임지는 프리미엄 핸드워시.",
       img: IMG.svcHand,
-      featured: true,
     },
     {
       Icon: IconTruck,
@@ -223,13 +222,11 @@ function Services() {
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-12">
+        <div className="grid gap-4 md:grid-cols-2">
           {items.map((s) => (
             <article
               key={s.name}
-              className={`group relative rounded-[24px] overflow-hidden bg-ink text-white ${
-                s.featured ? "md:col-span-7 md:row-span-2" : "md:col-span-5"
-              } ${s.featured ? "min-h-[540px]" : "min-h-[360px]"}`}
+              className="group relative rounded-[24px] overflow-hidden bg-ink text-white min-h-[360px] md:min-h-[420px]"
             >
               <Image
                 src={s.img}

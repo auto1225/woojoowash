@@ -9,7 +9,7 @@ export const IMG = {
   svcSelf:
     "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=1200&q=80",
   svcHand:
-    "https://images.unsplash.com/photo-1605618826115-fb9e0cd26085?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1606220838315-056192d5e927?auto=format&fit=crop&w=1200&q=80",
   svcPickup:
     "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?auto=format&fit=crop&w=1200&q=80",
   svcVisit:
