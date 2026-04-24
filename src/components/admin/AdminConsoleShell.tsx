@@ -1,8 +1,9 @@
 import * as React from "react";
 import { signOut } from "@/auth";
 import { AdminSidebar } from "./AdminSidebar";
+import { getFlags } from "@/lib/settings";
 
-export function AdminConsoleShell({
+export async function AdminConsoleShell({
   children,
   title,
   subtitle,
@@ -13,9 +14,11 @@ export function AdminConsoleShell({
   subtitle?: string;
   userName?: string | null;
 }) {
+  const flags = await getFlags();
+
   return (
     <div className="min-h-screen h-screen flex bg-paper">
-      <AdminSidebar />
+      <AdminSidebar flags={flags} />
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-[56px] shrink-0 bg-white border-b border-fog flex items-center justify-end gap-5 px-6">
           {userName && (

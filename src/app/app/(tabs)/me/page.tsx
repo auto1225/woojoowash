@@ -13,23 +13,29 @@ import {
   IconTicket,
 } from "@/components/icons";
 import { db } from "@/lib/db";
-
-const LINKS = [
-  { I: IconCar, label: "내 차량", href: "/app/me/cars" },
-  { I: IconTicket, label: "쿠폰함", href: "/app/me/coupons" },
-  { I: IconCamera, label: "Before / After", href: "/app/me/before-after" },
-  { I: IconShield, label: "배송지 관리", href: "/app/me/addresses" },
-  { I: IconTicket, label: "주문 내역", href: "/app/market/orders" },
-  { I: IconMsg, label: "1:1 문의", href: "#" },
-  { I: IconHelp, label: "자주 묻는 질문", href: "#" },
-  { I: IconShield, label: "이용약관·개인정보처리방침", href: "#" },
-  { I: IconInfo, label: "서비스 정보", href: "#" },
-  { I: IconSettings, label: "설정", href: "#" },
-];
+import { getFlag } from "@/lib/settings";
 
 export default async function MePage() {
   const session = await auth();
   if (!session?.user) redirect("/app/login?callbackUrl=/app/me");
+
+  const shopEnabled = await getFlag("shopEnabled");
+  const LINKS = [
+    { I: IconCar, label: "내 차량", href: "/app/me/cars" },
+    { I: IconTicket, label: "쿠폰함", href: "/app/me/coupons" },
+    { I: IconCamera, label: "Before / After", href: "/app/me/before-after" },
+    ...(shopEnabled
+      ? [
+          { I: IconShield, label: "배송지 관리", href: "/app/me/addresses" },
+          { I: IconTicket, label: "주문 내역", href: "/app/market/orders" },
+        ]
+      : []),
+    { I: IconMsg, label: "1:1 문의", href: "#" },
+    { I: IconHelp, label: "자주 묻는 질문", href: "#" },
+    { I: IconShield, label: "이용약관·개인정보처리방침", href: "#" },
+    { I: IconInfo, label: "서비스 정보", href: "#" },
+    { I: IconSettings, label: "설정", href: "#" },
+  ];
 
   const [reservationCount, couponCount, reviewCount] = await Promise.all([
     db.reservation.count({

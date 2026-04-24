@@ -6,6 +6,7 @@ import { ko } from "date-fns/locale";
 import { AppBar } from "@/components/app/AppBar";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { getFlag } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +37,7 @@ export default async function OrderDetailPage({
 }: {
   params: { id: string };
 }) {
+  if (!(await getFlag("shopEnabled"))) return notFound();
   const session = await auth();
   if (!session?.user) redirect("/app/login");
 

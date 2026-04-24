@@ -1,11 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { AppBar } from "@/components/app/AppBar";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { getFlag } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,7 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 export default async function OrdersPage() {
+  if (!(await getFlag("shopEnabled"))) return notFound();
   const session = await auth();
   if (!session?.user) redirect("/app/login?callbackUrl=/app/market/orders");
 

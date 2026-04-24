@@ -1,12 +1,14 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { AppBar } from "@/components/app/AppBar";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { getFlag } from "@/lib/settings";
 import { CheckoutForm } from "./CheckoutForm";
 
 export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage() {
+  if (!(await getFlag("shopEnabled"))) return notFound();
   const session = await auth();
   if (!session?.user) {
     redirect("/app/login?callbackUrl=/app/market/checkout");

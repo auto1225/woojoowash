@@ -12,6 +12,8 @@ type Group = {
   id: string;
   label: string;
   items: Item[];
+  // 이 그룹을 숨길 조건 (flags 기반)
+  hideIfDisabled?: "shop" | "community";
 };
 
 const GROUPS: Group[] = [
@@ -36,13 +38,12 @@ const GROUPS: Group[] = [
   {
     id: "landing",
     label: "랜딩 페이지",
-    items: [
-      { label: "Hero 슬라이드", href: "/admin/content/hero" },
-    ],
+    items: [{ label: "Hero 슬라이드", href: "/admin/content/hero" }],
   },
   {
     id: "shop",
     label: "쇼핑",
+    hideIfDisabled: "shop",
     items: [
       { label: "상품 관리", href: "/admin/shop/products" },
       { label: "주문 관리", href: "/admin/shop/orders" },
@@ -52,21 +53,38 @@ const GROUPS: Group[] = [
   {
     id: "community",
     label: "커뮤니티",
+    hideIfDisabled: "community",
     items: [
       { label: "공지사항", href: "/admin/notices" },
       { label: "FAQ 관리", href: "/admin/faqs" },
       { label: "게시판", href: "/admin/posts" },
     ],
   },
+  {
+    id: "settings",
+    label: "설정",
+    items: [{ label: "사이트 설정", href: "/admin/settings" }],
+  },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({
+  flags,
+}: {
+  flags: { shopEnabled: boolean; communityEnabled: boolean };
+}) {
   const pathname = usePathname() || "";
+
+  const visibleGroups = GROUPS.filter((g) => {
+    if (g.hideIfDisabled === "shop" && !flags.shopEnabled) return false;
+    if (g.hideIfDisabled === "community" && !flags.communityEnabled) return false;
+    return true;
+  });
+
   const activeGroup =
-    GROUPS.find((g) => g.items.some((i) => pathname === i.href))?.id ??
+    visibleGroups.find((g) => g.items.some((i) => pathname === i.href))?.id ??
     "home";
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(GROUPS.map((g) => [g.id, true])),
+    Object.fromEntries(visibleGroups.map((g) => [g.id, true])),
   );
 
   function toggle(id: string) {
@@ -83,8 +101,8 @@ export function AdminSidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto ww-no-scrollbar py-2">
-        {GROUPS.map((g) => {
-          const isOpen = open[g.id];
+        {visibleGroups.map((g) => {
+          const isOpen = open[g.id] ?? true;
           return (
             <div key={g.id} className="px-2 mt-1">
               <button
@@ -150,7 +168,16 @@ export function AdminSidebar() {
           href="/home"
           className="flex items-center gap-2 px-3 py-2 text-[12px] font-semibold text-slate hover:text-ink"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M15 18l-6-6 6-6" />
           </svg>
           사이트로 돌아가기

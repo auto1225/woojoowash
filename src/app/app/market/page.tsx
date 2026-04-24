@@ -1,12 +1,15 @@
 import Image from "next/image";
+import { notFound } from "next/navigation";
 import { AppBar } from "@/components/app/AppBar";
 import { CartButton } from "@/components/app/CartButton";
 import { AddToCartButton } from "./AddToCartButton";
 import { getActiveMarketProducts } from "@/lib/queries/content";
+import { getFlag } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
 export default async function MarketPage() {
+  if (!(await getFlag("shopEnabled"))) return notFound();
   const items = await getActiveMarketProducts();
   return (
     <div className="min-h-screen bg-paper pb-[100px]">

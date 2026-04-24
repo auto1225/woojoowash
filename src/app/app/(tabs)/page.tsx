@@ -8,6 +8,7 @@ import {
   getActiveHeroes,
   getActiveMarketProducts,
 } from "@/lib/queries/content";
+import { getFlag } from "@/lib/settings";
 import { ServiceIllust } from "@/components/illustrations/ServiceIllust";
 import { Card } from "@/components/ui/Card";
 import { auth } from "@/auth";
@@ -48,9 +49,10 @@ const FALLBACK_HERO = [
 
 export default async function AppHomePage() {
   const session = await auth();
+  const shopEnabled = await getFlag("shopEnabled");
   const [heroes, marketItems, nearby, myCar, lastDone] = await Promise.all([
     getActiveHeroes(),
-    getActiveMarketProducts(6),
+    shopEnabled ? getActiveMarketProducts(6) : Promise.resolve([]),
     listStoresWithMinPrice(),
     session?.user
       ? db.car.findFirst({
@@ -191,6 +193,7 @@ export default async function AppHomePage() {
         </section>
       )}
 
+      {shopEnabled && marketItems.length > 0 && (
       <section className="pt-6">
         <div className="flex items-baseline justify-between px-5 mb-3">
           <div className="text-[16px] font-extrabold tracking-[-0.3px]">
@@ -242,6 +245,7 @@ export default async function AppHomePage() {
           </div>
         </div>
       </section>
+      )}
 
       <section className="px-5 pt-6">
         <div className="flex items-baseline justify-between mb-3">
