@@ -1,0 +1,295 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Auth (NextAuth 호환 테이블)
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  phone         String?   @unique
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  cars          Car[]
+  reservations  Reservation[]
+  favorites     Favorite[]
+  coupons       Coupon[]
+  reviews       Review[]
+  passSub       PassSubscription?
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Domain
+// ─────────────────────────────────────────────────────────────
+
+model Car {
+  id        String   @id @default(cuid())
+  userId    String
+  brand     String
+  model     String
+  plate     String
+  color     String?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reservations Reservation[]
+
+  @@index([userId])
+  @@map("cars")
+}
+
+model Store {
+  id          String   @id @default(cuid())
+  name        String
+  address     String
+  phone       String?
+  lat         Float?
+  lng         Float?
+  coverImages Json     @default("[]")
+  hours       Json     @default("{}")
+  services    String[] @default([])
+  rating      Float    @default(0)
+  reviewCount Int      @default(0)
+  open        Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products     Product[]
+  reservations Reservation[]
+  favorites    Favorite[]
+  reviews      Review[]
+
+  @@map("stores")
+}
+
+enum ProductType {
+  SELF
+  HAND
+  PICKUP
+  VISIT
+  PREMIUM
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  storeId     String
+  type        ProductType
+  title       String
+  subtitle    String?
+  description String?     @db.Text
+  durationMin Int
+  price       Int
+  images      Json        @default("[]")
+  options     Json        @default("[]")
+  cautions    String[]    @default([])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  store        Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  reservations Reservation[]
+
+  @@index([storeId])
+  @@map("products")
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  DONE
+  CANCELED
+}
+
+model Reservation {
+  id          String            @id @default(cuid())
+  userId      String
+  storeId     String
+  productId   String
+  carId       String?
+  startAt     DateTime
+  durationMin Int
+  price       Int
+  options     Json              @default("[]")
+  request     String?           @db.Text
+  status      ReservationStatus @default(PENDING)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store       Store         @relation(fields: [storeId], references: [id])
+  product     Product       @relation(fields: [productId], references: [id])
+  car         Car?          @relation(fields: [carId], references: [id])
+  payment     Payment?
+  review      Review?
+  beforeAfter BeforeAfter?
+
+  @@index([userId])
+  @@index([storeId])
+  @@index([startAt])
+  @@map("reservations")
+}
+
+enum PaymentMethod {
+  EASY
+  CARD
+}
+
+enum PaymentStatus {
+  PENDING
+  DONE
+  FAILED
+  REFUNDED
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  reservationId  String        @unique
+  method         PaymentMethod
+  tossPaymentKey String?
+  amount         Int
+  discount       Int           @default(0)
+  status         PaymentStatus @default(PENDING)
+  paidAt         DateTime?
+  createdAt      DateTime      @default(now())
+
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+enum CouponType {
+  FLAT
+  PERCENT
+}
+
+model Coupon {
+  id           String     @id @default(cuid())
+  userId       String
+  title        String
+  discountType CouponType
+  amount       Int
+  expiresAt    DateTime
+  usedAt       DateTime?
+  createdAt    DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("coupons")
+}
+
+enum PassTier {
+  LIGHT
+  STANDARD
+  PREMIUM
+}
+
+model PassSubscription {
+  id         String    @id @default(cuid())
+  userId     String    @unique
+  tier       PassTier
+  startedAt  DateTime  @default(now())
+  expiresAt  DateTime
+  canceledAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("pass_subscriptions")
+}
+
+model Favorite {
+  userId    String
+  storeId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, storeId])
+  @@map("favorites")
+}
+
+model Review {
+  id            String   @id @default(cuid())
+  reservationId String   @unique
+  userId        String
+  storeId       String
+  rating        Int
+  body          String?  @db.Text
+  tags          String[] @default([])
+  photos        Json     @default("[]")
+  createdAt     DateTime @default(now())
+
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store       Store       @relation(fields: [storeId], references: [id])
+
+  @@index([storeId])
+  @@map("reviews")
+}
+
+model BeforeAfter {
+  id            String   @id @default(cuid())
+  reservationId String   @unique
+  beforePhoto   String
+  afterPhoto    String
+  createdAt     DateTime @default(now())
+
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@map("before_after")
+}
