@@ -6,10 +6,12 @@ import { useRouter } from "next/navigation";
 export function PayButton({
   storeId,
   productId,
+  startAt,
   total,
 }: {
   storeId: string;
   productId: string;
+  startAt: string;
   total: number;
 }) {
   const router = useRouter();
@@ -23,12 +25,12 @@ export function PayButton({
       const res = await fetch("/api/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storeId, productId }),
+        body: JSON.stringify({ storeId, productId, startAt }),
       });
       if (res.status === 401) {
         router.push(
           `/app/login?callbackUrl=${encodeURIComponent(
-            `/app/booking/payment?store=${storeId}&product=${productId}`,
+            `/app/booking/payment?store=${storeId}&product=${productId}&startAt=${startAt}`,
           )}`,
         );
         return;
@@ -55,7 +57,7 @@ export function PayButton({
         type="button"
         onClick={pay}
         disabled={loading}
-        className="h-14 rounded-full bg-ink text-white font-bold text-[15px] w-full flex items-center justify-center disabled:opacity-50"
+        className="h-14 rounded-full bg-accent text-white font-bold text-[16px] w-full flex items-center justify-center disabled:opacity-50 shadow-ww-blue"
       >
         {loading
           ? "결제 진행 중…"

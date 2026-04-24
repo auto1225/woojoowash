@@ -160,6 +160,20 @@ async function main() {
     },
   });
 
+  // 매장 운영자 (Owner) 데모 계정
+  const ownerPassword = await bcrypt.hash("owner1234", 10);
+  const owner = await db.user.upsert({
+    where: { email: "owner@woojoowash.kr" },
+    update: { password: ownerPassword, role: "OWNER" },
+    create: {
+      email: "owner@woojoowash.kr",
+      name: "강남점 사장님",
+      phone: "010-0000-0001",
+      password: ownerPassword,
+      role: "OWNER",
+    },
+  });
+
   await db.car.upsert({
     where: { id: "demo_car_1" },
     update: {},
@@ -174,12 +188,13 @@ async function main() {
     },
   });
 
-  // stores
+  // stores — 강남점/역삼점은 데모 owner 소유
   for (const s of STORES) {
+    const isOwned = s.id === "gangnam" || s.id === "yeoksam";
     await db.store.upsert({
       where: { id: s.id },
-      update: s,
-      create: s,
+      update: { ...s, ownerId: isOwned ? owner.id : null },
+      create: { ...s, ownerId: isOwned ? owner.id : null },
     });
   }
 

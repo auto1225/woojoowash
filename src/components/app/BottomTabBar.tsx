@@ -43,7 +43,7 @@ const TABS: {
   },
   {
     id: "res",
-    label: "예약",
+    label: "나의 예약",
     href: "/app/reservations",
     Icon: IconCal,
     IconFill: IconCalFill,
@@ -51,7 +51,7 @@ const TABS: {
   },
   {
     id: "me",
-    label: "마이",
+    label: "내 정보",
     href: "/app/me",
     Icon: IconUser,
     IconFill: IconUserFill,
@@ -77,7 +77,7 @@ export function BottomTabBar() {
               )}
             >
               <I size={24} stroke={1.8} />
-              <span className="text-[10px] font-semibold tracking-[-0.2px]">
+              <span className="text-[11px] font-semibold tracking-[-0.2px]">
                 {t.label}
               </span>
             </Link>

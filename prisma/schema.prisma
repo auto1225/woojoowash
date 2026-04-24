@@ -11,6 +11,12 @@ datasource db {
 // Auth (NextAuth 호환 테이블)
 // ─────────────────────────────────────────────────────────────
 
+enum UserRole {
+  USER
+  OWNER
+  ADMIN
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -19,6 +25,7 @@ model User {
   password      String?
   phone         String?   @unique
   image         String?
+  role          UserRole  @default(USER)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -30,6 +37,7 @@ model User {
   coupons       Coupon[]
   reviews       Review[]
   passSub       PassSubscription?
+  ownedStores   Store[]   @relation("StoreOwner")
 
   @@map("users")
 }
@@ -96,6 +104,7 @@ model Car {
 
 model Store {
   id          String   @id @default(cuid())
+  ownerId     String?
   name        String
   address     String
   phone       String?
@@ -107,15 +116,31 @@ model Store {
   rating      Float    @default(0)
   reviewCount Int      @default(0)
   open        Boolean  @default(true)
+  promo       String?  @db.Text
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  owner        User?         @relation("StoreOwner", fields: [ownerId], references: [id])
   products     Product[]
   reservations Reservation[]
   favorites    Favorite[]
   reviews      Review[]
+  closedDays   StoreClosedDay[]
 
+  @@index([ownerId])
   @@map("stores")
+}
+
+model StoreClosedDay {
+  id      String   @id @default(cuid())
+  storeId String
+  date    DateTime @db.Date
+  reason  String?
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([storeId, date])
+  @@map("store_closed_days")
 }
 
 enum ProductType {
