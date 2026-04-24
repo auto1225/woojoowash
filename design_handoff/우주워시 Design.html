@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>우주워시 — WoojooWash Design</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="tokens.js"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="browser-window.jsx"></script>
+<script type="text/babel" src="icons.jsx"></script>
+<script type="text/babel" src="ww-ui.jsx"></script>
+<script type="text/babel" src="app/home.jsx"></script>
+<script type="text/babel" src="app/finder.jsx"></script>
+<script type="text/babel" src="app/store.jsx"></script>
+<script type="text/babel" src="app/payment.jsx"></script>
+<script type="text/babel" src="app/me.jsx"></script>
+<script type="text/babel" src="app/extra.jsx"></script>
+<script type="text/babel" src="app/guest.jsx"></script>
+<script type="text/babel" src="app/hand-wash.jsx"></script>
+<script type="text/babel" src="brand/app-icon.jsx"></script>
+<script type="text/babel" src="brand/icon-showcase.jsx"></script>
+<script type="text/babel" src="web/landing.jsx"></script>
+<script type="text/babel" src="flow-diagram.jsx"></script>
+<style>
+  html, body, #root { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+// Phone frame — simple rounded device bezel without OS chrome (each screen has its own status bar)
+const Phone = ({ children }) => (
+  <div style={{
+    width: 375, height: 812, borderRadius: 44, background: '#0A0A0B',
+    padding: 8, boxShadow: '0 24px 60px rgba(10,10,11,0.15), 0 0 0 1px rgba(10,10,11,0.08)',
+  }}>
+    <div style={{
+      width: '100%', height: '100%', background: '#fff', borderRadius: 36,
+      overflow: 'hidden', position: 'relative',
+    }}>
+      {/* Dynamic island */}
+      <div style={{
+        position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)',
+        width: 116, height: 34, borderRadius: 20, background: '#0A0A0B', zIndex: 100,
+      }}/>
+      {children}
+      {/* Home indicator */}
+      <div style={{
+        position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)',
+        width: 130, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.3)', zIndex: 100,
+      }}/>
+    </div>
+  </div>
+);
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="overview" title="우주워시 — WoojooWash" subtitle="미니멀 모노크롬 · 세차 예약 플랫폼 · 앱 + 홈페이지 통합 디자인">
+        <DCArtboard id="cover" label="Cover" width={800} height={480}>
+          <div style={{ height: '100%', background: WW.ink, color: WW.white, padding: 60, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', right: -100, top: -100, width: 500, height: 500, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)' }}/>
+            <div style={{ position: 'absolute', right: -200, top: -200, width: 700, height: 700, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.05)' }}/>
+            <WWLogo size={26} dark/>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1.5, color: WW.accent, marginBottom: 16 }}>CAR WASH RESERVATION PLATFORM</div>
+              <div className="ww-disp" style={{ fontSize: 64, fontWeight: 800, letterSpacing: -2, lineHeight: 1.05, marginBottom: 20 }}>
+                내 차를 빛나게<br/>만드는 가장 쉬운 방법
+              </div>
+              <div style={{ fontSize: 15, opacity: 0.5, maxWidth: 500, lineHeight: 1.6 }}>
+                셀프세차부터 프리미엄 손세차, 픽업 배달까지.<br/>전국 450개 매장을 우주워시 한 앱에서 예약하세요.
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 32, fontSize: 12, opacity: 0.5 }}>
+              <span>01 · 앱 디자인 (11 screens)</span>
+              <span>02 · 홈페이지 (landing)</span>
+              <span>03 · Before / After 기록 기능</span>
+            </div>
+          </div>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="flow" title="User Flow · 화면 연결 플로우" subtitle="전체 UI가 어떻게 연결되는지 한 눈에 — 진입, 탐색, 예약 퍼널, 마이, 웹 진입까지">
+        <DCArtboard id="flow-diagram" label="User Flow Diagram" width={1880} height={1500}>
+          <FlowDiagram/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="app-core" title="App · 핵심 플로우" subtitle="둘러보기(게스트) → 로그인 → 홈 → 매장 찾기 → 예약 → 결제 직전 가입 → 결제 → 완료">
+        <DCArtboard id="login" label="01 · Login + 둘러보기" width={391} height={828}><Phone><AppLogin/></Phone></DCArtboard>
+        <DCArtboard id="home-guest" label="02 · Home (게스트)" width={391} height={828}><Phone><AppHomeGuest/></Phone></DCArtboard>
+        <DCArtboard id="home" label="03 · Home (로그인)" width={391} height={828}><Phone><AppHome/></Phone></DCArtboard>
+        <DCArtboard id="finder" label="04 · Store Finder" width={391} height={828}><Phone><AppFinder/></Phone></DCArtboard>
+        <DCArtboard id="store" label="05 · Booking (Store)" width={391} height={828}><Phone><AppStore/></Phone></DCArtboard>
+        <DCArtboard id="guest-signup" label="06 · 결제 직전 가입 ★" width={391} height={828}><Phone><AppGuestSignup/></Phone></DCArtboard>
+        <DCArtboard id="payment" label="07 · Payment" width={391} height={828}><Phone><AppPayment/></Phone></DCArtboard>
+        <DCArtboard id="confirmed" label="08 · Confirmed" width={391} height={828}><Phone><AppConfirmed/></Phone></DCArtboard>
+      </DCSection>
+
+      <DCSection id="hand-wash" title="App · 손세차 예약 플로우 ★" subtitle="매장 상세(탭) → 상품 상세 → 예약일시 선택 → 예약/결제 — 레퍼런스 구조에 맞춘 재설계">
+        <DCArtboard id="hw-store" label="H1 · 매장 상세" width={391} height={828}><Phone><HandStoreDetail/></Phone></DCArtboard>
+        <DCArtboard id="hw-product" label="H2 · 상품 상세" width={391} height={828}><Phone><HandProductDetail/></Phone></DCArtboard>
+        <DCArtboard id="hw-date" label="H3 · 예약일시 선택" width={391} height={828}><Phone><HandDatePicker/></Phone></DCArtboard>
+        <DCArtboard id="hw-pay" label="H4 · 예약/결제" width={391} height={828}><Phone><HandBookingPayment/></Phone></DCArtboard>
+      </DCSection>
+
+      <DCSection id="app-me" title="App · 마이 & 부가 기능" subtitle="내 정보, 예약 내역, 즐겨찾기, Before/After, 할인패스, 차량, 쿠폰">
+        <DCArtboard id="res" label="09 · Reservations" width={391} height={828}><Phone><AppReservations/></Phone></DCArtboard>
+        <DCArtboard id="fav" label="10 · Favorites" width={391} height={828}><Phone><AppFav/></Phone></DCArtboard>
+        <DCArtboard id="me" label="11 · My Profile" width={391} height={828}><Phone><AppMe/></Phone></DCArtboard>
+        <DCArtboard id="ba" label="12 · Before/After ★" width={391} height={828}><Phone><AppBeforeAfter/></Phone></DCArtboard>
+        <DCArtboard id="pass" label="13 · Membership" width={391} height={828}><Phone><AppPass/></Phone></DCArtboard>
+        <DCArtboard id="cars" label="14 · My Cars" width={391} height={828}><Phone><AppCars/></Phone></DCArtboard>
+        <DCArtboard id="coupons" label="15 · Coupons" width={391} height={828}><Phone><AppCoupons/></Phone></DCArtboard>
+      </DCSection>
+
+      <DCSection id="web" title="Web · 홈페이지" subtitle="히어로 · 서비스 소개 · 사용법 · 할인패스 · 제휴 · FAQ · 푸터">
+        <DCArtboard id="landing" label="Landing Page" width={1280} height={3800}>
+          <WebLanding/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="brand" title="Brand · 앱 아이콘" subtitle="정면 자동차 + 거품 버블 · 모노크롬 아이콘">
+        <DCArtboard id="app-icon" label="App Icon" width={900} height={1200}>
+          <AppIconShowcase/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="system" title="Design System" subtitle="컬러 · 타이포그래피 · 컴포넌트 원칙">
+        <DCArtboard id="tokens" label="Tokens" width={800} height={600}>
+          <div style={{ padding: 40, fontFamily: WW.fontKR, height: '100%', background: WW.white }}>
+            <div className="ww-disp" style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.6, marginBottom: 30 }}>우주워시 디자인 시스템</div>
+            
+            <div style={{ fontSize: 11, fontWeight: 700, color: WW.slate, letterSpacing: 1, marginBottom: 12 }}>COLORS</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 8, marginBottom: 32 }}>
+              {[
+                {n: 'ink', v: WW.ink}, {n: 'charcoal', v: WW.charcoal}, {n: 'graphite', v: WW.graphite},
+                {n: 'slate', v: WW.slate}, {n: 'ash', v: WW.ash}, {n: 'mist', v: WW.mist},
+                {n: 'fog', v: WW.fog}, {n: 'cloud', v: WW.cloud}, {n: 'paper', v: WW.paper},
+                {n: 'white', v: WW.white, b: true}, {n: 'accent', v: WW.accent}, {n: 'danger', v: WW.danger},
+              ].map((c, i) => (
+                <div key={i}>
+                  <div style={{ height: 56, borderRadius: 8, background: c.v, border: c.b ? `1px solid ${WW.fog}` : 'none', marginBottom: 6 }}/>
+                  <div style={{ fontSize: 10, fontWeight: 700 }}>{c.n}</div>
+                  <div style={{ fontSize: 9, color: WW.slate, fontFamily: 'monospace' }}>{c.v}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ fontSize: 11, fontWeight: 700, color: WW.slate, letterSpacing: 1, marginBottom: 12 }}>TYPOGRAPHY · Pretendard</div>
+            <div style={{ marginBottom: 24 }}>
+              <div className="ww-disp" style={{ fontSize: 40, fontWeight: 800, letterSpacing: -1, lineHeight: 1.1 }}>Display · 우주워시</div>
+              <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: -0.4, marginTop: 6 }}>Title · 오늘도 빛나는 드라이브</div>
+              <div style={{ fontSize: 14, fontWeight: 500, color: WW.graphite, marginTop: 6 }}>Body · 셀프세차부터 프리미엄 손세차까지</div>
+            </div>
+
+            <div style={{ fontSize: 11, fontWeight: 700, color: WW.slate, letterSpacing: 1, marginBottom: 12 }}>COMPONENTS</div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+              <WWChip>Default</WWChip>
+              <WWChip active>Active</WWChip>
+              <WWCircleChip>30분</WWCircleChip>
+              <WWCircleChip active>60분</WWCircleChip>
+              <div style={{ width: 120 }}><WWCTA size="md">Primary</WWCTA></div>
+              <div style={{ width: 120 }}><WWCTA variant="secondary" size="md">Secondary</WWCTA></div>
+            </div>
+          </div>
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
