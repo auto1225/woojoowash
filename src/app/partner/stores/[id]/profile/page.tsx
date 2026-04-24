@@ -1,6 +1,6 @@
 import { revalidatePath } from "next/cache";
-import { AdminShell } from "@/components/admin/AdminShell";
-import { StoreLocationPicker } from "@/components/admin/StoreLocationPicker";
+import { AdminShell } from "@/components/partner/PartnerShell";
+import { StoreLocationPicker } from "@/components/partner/StoreLocationPicker";
 import { requireOwnedStore, requireOwner } from "@/lib/admin";
 import { db } from "@/lib/db";
 
@@ -36,8 +36,8 @@ async function saveProfile(id: string, formData: FormData) {
       coverImages: coverUrl ? [coverUrl] : [],
     },
   });
-  revalidatePath(`/admin/stores/${id}`);
-  revalidatePath(`/admin/stores/${id}/profile`);
+  revalidatePath(`/partner/stores/${id}`);
+  revalidatePath(`/partner/stores/${id}/profile`);
   revalidatePath(`/app/stores/${id}`);
   revalidatePath(`/app/stores`);
   revalidatePath(`/stores`);

@@ -1,4 +1,4 @@
-import { AdminShell } from "@/components/admin/AdminShell";
+import { AdminShell } from "@/components/partner/PartnerShell";
 import { requireOwnedStore, requireOwner } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { CalendarReservations } from "./CalendarReservations";

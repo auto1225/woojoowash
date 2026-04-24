@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { AdminShell } from "@/components/admin/AdminShell";
+import { AdminShell } from "@/components/partner/PartnerShell";
 import { requireOwnedStore, requireOwner } from "@/lib/admin";
 import { db } from "@/lib/db";
 
@@ -18,14 +18,14 @@ async function addClosedDay(storeId: string, formData: FormData) {
     update: { reason },
     create: { storeId, date: new Date(dateStr), reason },
   });
-  revalidatePath(`/admin/stores/${storeId}/schedule`);
+  revalidatePath(`/partner/stores/${storeId}/schedule`);
 }
 
 async function removeClosedDay(storeId: string, dayId: string) {
   "use server";
   await requireOwnedStore(storeId);
   await db.storeClosedDay.delete({ where: { id: dayId } });
-  revalidatePath(`/admin/stores/${storeId}/schedule`);
+  revalidatePath(`/partner/stores/${storeId}/schedule`);
 }
 
 async function saveHours(storeId: string, formData: FormData) {
@@ -46,7 +46,7 @@ async function saveHours(storeId: string, formData: FormData) {
       },
     },
   });
-  revalidatePath(`/admin/stores/${storeId}/schedule`);
+  revalidatePath(`/partner/stores/${storeId}/schedule`);
   revalidatePath(`/app/stores/${storeId}`);
 }
 

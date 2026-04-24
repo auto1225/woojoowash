@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { AdminShell } from "@/components/admin/AdminShell";
+import { AdminShell } from "@/components/partner/PartnerShell";
 import { requireOwnedStore, requireOwner } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { ProductForm } from "../ProductForm";
@@ -14,9 +14,9 @@ async function createProduct(storeId: string, formData: FormData) {
   const created = await db.product.create({
     data: { ...data, storeId },
   });
-  revalidatePath(`/admin/stores/${storeId}/products`);
+  revalidatePath(`/partner/stores/${storeId}/products`);
   revalidatePath(`/app/stores/${storeId}`);
-  redirect(`/admin/stores/${storeId}/products/${created.id}`);
+  redirect(`/partner/stores/${storeId}/products/${created.id}`);
 }
 
 function parseForm(fd: FormData) {

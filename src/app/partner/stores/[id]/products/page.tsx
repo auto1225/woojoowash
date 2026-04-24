@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
-import { AdminShell } from "@/components/admin/AdminShell";
+import { AdminShell } from "@/components/partner/PartnerShell";
 import { requireOwnedStore, requireOwner } from "@/lib/admin";
 import { db } from "@/lib/db";
 
@@ -10,7 +10,7 @@ async function deleteProduct(storeId: string, productId: string) {
   "use server";
   await requireOwnedStore(storeId);
   await db.product.delete({ where: { id: productId } });
-  revalidatePath(`/admin/stores/${storeId}/products`);
+  revalidatePath(`/partner/stores/${storeId}/products`);
   revalidatePath(`/app/stores/${storeId}`);
 }
 
@@ -35,7 +35,7 @@ export default async function ProductsPage({
       <div className="flex items-center justify-between mb-6">
         <h1 className="ww-disp text-[24px] tracking-[-0.02em]">상품 관리</h1>
         <Link
-          href={`/admin/stores/${store.id}/products/new`}
+          href={`/partner/stores/${store.id}/products/new`}
           className="h-11 px-5 inline-flex items-center rounded-full bg-ink text-white text-[13px] font-bold"
         >
           + 상품 추가
@@ -86,7 +86,7 @@ export default async function ProductsPage({
                   <Td className="text-right">
                     <div className="flex justify-end gap-2">
                       <Link
-                        href={`/admin/stores/${store.id}/products/${p.id}`}
+                        href={`/partner/stores/${store.id}/products/${p.id}`}
                         className="text-[12px] font-semibold text-accent hover:underline"
                       >
                         수정

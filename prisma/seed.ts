@@ -174,6 +174,20 @@ async function main() {
     },
   });
 
+  // 서비스 관리자 (Super Admin) 데모 계정
+  const adminPassword = await bcrypt.hash("admin1234", 10);
+  await db.user.upsert({
+    where: { email: "admin@woojoowash.kr" },
+    update: { password: adminPassword, role: "ADMIN" },
+    create: {
+      email: "admin@woojoowash.kr",
+      name: "우주워시 운영팀",
+      phone: "010-0000-0000",
+      password: adminPassword,
+      role: "ADMIN",
+    },
+  });
+
   await db.car.upsert({
     where: { id: "demo_car_1" },
     update: {},
@@ -223,10 +237,44 @@ async function main() {
     },
   });
 
+  // 샘플 제휴 문의
+  const existingInquiries = await db.partnerInquiry.count();
+  if (existingInquiries === 0) {
+    await db.partnerInquiry.createMany({
+      data: [
+        {
+          storeName: "퍼펙트 카케어 용산점",
+          contactName: "박용산",
+          phone: "010-1234-1111",
+          address: "서울 용산구 한강대로 100",
+          message: "손세차 + 픽업세차 입점 문의드립니다.",
+          status: "NEW",
+        },
+        {
+          storeName: "다이아 디테일링 하남",
+          contactName: "김하남",
+          phone: "010-2222-3333",
+          address: "경기 하남시 미사강변로 200",
+          message: "프리미엄 디테일링 전문점입니다. 우주워시와 제휴하고 싶어요.",
+          status: "CONTACTED",
+          memo: "3/22 상담 완료. 계약서 검토 중.",
+        },
+        {
+          storeName: "세차왕 분당점",
+          contactName: "이분당",
+          phone: "010-5555-7777",
+          address: "경기 성남시 분당구 정자로 50",
+          status: "APPROVED",
+          memo: "4/1 계약 완료, 입점 준비 중.",
+        },
+      ],
+    });
+  }
+
   console.log(
     `✓ seeded: user=${demo.email}, stores=${STORES.length}, products=${
       Object.values(PRODUCTS_BY_STORE).flat().length
-    }`,
+    }, inquiries=${existingInquiries === 0 ? 3 : existingInquiries}`,
   );
 }
 

@@ -7,7 +7,7 @@ import { signIn } from "next-auth/react";
 export function AdminLoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const callbackUrl = params.get("callbackUrl") || "/admin";
+  const callbackUrl = params.get("callbackUrl") || "/partner";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);

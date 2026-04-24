@@ -23,6 +23,6 @@ export async function updateReservationStatus(
     where: { id: reservationId },
     data: { status: status as ReservationStatus },
   });
-  revalidatePath(`/admin/stores/${storeId}/reservations`);
-  revalidatePath(`/admin/stores/${storeId}`);
+  revalidatePath(`/partner/stores/${storeId}/reservations`);
+  revalidatePath(`/partner/stores/${storeId}`);
 }

@@ -66,9 +66,10 @@ npm run dev                   # http://localhost:3000
 | 역할 | 이메일 | 비밀번호 | 접근 경로 |
 |---|---|---|---|
 | 일반 유저 | `demo@woojoowash.kr` | `demo1234` | `/app/*` |
-| 매장 운영자 | `owner@woojoowash.kr` | `owner1234` | `/admin/*` (강남점·역삼점 소유) |
+| 매장 운영자 | `owner@woojoowash.kr` | `owner1234` | `/partner/*` (강남점·역삼점 소유) |
+| 서비스 관리자 | `admin@woojoowash.kr` | `admin1234` | `/admin/*` (전체 백오피스) |
 
-> 매장 운영자는 `/admin/login` 에서 별도 로그인. 일반 유저는 `/app/login` 에서 로그인/가입.
+> 일반 유저는 `/app/login`, 매장 운영자는 `/partner/login`, 서비스 관리자는 `/admin/login` 에서 각각 로그인.
 
 ### Postgres (로컬 Docker)
 
@@ -94,14 +95,22 @@ npm run dev                   # http://localhost:3000
 - `/app/reservations` · `/app/me` · `/app/me/cars` · `/app/me/coupons`
 - `/pass` — 할인패스 · `/partners` — 입점 문의
 
-### 매장 운영자 CMS
-- `/admin/login` — 운영자 로그인
-- `/admin` — 내 매장 대시보드
-- `/admin/stores/[id]` — 매장별 대시보드 (오늘·예정·매출)
-- `/admin/stores/[id]/profile` — 매장 정보·홍보 문구 편집 (저장 즉시 앱 반영)
-- `/admin/stores/[id]/products` — 상품 CRUD
-- `/admin/stores/[id]/schedule` — 영업시간·휴무일
-- `/admin/stores/[id]/reservations` — 예약 목록·상태 변경
+### 매장 운영자 CMS (사장님 전용, `/partner`)
+- `/partner/login` — 운영자 로그인
+- `/partner` — 내 매장 대시보드
+- `/partner/stores/[id]` — 매장별 대시보드 (오늘·예정·매출)
+- `/partner/stores/[id]/profile` — 매장 정보·홍보 문구·지도 위치 편집 (저장 즉시 앱 반영)
+- `/partner/stores/[id]/products` — 상품 CRUD
+- `/partner/stores/[id]/schedule` — 영업시간·휴무일
+- `/partner/stores/[id]/reservations` — 월 캘린더 + 상태 변경
+
+### 서비스 관리자 CMS (우주워시 내부 팀 전용, `/admin`)
+- `/admin/login` — 관리자 로그인
+- `/admin` — 종합 대시보드 (회원·매장·예약·매출·신규 문의)
+- `/admin/users` — 회원 검색·역할/상태 변경
+- `/admin/stores` — 전체 매장 + 소유자 지정 + 영업 여부 토글
+- `/admin/inquiries` — 제휴 문의 처리 (상태·내부 메모)
+- `/admin/revenue` — 6개월 매출 차트 + 매장별 TOP
 
 ## 네이버 지도 (매장 찾기)
 

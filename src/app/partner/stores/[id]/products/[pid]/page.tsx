@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { AdminShell } from "@/components/admin/AdminShell";
+import { AdminShell } from "@/components/partner/PartnerShell";
 import { requireOwnedStore, requireOwner } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { ProductForm } from "../ProductForm";
@@ -16,8 +16,8 @@ async function updateProduct(
   await requireOwnedStore(storeId);
   const data = parseForm(formData);
   await db.product.update({ where: { id: productId }, data });
-  revalidatePath(`/admin/stores/${storeId}/products`);
-  revalidatePath(`/admin/stores/${storeId}/products/${productId}`);
+  revalidatePath(`/partner/stores/${storeId}/products`);
+  revalidatePath(`/partner/stores/${storeId}/products/${productId}`);
   revalidatePath(`/app/stores/${storeId}`);
   revalidatePath(`/app/stores/${storeId}/products/${productId}`);
 }

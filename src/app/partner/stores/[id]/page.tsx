@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { AdminShell } from "@/components/admin/AdminShell";
+import { AdminShell } from "@/components/partner/PartnerShell";
 import { requireOwnedStore, requireOwner } from "@/lib/admin";
 import { db } from "@/lib/db";
 
@@ -84,7 +84,7 @@ export default async function StoreDashboardPage({
             최근 예약
           </div>
           <Link
-            href={`/admin/stores/${store.id}/reservations`}
+            href={`/partner/stores/${store.id}/reservations`}
             className="text-[12px] text-slate font-semibold hover:text-ink"
           >
             전체 보기
@@ -149,22 +149,22 @@ export default async function StoreDashboardPage({
 
       <section className="grid md:grid-cols-2 gap-4">
         <Tile
-          href={`/admin/stores/${store.id}/profile`}
+          href={`/partner/stores/${store.id}/profile`}
           title="매장 정보·홍보 문구"
           desc="이름·주소·커버 이미지·홍보 문구를 수정하면 앱에 즉시 반영됩니다."
         />
         <Tile
-          href={`/admin/stores/${store.id}/products`}
+          href={`/partner/stores/${store.id}/products`}
           title="상품 관리"
           desc="상품을 추가하면 앱에서 고객이 예약 가능해져요."
         />
         <Tile
-          href={`/admin/stores/${store.id}/schedule`}
+          href={`/partner/stores/${store.id}/schedule`}
           title="영업시간 · 휴무일"
           desc="휴무일 등록하면 날짜 선택 화면에서 자동 차단됩니다."
         />
         <Tile
-          href={`/admin/stores/${store.id}/reservations`}
+          href={`/partner/stores/${store.id}/reservations`}
           title="예약 목록"
           desc="확정 / 완료 / 취소 상태를 여기서 변경해요."
         />
