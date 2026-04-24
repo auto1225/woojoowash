@@ -25,27 +25,43 @@ export function AppBar({
   return (
     <div
       className={cn(
-        "h-[52px] flex items-center justify-between px-4 shrink-0",
+        "relative z-20 h-[52px] flex items-center justify-between px-3 shrink-0",
         dark ? "bg-transparent text-white" : "bg-white text-ink",
         border && "border-b border-fog",
       )}
     >
-      <div className="w-10 flex items-center">
+      <div className="w-11 flex items-center">
         {showBack && (
           <button
             type="button"
             onClick={back}
-            className="p-0 bg-transparent"
             aria-label="뒤로"
+            className={cn(
+              "inline-flex items-center justify-center w-10 h-10 rounded-full transition active:scale-[0.94]",
+              dark
+                ? "bg-black/30 text-white ww-backdrop-glass"
+                : "bg-transparent text-ink hover:bg-cloud",
+            )}
           >
-            <IconBack size={24} stroke={2} />
+            <IconBack size={22} stroke={2.2} />
           </button>
         )}
       </div>
-      <div className="text-[17px] font-semibold tracking-[-0.3px]">
+      <div className="text-[17px] font-semibold tracking-[-0.3px] truncate max-w-[60%] text-center">
         {title}
       </div>
-      <div className="w-10 flex justify-end">{right}</div>
+      <div className="w-11 flex justify-end">
+        {right && (
+          <div
+            className={cn(
+              "inline-flex items-center justify-center min-w-[40px] h-10 rounded-full",
+              dark ? "bg-black/30 ww-backdrop-glass px-2" : "",
+            )}
+          >
+            {right}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
