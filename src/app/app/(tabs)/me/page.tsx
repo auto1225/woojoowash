@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
@@ -37,17 +38,25 @@ export default async function MePage() {
     { I: IconSettings, label: "설정", href: "#" },
   ];
 
-  const [reservationCount, couponCount, reviewCount] = await Promise.all([
-    db.reservation.count({
-      where: { userId: session.user.id, status: "DONE" },
-    }),
-    db.coupon.count({
-      where: { userId: session.user.id, usedAt: null },
-    }),
-    db.review.count({ where: { userId: session.user.id } }),
-  ]);
+  const [userProfile, reservationCount, couponCount, reviewCount] =
+    await Promise.all([
+      db.user.findUnique({
+        where: { id: session.user.id },
+        select: { name: true, email: true, image: true },
+      }),
+      db.reservation.count({
+        where: { userId: session.user.id, status: "DONE" },
+      }),
+      db.coupon.count({
+        where: { userId: session.user.id, usedAt: null },
+      }),
+      db.review.count({ where: { userId: session.user.id } }),
+    ]);
 
-  const name = session.user.name || session.user.email || "고객";
+  const name =
+    userProfile?.name || session.user.name || session.user.email || "고객";
+  const email = userProfile?.email || session.user.email;
+  const avatarUrl = userProfile?.image ?? null;
 
   return (
     <>
@@ -57,14 +66,22 @@ export default async function MePage() {
 
       <section className="px-5 mb-5">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-cloud flex items-center justify-center text-[18px] font-extrabold">
-            {name[0]?.toUpperCase()}
+          <div className="relative w-14 h-14 rounded-full overflow-hidden bg-cloud flex items-center justify-center text-[18px] font-extrabold shrink-0">
+            {avatarUrl ? (
+              <Image
+                src={avatarUrl}
+                alt={name}
+                fill
+                className="object-cover"
+                sizes="56px"
+              />
+            ) : (
+              name[0]?.toUpperCase()
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-[18px] font-extrabold truncate">{name}</div>
-            <div className="text-[12px] text-slate truncate">
-              {session.user.email}
-            </div>
+            <div className="text-[12px] text-slate truncate">{email}</div>
           </div>
           <Link
             href="/app/me/profile"
