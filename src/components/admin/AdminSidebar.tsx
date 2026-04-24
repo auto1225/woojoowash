@@ -57,6 +57,7 @@ const GROUPS: Group[] = [
     items: [
       { label: "공지사항", href: "/admin/notices" },
       { label: "FAQ 관리", href: "/admin/faqs" },
+      { label: "1:1 문의", href: "/admin/support" },
       { label: "게시판", href: "/admin/posts" },
     ],
   },

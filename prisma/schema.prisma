@@ -46,6 +46,7 @@ model User {
   ownedStores   Store[]   @relation("StoreOwner")
   addresses     Address[]
   orders        Order[]
+  supportTickets SupportTicket[]
 
   @@map("users")
 }
@@ -522,6 +523,51 @@ model Shipment {
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("shipments")
+}
+
+enum TicketStatus {
+  OPEN
+  ANSWERED
+  CLOSED
+}
+
+enum MessageSender {
+  CUSTOMER
+  ADMIN
+  SYSTEM
+}
+
+model SupportTicket {
+  id             String       @id @default(cuid())
+  userId         String
+  subject        String?
+  status         TicketStatus @default(OPEN)
+  lastMessageAt  DateTime     @default(now())
+  customerUnread Int          @default(0)
+  adminUnread    Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages SupportMessage[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([lastMessageAt])
+  @@map("support_tickets")
+}
+
+model SupportMessage {
+  id        String        @id @default(cuid())
+  ticketId  String
+  sender    MessageSender
+  body      String        @db.Text
+  createdAt DateTime      @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@map("support_messages")
 }
 
 model SiteSetting {

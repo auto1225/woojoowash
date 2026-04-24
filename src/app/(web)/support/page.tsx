@@ -42,7 +42,7 @@ export default function SupportPage() {
             앱 내 채팅으로 상담사와 바로 대화. 24시간 접수됩니다.
           </div>
           <Link
-            href="/app"
+            href="/app/support"
             className="inline-flex items-center gap-[6px] text-[13px] font-bold text-accent"
           >
             채팅 시작 <IconArrow size={12} stroke={2.5} />
