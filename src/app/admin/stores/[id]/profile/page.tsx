@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { AdminShell } from "@/components/admin/AdminShell";
+import { StoreLocationPicker } from "@/components/admin/StoreLocationPicker";
 import { requireOwnedStore, requireOwner } from "@/lib/admin";
 import { db } from "@/lib/db";
 
@@ -17,6 +18,11 @@ async function saveProfile(id: string, formData: FormData) {
   const promo = String(formData.get("promo") ?? "").trim() || null;
   const open = formData.get("open") === "on";
 
+  const latRaw = String(formData.get("lat") ?? "").trim();
+  const lngRaw = String(formData.get("lng") ?? "").trim();
+  const lat = latRaw === "" ? null : Number(latRaw);
+  const lng = lngRaw === "" ? null : Number(lngRaw);
+
   await db.store.update({
     where: { id },
     data: {
@@ -25,12 +31,15 @@ async function saveProfile(id: string, formData: FormData) {
       phone,
       promo,
       open,
+      lat: Number.isFinite(lat as number) ? lat : null,
+      lng: Number.isFinite(lng as number) ? lng : null,
       coverImages: coverUrl ? [coverUrl] : [],
     },
   });
   revalidatePath(`/admin/stores/${id}`);
   revalidatePath(`/admin/stores/${id}/profile`);
   revalidatePath(`/app/stores/${id}`);
+  revalidatePath(`/app/stores`);
   revalidatePath(`/stores`);
 }
 
@@ -44,6 +53,7 @@ export default async function ProfilePage({
   const coverUrl = Array.isArray(store.coverImages)
     ? ((store.coverImages as string[])[0] ?? "")
     : "";
+  const clientId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID ?? null;
 
   return (
     <AdminShell
@@ -64,6 +74,7 @@ export default async function ProfilePage({
           name="address"
           defaultValue={store.address}
           required
+          hint="앱 매장 상세·리스트에 표시됩니다."
         />
         <Field
           label="전화번호"
@@ -91,6 +102,21 @@ export default async function ProfilePage({
             placeholder="예: 주말 할인 진행중! 프리미엄 코스 10% 할인"
           />
         </label>
+
+        <div>
+          <div className="text-[12px] font-bold mb-[6px]">
+            매장 위치 <span className="text-danger">*</span>
+          </div>
+          <div className="text-[11px] text-slate mb-3 leading-[1.6]">
+            지도를 클릭해 매장 위치를 핀으로 고정하세요. 앱의 매장 찾기
+            지도에서 이 좌표로 마커가 표시됩니다.
+          </div>
+          <StoreLocationPicker
+            clientId={clientId}
+            initialLat={store.lat}
+            initialLng={store.lng}
+          />
+        </div>
 
         <label className="flex items-center gap-2 text-[13px]">
           <input
