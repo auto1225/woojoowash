@@ -103,6 +103,32 @@ npm run dev                   # http://localhost:3000
 - `/admin/stores/[id]/schedule` — 영업시간·휴무일
 - `/admin/stores/[id]/reservations` — 예약 목록·상태 변경
 
+## 네이버 지도 (매장 찾기)
+
+`/app/stores` 는 네이버 지도 Web Dynamic Map 으로 동작합니다. Client ID 가
+없으면 fallback 배너 + 리스트만 표시됩니다.
+
+### 키 발급 단계
+
+1. [네이버 클라우드 플랫폼 콘솔](https://console.ncloud.com/) 로그인
+2. **Services → Application Services → Maps**
+3. **Application 등록** → "Web Dynamic Map" 체크
+4. **Web 서비스 URL** 에 `http://localhost:3000` 추가 (프로덕션 도메인도 나중에)
+5. 발급된 **Client ID** 를 `.env.local` 에 추가:
+
+```bash
+NEXT_PUBLIC_NAVER_MAP_CLIENT_ID=여기에_Client_ID_붙여넣기
+```
+
+6. `npm run dev` 재시작 → `/app/stores` 에서 지도 활성화 확인
+
+### 동작
+- 최초 접속: 브라우저가 위치 권한을 요청 → 허용 시 내 위치로 이동, 거부 시 강남역 중심
+- 지도를 드래그 하거나 줌 변경 시 **"이 지역에서 재검색"** 버튼 노출
+- 버튼 클릭 → 현재 지도 bbox 로 `/api/stores/nearby` 호출 → 마커·리스트 동기화
+- 리스트 카드 클릭 → 해당 매장으로 지도 이동 + 선택 강조
+- 마커 클릭 → 리스트에서 해당 카드로 스크롤 + 선택 강조
+
 ## 환경 변수
 
 `.env.example` 참고 → `.env.local` 로 복사. DB URL 은 `.env` 에 `DATABASE_URL` 로 Prisma가 읽습니다.
@@ -128,6 +154,7 @@ npm run dev                   # http://localhost:3000
 - [x] Sprint 3.2 — NextAuth (Credentials · 이메일/비밀번호)
 - [x] Sprint 3.3 — mock → DB 실제 연동 (매장·상품·예약·마이)
 - [x] Sprint 4 — yper 스타일 앱 UI + 운영자 CMS (매장·상품·스케줄·예약 관리)
-- [ ] Sprint 5 — 카카오 OAuth · 토스페이먼츠 · 카카오맵
+- [x] Sprint 4.5 — 네이버 지도 (Web Dynamic Map) + 내 위치 + bbox 재검색
+- [ ] Sprint 5 — 카카오 OAuth · 토스페이먼츠
 - [ ] Sprint 6 — Polish (skeleton · error · empty · push 알림)
 - [ ] Sprint 7 — Capacitor 래핑
