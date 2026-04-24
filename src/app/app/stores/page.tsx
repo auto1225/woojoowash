@@ -45,7 +45,6 @@ export default async function FinderPage() {
       <AppBar
         title="매장 찾기"
         right={<IconFilter size={22} stroke={1.7} />}
-        showBack={false}
         border={false}
       />
 
