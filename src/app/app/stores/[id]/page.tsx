@@ -5,27 +5,31 @@ import { AppBar } from "@/components/app/AppBar";
 import {
   IconClock,
   IconPin,
+  IconShield,
   IconStarFill,
 } from "@/components/icons";
-import { MOCK_PRODUCTS, MOCK_STORES } from "@/lib/mock/stores";
+import { getStore, displayDist } from "@/lib/queries/stores";
+import { labelServices } from "@/lib/services";
+import { IMG } from "@/lib/images";
 
-export default function StoreDetailPage({
+export const dynamic = "force-dynamic";
+
+export default async function StoreDetailPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const store = MOCK_STORES.find((s) => s.id === params.id);
+  const store = await getStore(params.id);
   if (!store) return notFound();
 
-  const products = MOCK_PRODUCTS.filter((p) => p.storeId === store.id).length > 0
-    ? MOCK_PRODUCTS.filter((p) => p.storeId === store.id)
-    : MOCK_PRODUCTS;
+  const cover = store.coverImages[0] ?? IMG.store1;
+  const labels = labelServices(store.services);
 
   return (
     <div className="pb-[120px]">
       <div className="relative h-[260px]">
         <Image
-          src={store.cover}
+          src={cover}
           alt={store.name}
           fill
           priority
@@ -36,7 +40,7 @@ export default function StoreDetailPage({
         <AppBar dark border={false} showBack />
         <div className="absolute left-4 right-4 bottom-4 text-white">
           <div className="flex gap-2 mb-3">
-            {store.types.map((t) => (
+            {labels.map((t) => (
               <span
                 key={t}
                 className="text-[10px] font-bold px-[10px] py-[4px] rounded-full bg-white/15 ww-backdrop-glass border border-white/20"
@@ -54,10 +58,10 @@ export default function StoreDetailPage({
       <div className="px-5 pt-5">
         <div className="flex items-center gap-[6px] text-[12px]">
           <IconStarFill size={12} />
-          <span className="font-bold">{store.rating}</span>
-          <span className="text-slate">({store.reviews})</span>
+          <span className="font-bold">{store.rating.toFixed(1)}</span>
+          <span className="text-slate">({store.reviewCount})</span>
           <span className="text-ash">·</span>
-          <span className="text-slate">{store.dist}</span>
+          <span className="text-slate">{displayDist(store.id)}</span>
         </div>
         <div className="flex items-center gap-2 mt-3 text-[12px] text-slate">
           <IconPin size={14} stroke={1.6} />
@@ -83,37 +87,57 @@ export default function StoreDetailPage({
       </div>
 
       <div className="px-5 pt-5 flex flex-col gap-3">
-        {products.map((p) => (
-          <Link
-            key={p.id}
-            href={`/app/stores/${store.id}/products/${p.id}`}
-            className="rounded-[16px] border border-fog p-3 bg-white flex gap-3 active:bg-paper transition"
-          >
-            <div className="relative w-[92px] h-[92px] rounded-[12px] shrink-0 overflow-hidden">
-              <Image
-                src={p.hero}
-                alt={p.title}
-                fill
-                className="object-cover"
-                sizes="100px"
-              />
-            </div>
-            <div className="flex-1 min-w-0 py-1">
-              <div className="text-[11px] text-slate font-medium mb-[2px]">
-                {p.duration}분 소요
-              </div>
-              <div className="text-[15px] font-extrabold tracking-[-0.3px] mb-1">
-                {p.title}
-              </div>
-              <div className="text-[12px] text-slate line-clamp-1 mb-2">
-                {p.subtitle}
-              </div>
-              <div className="text-[15px] font-extrabold ww-num">
-                {p.price.toLocaleString("ko-KR")}원
-              </div>
-            </div>
-          </Link>
-        ))}
+        {store.products.length === 0 ? (
+          <div className="py-16 text-center text-slate text-[13px]">
+            등록된 상품이 없어요.
+          </div>
+        ) : (
+          store.products.map((p) => {
+            const images = Array.isArray(p.images) ? (p.images as string[]) : [];
+            const img = images[0];
+            return (
+              <Link
+                key={p.id}
+                href={`/app/stores/${store.id}/products/${p.id}`}
+                className="rounded-[16px] border border-fog p-3 bg-white flex gap-3 active:bg-paper transition"
+              >
+                <div className="relative w-[92px] h-[92px] rounded-[12px] shrink-0 overflow-hidden bg-cloud">
+                  {img ? (
+                    <Image
+                      src={img}
+                      alt={p.title}
+                      fill
+                      className="object-cover"
+                      sizes="100px"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <IconShield
+                        size={30}
+                        stroke={1.3}
+                        className="text-graphite opacity-60"
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 py-1">
+                  <div className="text-[11px] text-slate font-medium mb-[2px]">
+                    {p.durationMin}분 소요
+                  </div>
+                  <div className="text-[15px] font-extrabold tracking-[-0.3px] mb-1">
+                    {p.title}
+                  </div>
+                  <div className="text-[12px] text-slate line-clamp-1 mb-2">
+                    {p.subtitle}
+                  </div>
+                  <div className="text-[15px] font-extrabold ww-num">
+                    {p.price.toLocaleString("ko-KR")}원
+                  </div>
+                </div>
+              </Link>
+            );
+          })
+        )}
       </div>
     </div>
   );

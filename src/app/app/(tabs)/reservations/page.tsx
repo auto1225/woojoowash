@@ -1,14 +1,33 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 import { Card } from "@/components/ui/Card";
-import { MOCK_USER } from "@/lib/mock/user";
+import { auth } from "@/auth";
+import { db } from "@/lib/db";
+
+export const dynamic = "force-dynamic";
 
 const STATUS_LABEL = {
-  confirmed: "예약 확정",
-  done: "완료",
-  canceled: "취소됨",
-};
+  PENDING: "결제 대기",
+  CONFIRMED: "예약 확정",
+  DONE: "완료",
+  CANCELED: "취소됨",
+} as const;
 
-export default function ReservationsPage() {
+export default async function ReservationsPage() {
+  const session = await auth();
+  if (!session?.user) redirect("/app/login?callbackUrl=/app/reservations");
+
+  const reservations = await db.reservation.findMany({
+    where: { userId: session.user.id },
+    orderBy: { startAt: "desc" },
+    include: {
+      store: { select: { name: true } },
+      product: { select: { title: true } },
+    },
+  });
+
   return (
     <>
       <div className="px-5 pt-4 pb-3">
@@ -26,34 +45,54 @@ export default function ReservationsPage() {
           </span>
         ))}
       </div>
-      <div className="px-5 flex flex-col gap-3">
-        {MOCK_USER.reservations.map((r) => (
-          <Link key={r.id} href={`/app/booking/${r.id}/confirmed`}>
-            <Card className="p-5">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <div className="text-[11px] text-slate font-medium">
-                    {STATUS_LABEL[r.status]}
-                  </div>
-                  <div className="text-[16px] font-extrabold mt-[2px] tracking-[-0.3px]">
-                    {r.storeName}
-                  </div>
-                </div>
-                <div className="text-[11px] text-slate">보기</div>
-              </div>
-              <div className="text-[13px] text-graphite">{r.productName}</div>
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-fog">
-                <div className="text-[12px] text-slate ww-num">
-                  {r.date} · {r.time} · {r.durationMin}분
-                </div>
-                <div className="text-[14px] font-extrabold ww-num">
-                  {r.price.toLocaleString("ko-KR")}원
-                </div>
-              </div>
-            </Card>
+
+      {reservations.length === 0 ? (
+        <div className="px-5 pt-10 text-center">
+          <div className="text-[14px] text-slate mb-4">
+            아직 예약 내역이 없어요.
+          </div>
+          <Link
+            href="/app/stores"
+            className="inline-flex h-11 items-center px-5 rounded-full bg-ink text-white text-[13px] font-bold"
+          >
+            매장 둘러보기
           </Link>
-        ))}
-      </div>
+        </div>
+      ) : (
+        <div className="px-5 flex flex-col gap-3">
+          {reservations.map((r) => (
+            <Link key={r.id} href={`/app/booking/${r.id}/confirmed`}>
+              <Card className="p-5">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <div className="text-[11px] text-slate font-medium">
+                      {STATUS_LABEL[r.status]}
+                    </div>
+                    <div className="text-[16px] font-extrabold mt-[2px] tracking-[-0.3px]">
+                      {r.store.name}
+                    </div>
+                  </div>
+                  <div className="text-[11px] text-slate">보기</div>
+                </div>
+                <div className="text-[13px] text-graphite">
+                  {r.product.title}
+                </div>
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-fog">
+                  <div className="text-[12px] text-slate ww-num">
+                    {format(r.startAt, "yyyy-MM-dd (EEE) HH:mm", {
+                      locale: ko,
+                    })}{" "}
+                    · {r.durationMin}분
+                  </div>
+                  <div className="text-[14px] font-extrabold ww-num">
+                    {r.price.toLocaleString("ko-KR")}원
+                  </div>
+                </div>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      )}
     </>
   );
 }

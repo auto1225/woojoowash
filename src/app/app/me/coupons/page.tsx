@@ -1,43 +1,54 @@
+import { redirect } from "next/navigation";
+import { format } from "date-fns";
 import { AppBar } from "@/components/app/AppBar";
 import { IconTicket } from "@/components/icons";
+import { auth } from "@/auth";
+import { db } from "@/lib/db";
 
-const COUPONS = [
-  {
-    title: "첫 예약 3,000원 할인",
-    desc: "모든 서비스 · 최소 10,000원 이상",
-    expires: "2026-05-30까지",
-  },
-  {
-    title: "손세차 15% 할인",
-    desc: "손세차 카테고리 전용",
-    expires: "2026-05-15까지",
-  },
-];
+export const dynamic = "force-dynamic";
 
-export default function CouponsPage() {
+export default async function CouponsPage() {
+  const session = await auth();
+  if (!session?.user) redirect("/app/login?callbackUrl=/app/me/coupons");
+
+  const coupons = await db.coupon.findMany({
+    where: { userId: session.user.id, usedAt: null },
+    orderBy: { expiresAt: "asc" },
+  });
+
   return (
     <div className="min-h-screen bg-paper pb-[100px]">
       <AppBar title="쿠폰함" />
       <section className="px-5 pt-5 flex flex-col gap-3">
-        {COUPONS.map((c) => (
-          <div
-            key={c.title}
-            className="bg-white rounded-[16px] border border-fog p-5 flex gap-4 items-center"
-          >
-            <div className="w-12 h-12 rounded-[12px] bg-ink text-white flex items-center justify-center">
-              <IconTicket size={22} stroke={1.6} />
-            </div>
-            <div className="flex-1">
-              <div className="text-[15px] font-extrabold mb-[2px]">
-                {c.title}
-              </div>
-              <div className="text-[12px] text-slate">{c.desc}</div>
-              <div className="text-[11px] text-slate ww-num mt-1">
-                {c.expires}
-              </div>
-            </div>
+        {coupons.length === 0 ? (
+          <div className="py-10 text-center text-slate text-[13px]">
+            사용 가능한 쿠폰이 없어요.
           </div>
-        ))}
+        ) : (
+          coupons.map((c) => (
+            <div
+              key={c.id}
+              className="bg-white rounded-[16px] border border-fog p-5 flex gap-4 items-center"
+            >
+              <div className="w-12 h-12 rounded-[12px] bg-ink text-white flex items-center justify-center">
+                <IconTicket size={22} stroke={1.6} />
+              </div>
+              <div className="flex-1">
+                <div className="text-[15px] font-extrabold mb-[2px]">
+                  {c.title}
+                </div>
+                <div className="text-[12px] text-slate">
+                  {c.discountType === "FLAT"
+                    ? `${c.amount.toLocaleString("ko-KR")}원 할인`
+                    : `${c.amount}% 할인`}
+                </div>
+                <div className="text-[11px] text-slate ww-num mt-1">
+                  {format(c.expiresAt, "yyyy-MM-dd")}까지
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </section>
     </div>
   );

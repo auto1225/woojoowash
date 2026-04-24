@@ -1,20 +1,25 @@
-import Link from "next/link";
+import { notFound } from "next/navigation";
 import { AppBar } from "@/components/app/AppBar";
 import { Card } from "@/components/ui/Card";
 import { IconCard, IconChev, IconTicket } from "@/components/icons";
-import { MOCK_PRODUCTS, MOCK_STORES } from "@/lib/mock/stores";
+import { getProduct } from "@/lib/queries/stores";
+import { PayButton } from "./PayButton";
 
-export default function PaymentPage({
+export const dynamic = "force-dynamic";
+
+export default async function PaymentPage({
   searchParams,
 }: {
   searchParams: { store?: string; product?: string };
 }) {
-  const storeId = searchParams.store ?? "gangnam";
-  const productId = searchParams.product ?? "basic";
-  const store = MOCK_STORES.find((s) => s.id === storeId) ?? MOCK_STORES[0];
-  const product = MOCK_PRODUCTS.find((p) => p.id === productId) ?? MOCK_PRODUCTS[0];
+  const storeId = searchParams.store;
+  const productId = searchParams.product;
+  if (!storeId || !productId) return notFound();
 
-  const discount = 5000;
+  const product = await getProduct(storeId, productId);
+  if (!product) return notFound();
+
+  const discount = 3000;
   const total = product.price - discount;
 
   return (
@@ -26,10 +31,12 @@ export default function PaymentPage({
           <div className="text-[11px] text-slate font-medium mb-[4px]">
             예약 정보
           </div>
-          <div className="text-[16px] font-extrabold mb-1">{store.name}</div>
+          <div className="text-[16px] font-extrabold mb-1">
+            {product.store.name}
+          </div>
           <div className="text-[13px] text-graphite">{product.title}</div>
           <div className="text-[12px] text-slate ww-num mt-3 pt-3 border-t border-fog">
-            2026-04-25 (토) · 14:30 · {product.duration}분
+            {product.durationMin}분 소요
           </div>
         </Card>
       </section>
@@ -57,7 +64,9 @@ export default function PaymentPage({
           <div className="flex items-center gap-3 p-5">
             <IconTicket size={22} stroke={1.6} />
             <div className="flex-1 text-[14px] font-semibold">쿠폰함</div>
-            <span className="text-[13px] font-bold text-accent">3,000원 할인 적용</span>
+            <span className="text-[13px] font-bold text-accent">
+              {discount.toLocaleString("ko-KR")}원 할인 적용
+            </span>
             <IconChev size={18} stroke={1.8} className="text-ash ml-1" />
           </div>
         </Card>
@@ -100,12 +109,11 @@ export default function PaymentPage({
 
       <div className="fixed left-0 right-0 bottom-0 flex justify-center">
         <div className="w-full max-w-app bg-white border-t border-fog px-4 py-3">
-          <Link
-            href={`/app/booking/rsv_new/confirmed?store=${storeId}&product=${productId}`}
-            className="h-14 rounded-full bg-ink text-white font-bold text-[15px] w-full flex items-center justify-center"
-          >
-            {total.toLocaleString("ko-KR")}원 결제하기
-          </Link>
+          <PayButton
+            storeId={storeId}
+            productId={productId}
+            total={total}
+          />
         </div>
       </div>
     </div>

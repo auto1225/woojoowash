@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { formatDistanceToNow } from "date-fns";
+import { ko } from "date-fns/locale";
 import { WWLogo } from "@/components/brand/Logo";
 import {
   IconArrow,
@@ -17,7 +19,12 @@ import {
   IconTruck,
 } from "@/components/icons";
 import { Card } from "@/components/ui/Card";
-import { MOCK_STORES } from "@/lib/mock/stores";
+import { auth } from "@/auth";
+import { db } from "@/lib/db";
+import { displayDist, displaySlot, listStoresWithMinPrice } from "@/lib/queries/stores";
+import { IMG } from "@/lib/images";
+
+export const dynamic = "force-dynamic";
 
 const services = [
   { name: "셀프세차", Icon: IconSpray, hint: "BAY 예약", href: "/app/stores?type=self" },
@@ -28,7 +35,28 @@ const services = [
   { name: "마켓", Icon: IconGift, hint: "세차용품", href: "/app/market" },
 ];
 
-export default function AppHomePage() {
+export default async function AppHomePage() {
+  const session = await auth();
+  const [nearby, myCar, lastDone] = await Promise.all([
+    listStoresWithMinPrice(),
+    session?.user
+      ? db.car.findFirst({
+          where: { userId: session.user.id, isDefault: true },
+        })
+      : Promise.resolve(null),
+    session?.user
+      ? db.reservation.findFirst({
+          where: { userId: session.user.id, status: "DONE" },
+          orderBy: { startAt: "desc" },
+          select: { startAt: true },
+        })
+      : Promise.resolve(null),
+  ]);
+
+  const lastWashLabel = lastDone
+    ? formatDistanceToNow(lastDone.startAt, { addSuffix: true, locale: ko })
+    : null;
+
   return (
     <>
       <Header />
@@ -106,36 +134,47 @@ export default function AppHomePage() {
           </Link>
         </section>
 
-        <section className="px-5 pb-3">
-          <div className="flex items-baseline justify-between mb-3">
-            <div className="text-[17px] font-extrabold tracking-[-0.4px]">
-              내 차량
-            </div>
-            <Link
-              href="/app/me/cars"
-              className="text-[12px] text-slate font-medium"
-            >
-              관리
-            </Link>
-          </div>
-          <Card className="p-4">
-            <div className="flex items-center gap-[14px]">
-              <div className="w-11 h-11 rounded-[12px] bg-cloud flex items-center justify-center">
-                <IconCar size={22} stroke={1.6} />
+        {myCar && (
+          <section className="px-5 pb-3">
+            <div className="flex items-baseline justify-between mb-3">
+              <div className="text-[17px] font-extrabold tracking-[-0.4px]">
+                내 차량
               </div>
-              <div className="flex-1">
-                <div className="text-[14px] font-bold">현대 그랜저 IG</div>
-                <div className="text-[11px] text-slate font-medium">
-                  12가 3456 · 펄 화이트
+              <Link
+                href="/app/me/cars"
+                className="text-[12px] text-slate font-medium"
+              >
+                관리
+              </Link>
+            </div>
+            <Card className="p-4">
+              <div className="flex items-center gap-[14px]">
+                <div className="w-11 h-11 rounded-[12px] bg-cloud flex items-center justify-center">
+                  <IconCar size={22} stroke={1.6} />
                 </div>
+                <div className="flex-1">
+                  <div className="text-[14px] font-bold">
+                    {myCar.brand} {myCar.model}
+                  </div>
+                  <div className="text-[11px] text-slate font-medium">
+                    {myCar.plate}
+                    {myCar.color ? ` · ${myCar.color}` : ""}
+                  </div>
+                </div>
+                {lastWashLabel && (
+                  <div className="text-right">
+                    <div className="text-[10px] text-slate font-medium">
+                      최근 세차
+                    </div>
+                    <div className="text-[12px] font-bold mt-[2px]">
+                      {lastWashLabel}
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="text-right">
-                <div className="text-[10px] text-slate font-medium">최근 세차</div>
-                <div className="text-[12px] font-bold mt-[2px]">4일 전</div>
-              </div>
-            </div>
-          </Card>
-        </section>
+            </Card>
+          </section>
+        )}
 
         <section className="px-5 pt-6">
           <div className="flex items-baseline justify-between mb-[14px]">
@@ -153,41 +192,47 @@ export default function AppHomePage() {
           </div>
 
           <div className="flex flex-col gap-3">
-            {MOCK_STORES.slice(0, 3).map((s) => (
-              <Link
-                key={s.id}
-                href={`/app/stores/${s.id}`}
-                className="p-3 rounded-[16px] border border-fog bg-white flex gap-3"
-              >
-                <div className="relative w-[86px] h-[86px] rounded-[12px] shrink-0 overflow-hidden">
-                  <Image
-                    src={s.cover}
-                    alt={s.name}
-                    fill
-                    className="object-cover"
-                    sizes="90px"
-                  />
-                </div>
-                <div className="flex-1 min-w-0 py-[2px]">
-                  <div className="text-[14px] font-bold truncate">{s.name}</div>
-                  <div className="flex items-center gap-[6px] mt-[2px] mb-[6px] text-[11px]">
-                    <IconStarFill size={11} />
-                    <span className="font-semibold">{s.rating}</span>
-                    <span className="text-slate">({s.reviews})</span>
-                    <span className="text-ash">·</span>
-                    <span className="text-slate">{s.dist}</span>
+            {nearby.slice(0, 3).map((s) => {
+              const cover = s.coverImages[0] ?? IMG.store1;
+              const slot = displaySlot(s.id);
+              return (
+                <Link
+                  key={s.id}
+                  href={`/app/stores/${s.id}`}
+                  className="p-3 rounded-[16px] border border-fog bg-white flex gap-3"
+                >
+                  <div className="relative w-[86px] h-[86px] rounded-[12px] shrink-0 overflow-hidden">
+                    <Image
+                      src={cover}
+                      alt={s.name}
+                      fill
+                      className="object-cover"
+                      sizes="90px"
+                    />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-[11px] text-accent font-bold">
-                      {s.slot || "예약 가능"}
+                  <div className="flex-1 min-w-0 py-[2px]">
+                    <div className="text-[14px] font-bold truncate">{s.name}</div>
+                    <div className="flex items-center gap-[6px] mt-[2px] mb-[6px] text-[11px]">
+                      <IconStarFill size={11} />
+                      <span className="font-semibold">{s.rating.toFixed(1)}</span>
+                      <span className="text-slate">({s.reviewCount})</span>
+                      <span className="text-ash">·</span>
+                      <span className="text-slate">{displayDist(s.id)}</span>
                     </div>
-                    <div className="text-[13px] font-extrabold ww-num">
-                      {s.priceFrom.toLocaleString("ko-KR")}원~
+                    <div className="flex items-center justify-between">
+                      <div className="text-[11px] text-accent font-bold">
+                        {slot || "예약 가능"}
+                      </div>
+                      <div className="text-[13px] font-extrabold ww-num">
+                        {s.priceFrom !== null
+                          ? `${s.priceFrom.toLocaleString("ko-KR")}원~`
+                          : "문의"}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </section>
       </div>

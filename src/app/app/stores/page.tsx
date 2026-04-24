@@ -8,9 +8,15 @@ import {
   IconSearch,
   IconStarFill,
 } from "@/components/icons";
-import { MOCK_STORES } from "@/lib/mock/stores";
+import { displayDist, listStoresWithMinPrice } from "@/lib/queries/stores";
+import { labelServices } from "@/lib/services";
+import { IMG } from "@/lib/images";
 
-export default function FinderPage() {
+export const dynamic = "force-dynamic";
+
+export default async function FinderPage() {
+  const stores = await listStoresWithMinPrice();
+
   return (
     <div className="pb-[90px]">
       <AppBar
@@ -36,7 +42,7 @@ export default function FinderPage() {
             반경 2km 내
           </div>
           <div className="text-[18px] font-extrabold tracking-[-0.4px]">
-            {MOCK_STORES.length}개 매장
+            {stores.length}개 매장
           </div>
         </div>
         <div className="flex items-center gap-1 text-[13px] font-semibold">
@@ -45,55 +51,61 @@ export default function FinderPage() {
       </div>
 
       <div className="px-5 flex flex-col gap-3">
-        {MOCK_STORES.map((s) => (
-          <Link
-            key={s.id}
-            href={`/app/stores/${s.id}`}
-            className="flex gap-3 p-3 rounded-[16px] border border-fog bg-white active:bg-paper transition"
-          >
-            <div className="relative w-[84px] h-[84px] rounded-[12px] shrink-0 overflow-hidden">
-              <Image
-                src={s.cover}
-                alt={s.name}
-                fill
-                className="object-cover"
-                sizes="90px"
-              />
-              <span
-                className={`absolute left-[4px] top-[4px] text-[9px] font-bold px-[6px] py-[2px] rounded-[4px] ${
-                  s.open ? "bg-accent text-white" : "bg-ash/90 text-white"
-                }`}
-              >
-                {s.open ? "영업중" : "영업종료"}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0 py-[2px]">
-              <div className="text-[14px] font-bold truncate">{s.name}</div>
-              <div className="flex items-center gap-[6px] mt-[3px] mb-[6px] text-[11px]">
-                <IconStarFill size={11} />
-                <span className="font-semibold">{s.rating}</span>
-                <span className="text-slate">({s.reviews})</span>
-                <span className="text-ash">·</span>
-                <span className="text-slate">{s.dist}</span>
+        {stores.map((s) => {
+          const cover = s.coverImages[0] ?? IMG.store1;
+          const labels = labelServices(s.services);
+          return (
+            <Link
+              key={s.id}
+              href={`/app/stores/${s.id}`}
+              className="flex gap-3 p-3 rounded-[16px] border border-fog bg-white active:bg-paper transition"
+            >
+              <div className="relative w-[84px] h-[84px] rounded-[12px] shrink-0 overflow-hidden">
+                <Image
+                  src={cover}
+                  alt={s.name}
+                  fill
+                  className="object-cover"
+                  sizes="90px"
+                />
+                <span
+                  className={`absolute left-[4px] top-[4px] text-[9px] font-bold px-[6px] py-[2px] rounded-[4px] ${
+                    s.open ? "bg-accent text-white" : "bg-ash/90 text-white"
+                  }`}
+                >
+                  {s.open ? "영업중" : "영업종료"}
+                </span>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex gap-1">
-                  {s.types.map((t) => (
-                    <span
-                      key={t}
-                      className="text-[10px] font-semibold px-[7px] py-[2px] rounded-[4px] bg-cloud text-graphite"
-                    >
-                      {t}
-                    </span>
-                  ))}
+              <div className="flex-1 min-w-0 py-[2px]">
+                <div className="text-[14px] font-bold truncate">{s.name}</div>
+                <div className="flex items-center gap-[6px] mt-[3px] mb-[6px] text-[11px]">
+                  <IconStarFill size={11} />
+                  <span className="font-semibold">{s.rating.toFixed(1)}</span>
+                  <span className="text-slate">({s.reviewCount})</span>
+                  <span className="text-ash">·</span>
+                  <span className="text-slate">{displayDist(s.id)}</span>
                 </div>
-                <div className="text-[13px] font-extrabold ww-num">
-                  {s.priceFrom.toLocaleString("ko-KR")}원~
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-1">
+                    {labels.slice(0, 2).map((t) => (
+                      <span
+                        key={t}
+                        className="text-[10px] font-semibold px-[7px] py-[2px] rounded-[4px] bg-cloud text-graphite"
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="text-[13px] font-extrabold ww-num">
+                    {s.priceFrom !== null
+                      ? `${s.priceFrom.toLocaleString("ko-KR")}원~`
+                      : "문의"}
+                  </div>
                 </div>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
