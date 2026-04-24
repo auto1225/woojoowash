@@ -1,4 +1,5 @@
 import { PrismaClient, ProductType } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const db = new PrismaClient();
 
@@ -147,13 +148,15 @@ const PRODUCTS_BY_STORE: Record<
 
 async function main() {
   // users
+  const demoPassword = await bcrypt.hash("demo1234", 10);
   const demo = await db.user.upsert({
     where: { email: "demo@woojoowash.kr" },
-    update: {},
+    update: { password: demoPassword },
     create: {
       email: "demo@woojoowash.kr",
       name: "김우주",
       phone: "010-1234-5678",
+      password: demoPassword,
     },
   });
 

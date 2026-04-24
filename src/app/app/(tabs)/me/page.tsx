@@ -1,6 +1,18 @@
 import Link from "next/link";
-import { IconCamera, IconCar, IconChev, IconHelp, IconInfo, IconMsg, IconSettings, IconShield, IconTicket } from "@/components/icons";
-import { MOCK_USER } from "@/lib/mock/user";
+import { redirect } from "next/navigation";
+import { auth, signOut } from "@/auth";
+import {
+  IconCamera,
+  IconCar,
+  IconChev,
+  IconHelp,
+  IconInfo,
+  IconMsg,
+  IconSettings,
+  IconShield,
+  IconTicket,
+} from "@/components/icons";
+import { db } from "@/lib/db";
 
 const LINKS = [
   { I: IconCar, label: "내 차량", href: "/app/me/cars" },
@@ -13,7 +25,22 @@ const LINKS = [
   { I: IconSettings, label: "설정", href: "#" },
 ];
 
-export default function MePage() {
+export default async function MePage() {
+  const session = await auth();
+  if (!session?.user) redirect("/app/login?callbackUrl=/app/me");
+
+  const [reservationCount, couponCount, reviewCount] = await Promise.all([
+    db.reservation.count({
+      where: { userId: session.user.id, status: "DONE" },
+    }),
+    db.coupon.count({
+      where: { userId: session.user.id, usedAt: null },
+    }),
+    db.review.count({ where: { userId: session.user.id } }),
+  ]);
+
+  const name = session.user.name || session.user.email || "고객";
+
   return (
     <>
       <div className="px-5 pt-4 pb-6">
@@ -23,12 +50,12 @@ export default function MePage() {
       <section className="px-5 mb-5">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-cloud flex items-center justify-center text-[18px] font-extrabold">
-            {MOCK_USER.name[0]}
+            {name[0]?.toUpperCase()}
           </div>
-          <div className="flex-1">
-            <div className="text-[18px] font-extrabold">{MOCK_USER.name}</div>
-            <div className="text-[12px] text-slate ww-num">
-              {MOCK_USER.phone}
+          <div className="flex-1 min-w-0">
+            <div className="text-[18px] font-extrabold truncate">{name}</div>
+            <div className="text-[12px] text-slate truncate">
+              {session.user.email}
             </div>
           </div>
           <Link href="#" className="text-[12px] text-slate">
@@ -40,9 +67,9 @@ export default function MePage() {
       <section className="px-5 mb-6">
         <div className="grid grid-cols-3 bg-cloud rounded-[16px] overflow-hidden">
           {[
-            { k: "2", l: "이용 완료" },
-            { k: "1", l: "쿠폰" },
-            { k: "0", l: "리뷰" },
+            { k: reservationCount, l: "이용 완료" },
+            { k: couponCount, l: "쿠폰" },
+            { k: reviewCount, l: "리뷰" },
           ].map((s, i) => (
             <div
               key={s.l}
@@ -69,6 +96,21 @@ export default function MePage() {
             <IconChev size={18} stroke={1.8} className="text-ash" />
           </Link>
         ))}
+
+        <form
+          action={async () => {
+            "use server";
+            await signOut({ redirectTo: "/home" });
+          }}
+          className="px-5 py-5"
+        >
+          <button
+            type="submit"
+            className="w-full h-12 rounded-full border border-fog text-[13px] font-bold text-slate"
+          >
+            로그아웃
+          </button>
+        </form>
       </section>
     </>
   );

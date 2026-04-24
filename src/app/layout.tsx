@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AuthProvider } from "@/components/providers/SessionProvider";
 
 export const metadata: Metadata = {
   title: "우주워시 — 내 차를 빛나게 만드는 가장 쉬운 방법",
@@ -28,7 +29,9 @@ export default function RootLayout({
           content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }
