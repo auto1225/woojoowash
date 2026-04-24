@@ -45,6 +45,8 @@ const GROUPS: Group[] = [
     label: "쇼핑",
     items: [
       { label: "상품 관리", href: "/admin/shop/products" },
+      { label: "주문 관리", href: "/admin/shop/orders" },
+      { label: "배송 관리", href: "/admin/shop/shipments" },
     ],
   },
   {

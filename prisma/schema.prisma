@@ -44,6 +44,8 @@ model User {
   reviews       Review[]
   passSub       PassSubscription?
   ownedStores   Store[]   @relation("StoreOwner")
+  addresses     Address[]
+  orders        Order[]
 
   @@map("users")
 }
@@ -420,9 +422,106 @@ model MarketProduct {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  orderItems  OrderItem[]
+
   @@index([order])
   @@index([active])
   @@map("market_products")
+}
+
+model Address {
+  id            String   @id @default(cuid())
+  userId        String
+  label         String?  // "집" "회사" 등
+  recipientName String
+  phone         String
+  postalCode    String
+  addr1         String
+  addr2         String?
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+enum OrderStatus {
+  PENDING     // 결제 대기
+  PAID        // 결제 완료
+  PREPARING   // 상품 준비중
+  SHIPPED     // 배송중
+  DELIVERED   // 배송 완료
+  CANCELED    // 취소
+  REFUNDED    // 환불
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  addressId       String?
+  // 주문 시점 주소 스냅샷 (배송지 변경에도 주문 기록 보존)
+  recipientName   String
+  phone           String
+  postalCode      String
+  addr1           String
+  addr2           String?
+  memo            String?     @db.Text
+
+  subtotal        Int
+  shippingFee     Int         @default(0)
+  discount        Int         @default(0)
+  total           Int
+  paymentMethod   String?     // 'easy' | 'card'
+  paidAt          DateTime?
+  status          OrderStatus @default(PENDING)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user     User        @relation(fields: [userId], references: [id])
+  address  Address?    @relation(fields: [addressId], references: [id])
+  items    OrderItem[]
+  shipment Shipment?
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id           String  @id @default(cuid())
+  orderId      String
+  productId    String?
+  // 스냅샷 — 상품이 삭제되더라도 주문은 보존
+  productName  String
+  productImage String?
+  price        Int
+  quantity     Int
+
+  order   Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product MarketProduct? @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model Shipment {
+  id             String    @id @default(cuid())
+  orderId        String    @unique
+  carrier        String?   // 예: CJ대한통운
+  trackingNumber String?
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+  memo           String?
+  updatedAt      DateTime  @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("shipments")
 }
 
 model SiteEvent {

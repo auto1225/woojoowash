@@ -7,6 +7,8 @@ const USER_PROTECTED = [
   "/app/reservations",
   "/app/favorites",
   "/app/booking",
+  "/app/market/orders",
+  "/app/market/checkout",
 ];
 
 export default async function middleware(req: NextRequest) {
@@ -63,6 +65,8 @@ export const config = {
     "/app/reservations/:path*",
     "/app/favorites/:path*",
     "/app/booking/:path*",
+    "/app/market/orders/:path*",
+    "/app/market/checkout",
     "/partner/:path*",
     "/admin/:path*",
   ],
