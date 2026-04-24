@@ -62,8 +62,11 @@ const TABS: {
 export function BottomTabBar() {
   const pathname = usePathname() || "";
   return (
-    <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-fog pb-5 z-40">
-      <div className="flex pt-[10px] pb-[6px]">
+    <nav
+      className="shrink-0 bg-white border-t border-fog z-40"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
+      <div className="flex pt-[10px] pb-[8px]">
         {TABS.map((t) => {
           const active = t.match(pathname);
           const I = active ? t.IconFill : t.Icon;
@@ -84,6 +87,6 @@ export function BottomTabBar() {
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 }

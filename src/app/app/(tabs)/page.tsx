@@ -2,13 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import { WWLogo } from "@/components/brand/Logo";
-import {
-  IconBell,
-  IconCar,
-  IconPin,
-  IconSearch,
-} from "@/components/icons";
+import { IconCar, IconPin, IconSearch } from "@/components/icons";
 import { HeroCarousel } from "@/components/app/HeroCarousel";
 import { ServiceIllust } from "@/components/illustrations/ServiceIllust";
 import { Card } from "@/components/ui/Card";
@@ -84,17 +78,6 @@ export default async function AppHomePage() {
 
   return (
     <>
-      {/* Top overlay header (over the hero) */}
-      <header className="absolute top-0 left-0 right-0 z-10 px-5 pt-3 pb-3 flex items-center justify-between">
-        <WWLogo size={18} compact dark />
-        <div className="flex gap-[14px] items-center">
-          <div className="relative">
-            <IconBell size={22} stroke={1.6} className="text-white" />
-            <span className="absolute top-0 right-0 w-[6px] h-[6px] rounded-full bg-accent" />
-          </div>
-        </div>
-      </header>
-
       <HeroCarousel slides={HERO_SLIDES} />
 
       <section className="px-5 pt-6">
