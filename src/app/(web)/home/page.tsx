@@ -172,34 +172,53 @@ function TrustBar() {
 }
 
 function Services() {
-  const items = [
+  const items: Array<{
+    Icon: typeof IconSpray;
+    tag: string;
+    name: string;
+    nameSub?: string;
+    img: string;
+    features: string[];
+  }> = [
     {
       Icon: IconSpray,
       tag: "SELF",
       name: "셀프세차",
-      desc: "30분 단위 BAY 예약. 내가 직접, 내 속도로.",
       img: IMG.svcSelf,
+      features: [
+        "실내 세차라 추위에 따뜻하고 더위에 시원하게 세차가 가능합니다.",
+        "앱 예약으로 현장 기다림 없이 세차할 수 있습니다.",
+        "RF카드를 매번 충전 및 지갑에 보관할 필요가 없습니다.",
+      ],
     },
     {
       Icon: IconBucket,
       tag: "HAND",
       name: "손세차",
-      desc: "전문 디테일러가 책임지는 프리미엄 핸드워시.",
+      nameSub: "방문세차",
       img: IMG.svcHand,
+      features: [
+        "매장 방문이 힘든 고객을 위해 전문 카매니저가 직접 차량을 인수하여 예약된 매장에서 세차 작업을 진행한 후 안전하게 인도해 드립니다.",
+      ],
     },
     {
       Icon: IconTruck,
       tag: "PICKUP",
       name: "배달세차",
-      desc: "맡기고, 돌려받고. 이동 없이 끝내는 픽업.",
       img: IMG.svcPickup,
+      features: [
+        "내 소중한 차를 위해 엄선된 고품질의 전문 세차장이 모였습니다.",
+        "원하는 세차 상품 및 디테일한 나만의 옵션 선택으로 내 차에 가장 최적화된 서비스가 가능합니다.",
+      ],
     },
     {
       Icon: IconCarWash,
       tag: "VISIT",
       name: "출장세차",
-      desc: "주차장으로 직접 방문해 세차해 드려요.",
       img: IMG.svcVisit,
+      features: [
+        "화재 위험성이 없는 친환경 세차 방식으로 차량이 주차된 장소에서 세차 전문가가 세차 작업을 진행합니다.",
+      ],
     },
   ];
   return (
@@ -242,15 +261,25 @@ function Services() {
                   {s.tag}
                 </div>
                 <div>
-                  <h3 className="ww-disp text-[30px] md:text-[40px] tracking-[-0.02em] mb-3">
+                  <h3 className="ww-disp text-[30px] md:text-[40px] tracking-[-0.02em] mb-4">
                     {s.name}
+                    {s.nameSub && (
+                      <span className="text-white/50 text-[18px] md:text-[22px] font-semibold ml-2">
+                        ({s.nameSub})
+                      </span>
+                    )}
                   </h3>
-                  <p className="text-white/75 text-[14px] md:text-[15px] leading-[1.6] max-w-[320px]">
-                    {s.desc}
-                  </p>
-                  <div className="inline-flex items-center gap-[6px] mt-6 text-[13px] font-bold text-accent-sky">
-                    자세히 보기 <IconArrow size={14} stroke={2.5} />
-                  </div>
+                  <ul className="flex flex-col gap-[10px] max-w-[420px]">
+                    {s.features.map((f) => (
+                      <li
+                        key={f}
+                        className="text-white/80 text-[13px] md:text-[14px] leading-[1.7] flex gap-2"
+                      >
+                        <span className="text-accent-sky shrink-0">•</span>
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </article>
