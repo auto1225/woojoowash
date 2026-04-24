@@ -4,6 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import { IconCar, IconPin, IconSearch } from "@/components/icons";
 import { HeroCarousel } from "@/components/app/HeroCarousel";
+import { POPULAR_MARKET_ITEMS } from "@/lib/market";
 import { ServiceIllust } from "@/components/illustrations/ServiceIllust";
 import { Card } from "@/components/ui/Card";
 import { auth } from "@/auth";
@@ -32,8 +33,6 @@ const SERVICES: ServiceItem[] = [
   { kind: "hand", name: "손세차", subtitle: "(배달)", href: "/app/stores?type=hand" },
   { kind: "visit", name: "출장세차", href: "/app/stores?type=visit" },
   { kind: "auto", name: "프리미엄\n자동세차", href: "/app/stores?type=premium" },
-  { kind: "pickup", name: "주유소\n자동세차", href: "/app/stores?type=pickup" },
-  { kind: "market", name: "마켓", badge: "10%페이백", accent: true, href: "/app/market" },
 ];
 
 const HERO_SLIDES = [
@@ -97,30 +96,23 @@ export default async function AppHomePage() {
       </section>
 
       <section className="px-5 pt-5">
-        <div className="grid grid-cols-3 gap-[10px]">
+        <div className="grid grid-cols-2 gap-[10px]">
           {SERVICES.map((s) => (
             <Link
               key={s.name}
               href={s.href}
-              className={`relative rounded-[16px] p-3 aspect-[1/1.15] flex flex-col active:scale-[0.97] transition ${
-                s.accent ? "bg-accent text-white" : "bg-cloud text-ink"
-              }`}
+              className="relative rounded-[18px] p-4 aspect-[1.45/1] flex items-stretch bg-cloud text-ink active:scale-[0.98] transition"
             >
-              <div className="text-[14px] font-extrabold leading-[1.2] whitespace-pre-line tracking-[-0.02em]">
-                {s.name}
-                {s.subtitle && (
-                  <span className={s.accent ? "opacity-80" : "text-slate"}>
-                    {s.subtitle}
-                  </span>
-                )}
-              </div>
-              {s.badge && (
-                <div className="text-[10px] font-bold mt-[2px] opacity-90">
-                  {s.badge}
+              <div className="flex-1 min-w-0">
+                <div className="text-[16px] font-extrabold leading-[1.2] whitespace-pre-line tracking-[-0.02em]">
+                  {s.name}
+                  {s.subtitle && (
+                    <span className="text-slate">{s.subtitle}</span>
+                  )}
                 </div>
-              )}
-              <div className="mt-auto flex justify-center">
-                <ServiceIllust kind={s.kind} size={78} />
+              </div>
+              <div className="flex items-end justify-end shrink-0">
+                <ServiceIllust kind={s.kind} size={92} />
               </div>
             </Link>
           ))}
@@ -203,6 +195,58 @@ export default async function AppHomePage() {
           </Card>
         </section>
       )}
+
+      <section className="pt-6">
+        <div className="flex items-baseline justify-between px-5 mb-3">
+          <div className="text-[16px] font-extrabold tracking-[-0.3px]">
+            마켓
+          </div>
+          <Link
+            href="/app/market"
+            className="text-[12px] text-slate font-medium"
+          >
+            전체
+          </Link>
+        </div>
+        <div className="overflow-x-auto ww-scroll-x">
+          <div className="flex gap-3 pl-5 pr-5 pb-1">
+            {POPULAR_MARKET_ITEMS.map((m) => (
+              <Link
+                key={m.id}
+                href="/app/market"
+                className="shrink-0 w-[132px] active:opacity-80 transition"
+              >
+                <div className="relative w-[132px] h-[132px] rounded-[14px] overflow-hidden bg-cloud">
+                  <Image
+                    src={m.image}
+                    alt={m.name}
+                    fill
+                    className="object-cover"
+                    sizes="140px"
+                  />
+                  {m.tag && (
+                    <span
+                      className={`absolute left-2 top-2 text-[9px] font-extrabold px-[6px] py-[2px] rounded ${
+                        m.tag === "BEST"
+                          ? "bg-ink text-white"
+                          : "bg-accent text-white"
+                      }`}
+                    >
+                      {m.tag}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-2 text-[13px] font-bold truncate">
+                  {m.name}
+                </div>
+                <div className="text-[14px] font-extrabold ww-num mt-[2px]">
+                  {m.price.toLocaleString("ko-KR")}원
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="px-5 pt-6">
         <div className="flex items-baseline justify-between mb-3">
