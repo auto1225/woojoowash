@@ -66,7 +66,10 @@ export default async function MePage() {
               {session.user.email}
             </div>
           </div>
-          <Link href="#" className="text-[12px] text-slate">
+          <Link
+            href="/app/me/profile"
+            className="text-[12px] text-slate hover:text-ink"
+          >
             프로필 수정
           </Link>
         </div>

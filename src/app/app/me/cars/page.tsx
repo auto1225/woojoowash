@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppBar } from "@/components/app/AppBar";
 import { Card } from "@/components/ui/Card";
 import { IconCar, IconPlus } from "@/components/icons";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { deleteCar, setDefaultCar } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -26,33 +28,58 @@ export default async function CarsPage() {
           </div>
         ) : (
           cars.map((c) => (
-            <Card key={c.id} className="p-5 flex items-center gap-3">
-              <div className="w-12 h-12 rounded-[12px] bg-cloud flex items-center justify-center">
-                <IconCar size={24} stroke={1.6} />
-              </div>
-              <div className="flex-1">
-                <div className="text-[15px] font-bold">
-                  {c.brand} {c.model}
+            <Card key={c.id} className="p-5">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-[12px] bg-cloud flex items-center justify-center">
+                  <IconCar size={24} stroke={1.6} />
                 </div>
-                <div className="text-[12px] text-slate">
-                  {c.plate}
-                  {c.color ? ` · ${c.color}` : ""}
+                <div className="flex-1 min-w-0">
+                  <div className="text-[15px] font-bold truncate">
+                    {c.brand} {c.model}
+                  </div>
+                  <div className="text-[12px] text-slate truncate">
+                    {c.plate}
+                    {c.color ? ` · ${c.color}` : ""}
+                  </div>
                 </div>
+                {c.isDefault && (
+                  <span className="text-[10px] font-bold bg-ink text-white px-2 py-[3px] rounded">
+                    기본
+                  </span>
+                )}
               </div>
-              {c.isDefault && (
-                <span className="text-[10px] font-bold bg-ink text-white px-2 py-[3px] rounded">
-                  기본
-                </span>
-              )}
+              <div className="flex items-center gap-3 mt-4 pt-4 border-t border-fog text-[12px] font-semibold">
+                {!c.isDefault && (
+                  <form action={setDefaultCar.bind(null, c.id)}>
+                    <button
+                      type="submit"
+                      className="text-accent hover:underline"
+                    >
+                      기본으로 설정
+                    </button>
+                  </form>
+                )}
+                <form
+                  action={deleteCar.bind(null, c.id)}
+                  className="ml-auto"
+                >
+                  <button
+                    type="submit"
+                    className="text-danger hover:underline"
+                  >
+                    삭제
+                  </button>
+                </form>
+              </div>
             </Card>
           ))
         )}
-        <button
-          type="button"
-          className="h-14 rounded-[14px] border-[1.5px] border-dashed border-fog flex items-center justify-center gap-2 text-[14px] font-bold text-slate"
+        <Link
+          href="/app/me/cars/new"
+          className="h-14 rounded-[14px] border-[1.5px] border-dashed border-fog flex items-center justify-center gap-2 text-[14px] font-bold text-slate hover:border-ink hover:text-ink transition"
         >
           <IconPlus size={18} stroke={2} /> 차량 추가
-        </button>
+        </Link>
       </section>
     </div>
   );
