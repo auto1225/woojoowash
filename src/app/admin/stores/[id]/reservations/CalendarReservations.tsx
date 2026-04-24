@@ -167,7 +167,7 @@ export function CalendarReservations({
                 key={c.key + i}
                 onClick={() => c.inMonth && setSelectedKey(c.key)}
                 disabled={!c.inMonth}
-                className={`relative min-h-[88px] md:min-h-[104px] p-2 text-left border-l first:border-l-0 border-t border-fog transition ${
+                className={`relative min-h-[54px] md:min-h-[64px] p-2 text-left border-l first:border-l-0 border-t border-fog transition ${
                   !c.inMonth
                     ? "bg-paper text-ash cursor-default"
                     : isSelected
