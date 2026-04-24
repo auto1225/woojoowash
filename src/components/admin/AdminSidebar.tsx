@@ -77,13 +77,13 @@ export function AdminSidebar() {
         {GROUPS.map((g) => {
           const isOpen = open[g.id];
           return (
-            <div key={g.id} className="px-2">
+            <div key={g.id} className="px-2 mt-1">
               <button
                 type="button"
                 onClick={() => toggle(g.id)}
                 className={cn(
-                  "w-full flex items-center justify-between px-3 py-[10px] rounded-[8px] text-[12px] font-bold uppercase tracking-[0.08em]",
-                  activeGroup === g.id ? "text-ink" : "text-slate",
+                  "w-full flex items-center justify-between px-3 py-[11px] rounded-[8px] text-[15px] font-extrabold tracking-[-0.2px]",
+                  activeGroup === g.id ? "text-ink" : "text-graphite",
                 )}
               >
                 <span>{g.label}</span>
