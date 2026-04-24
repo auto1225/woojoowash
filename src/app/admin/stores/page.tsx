@@ -23,7 +23,7 @@ export default async function StoresAdminPage() {
   });
 
   return (
-    <AdminConsoleShell active="stores" userName={me.name || me.email}>
+    <AdminConsoleShell  userName={me.name || me.email}>
       <div className="flex items-center justify-between mb-6">
         <h1 className="ww-disp text-[24px] tracking-[-0.02em]">전체 매장</h1>
         <div className="text-[12px] text-slate">{stores.length}개</div>

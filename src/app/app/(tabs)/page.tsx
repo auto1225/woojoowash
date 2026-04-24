@@ -5,6 +5,7 @@ import { ko } from "date-fns/locale";
 import { IconCar, IconPin, IconSearch } from "@/components/icons";
 import { HeroCarousel } from "@/components/app/HeroCarousel";
 import { POPULAR_MARKET_ITEMS } from "@/lib/market";
+import { getActiveHeroes } from "@/lib/queries/content";
 import { ServiceIllust } from "@/components/illustrations/ServiceIllust";
 import { Card } from "@/components/ui/Card";
 import { auth } from "@/auth";
@@ -35,27 +36,18 @@ const SERVICES: ServiceItem[] = [
   { kind: "auto", name: "프리미엄\n자동세차", href: "/app/stores?type=premium" },
 ];
 
-const HERO_SLIDES = [
+const FALLBACK_HERO = [
   {
     src: IMG.hero,
-    subtitle: "90%가 모르는",
-    title: "빠르게 광내는 법",
-  },
-  {
-    src: IMG.gallery2,
-    subtitle: "프리미엄 손세차",
-    title: "디테일러가 직접",
-  },
-  {
-    src: IMG.gallery4,
-    subtitle: "회원 전용",
-    title: "할인패스 50% OFF",
+    subtitle: "우주워시",
+    title: "세차 예약 플랫폼",
   },
 ];
 
 export default async function AppHomePage() {
   const session = await auth();
-  const [nearby, myCar, lastDone] = await Promise.all([
+  const [heroes, nearby, myCar, lastDone] = await Promise.all([
+    getActiveHeroes(),
     listStoresWithMinPrice(),
     session?.user
       ? db.car.findFirst({
@@ -77,7 +69,7 @@ export default async function AppHomePage() {
 
   return (
     <>
-      <HeroCarousel slides={HERO_SLIDES} />
+      <HeroCarousel slides={heroes.length > 0 ? heroes : FALLBACK_HERO} />
 
       <section className="px-5 pt-6">
         <div className="flex items-center gap-1 mb-3">

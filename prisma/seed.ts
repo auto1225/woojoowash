@@ -237,6 +237,141 @@ async function main() {
     },
   });
 
+  // 랜딩 Hero 슬라이드
+  if ((await db.homeHero.count()) === 0) {
+    await db.homeHero.createMany({
+      data: [
+        {
+          order: 0,
+          subtitle: "90%가 모르는",
+          title: "빠르게 광내는 법",
+          imageUrl:
+            "https://images.unsplash.com/photo-1600320254374-ce2d293c324e?auto=format&fit=crop&w=1600&q=80",
+        },
+        {
+          order: 1,
+          subtitle: "프리미엄 손세차",
+          title: "디테일러가 직접",
+          imageUrl:
+            "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=900&q=80",
+        },
+        {
+          order: 2,
+          subtitle: "회원 전용",
+          title: "할인패스 50% OFF",
+          imageUrl:
+            "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80",
+          linkHref: "/pass",
+        },
+      ],
+    });
+  }
+
+  // 공지사항
+  if ((await db.notice.count()) === 0) {
+    await db.notice.createMany({
+      data: [
+        {
+          title: "우주워시 v1.0 정식 출시 안내",
+          body: "안녕하세요, 우주워시입니다. 오랜 준비 끝에 정식 서비스를 시작했어요. 많은 관심 부탁드립니다.",
+          pinned: true,
+          publishedAt: new Date("2026-04-01"),
+        },
+        {
+          title: "할인패스 프로모션 (5월 한정)",
+          body: "5월 한 달간 스탠다드 플랜 첫 달 70% 할인! 지금 가입하고 빛나는 세차 생활 시작하세요.",
+          pinned: false,
+          publishedAt: new Date("2026-04-20"),
+        },
+      ],
+    });
+  }
+
+  // FAQ
+  if ((await db.faq.count()) === 0) {
+    await db.faq.createMany({
+      data: [
+        {
+          category: "예약",
+          question: "예약 취소는 언제까지 가능한가요?",
+          answer:
+            "이용 1시간 전까지 무료 취소 가능하며, 이후에는 예약 취소/환불 수수료 약관이 적용됩니다.",
+          order: 0,
+        },
+        {
+          category: "결제",
+          question: "결제 영수증은 어떻게 받나요?",
+          answer:
+            "앱 내 예약 내역에서 전자영수증·현금영수증(사업자용 포함)을 발급할 수 있습니다.",
+          order: 1,
+        },
+        {
+          category: "할인패스",
+          question: "할인패스는 중도 해지할 수 있나요?",
+          answer:
+            "다음 결제일 전까지 언제든 해지 가능합니다. 해지 후에도 남은 기간은 정상 이용됩니다.",
+          order: 2,
+        },
+        {
+          category: "Before / After",
+          question: "Before / After 사진은 어떻게 저장되나요?",
+          answer:
+            "담당 디테일러가 앱 내에 자동 업로드하며, 마이 페이지 > Before/After 에서 확인할 수 있습니다.",
+          order: 3,
+        },
+      ],
+    });
+  }
+
+  // 게시판 샘플
+  if ((await db.post.count()) === 0) {
+    await db.post.createMany({
+      data: [
+        {
+          title: "강남점 첫 방문 후기",
+          body: "직원분들이 너무 친절하셨고 차량도 반짝반짝해져서 돌아왔습니다. 강추!",
+          authorName: "이주현",
+          category: "후기",
+        },
+        {
+          title: "출장세차 이용 꿀팁 공유",
+          body: "업무 중에 맡기시려면 아침 10시 전이 가장 빠르게 예약 됩니다.",
+          authorName: "박서연",
+          category: "팁",
+        },
+      ],
+    });
+  }
+
+  // 최근 30일 방문 이벤트 샘플 (간단한 randomized)
+  if ((await db.siteEvent.count()) === 0) {
+    const events: Array<{ kind: string; createdAt: Date; path?: string }> = [];
+    for (let d = 0; d < 30; d++) {
+      const date = new Date();
+      date.setDate(date.getDate() - d);
+      date.setHours(0, 0, 0, 0);
+      const views = 20 + Math.floor(Math.random() * 200);
+      for (let i = 0; i < views; i++) {
+        const t = new Date(date);
+        t.setMinutes(Math.floor(Math.random() * 1440));
+        events.push({
+          kind: "page_view",
+          path: ["/home", "/stores", "/pass", "/app"][
+            Math.floor(Math.random() * 4)
+          ],
+          createdAt: t,
+        });
+      }
+    }
+    await db.siteEvent.createMany({
+      data: events.map((e) => ({
+        kind: e.kind,
+        path: e.path,
+        createdAt: e.createdAt,
+      })),
+    });
+  }
+
   // 샘플 제휴 문의
   const existingInquiries = await db.partnerInquiry.count();
   if (existingInquiries === 0) {

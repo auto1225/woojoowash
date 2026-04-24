@@ -33,7 +33,7 @@ export default async function InquiriesAdminPage({
   });
 
   return (
-    <AdminConsoleShell active="inquiries" userName={me.name || me.email}>
+    <AdminConsoleShell  userName={me.name || me.email}>
       <div className="flex items-center justify-between mb-6">
         <h1 className="ww-disp text-[24px] tracking-[-0.02em]">제휴 문의</h1>
         <div className="text-[12px] text-slate">{inquiries.length}건</div>

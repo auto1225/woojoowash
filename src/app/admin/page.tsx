@@ -52,7 +52,7 @@ export default async function AdminDashboardPage() {
   ]);
 
   return (
-    <AdminConsoleShell active="dashboard" userName={user.name || user.email}>
+    <AdminConsoleShell  userName={user.name || user.email}>
       <div className="mb-8">
         <div className="text-[12px] font-bold text-accent tracking-[0.15em] mb-2">
           DASHBOARD

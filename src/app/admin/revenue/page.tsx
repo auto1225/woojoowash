@@ -79,7 +79,7 @@ export default async function RevenuePage() {
   const totalCount = buckets.reduce((s, b) => s + b.count, 0);
 
   return (
-    <AdminConsoleShell active="revenue" userName={me.name || me.email}>
+    <AdminConsoleShell  userName={me.name || me.email}>
       <div className="mb-8">
         <div className="text-[12px] font-bold text-accent tracking-[0.15em] mb-2">
           REVENUE

@@ -45,7 +45,7 @@ export default async function UsersAdminPage({
   });
 
   return (
-    <AdminConsoleShell active="users" userName={me.name || me.email}>
+    <AdminConsoleShell  userName={me.name || me.email}>
       <div className="flex items-center justify-between mb-6">
         <h1 className="ww-disp text-[24px] tracking-[-0.02em]">회원 관리</h1>
         <div className="text-[12px] text-slate">{users.length}명</div>
