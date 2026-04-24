@@ -269,13 +269,15 @@ function Services() {
                       </span>
                     )}
                   </h3>
-                  <ul className="flex flex-col gap-[10px] max-w-[420px]">
+                  <ul className="flex flex-col gap-[10px] max-w-[460px]">
                     {s.features.map((f) => (
                       <li
                         key={f}
-                        className="text-white/80 text-[13px] md:text-[14px] leading-[1.7] flex gap-2"
+                        className="text-white/85 text-[15px] md:text-[17px] leading-[1.65] flex gap-2"
                       >
-                        <span className="text-accent-sky shrink-0">•</span>
+                        <span className="text-accent-sky shrink-0 text-[18px] leading-[1.4]">
+                          •
+                        </span>
                         <span>{f}</span>
                       </li>
                     ))}
