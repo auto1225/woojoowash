@@ -1,0 +1,33 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_NAVER_MAP_CLIENT_ID: ${NEXT_PUBLIC_NAVER_MAP_CLIENT_ID}
+    image: woojoowash:latest
+    container_name: woojoowash_app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NEXT_PUBLIC_NAVER_MAP_CLIENT_ID: ${NEXT_PUBLIC_NAVER_MAP_CLIENT_ID}
+      TZ: Asia/Seoul
+    ports:
+      - "3020:3000"
+    volumes:
+      - woojoowash_uploads:/app/public/uploads
+    networks:
+      - default
+      - bridge
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  woojoowash_uploads:
+
+networks:
+  bridge:
+    external: true
