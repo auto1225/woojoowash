@@ -65,7 +65,7 @@ export default async function StoreDetailPage({
         </div>
       </div>
 
-      <div className="px-5 pt-5">
+      <div className="px-5 pt-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-[6px] text-[12px]">
             <IconStarFill size={12} />
