@@ -84,6 +84,22 @@ npm run dev                   # http://localhost:3000
 - **Email / PW**: `admin@woojoowash.kr` / `admin`
 - **서버 등록 시 Host**: `postgres` (컨테이너 이름, `localhost` 아님)
 
+### 이미지 서버 — MinIO (S3 호환)
+
+매장 커버 이미지 등 **사용자 업로드 파일은 별도 이미지 서버에 저장**되고
+DB 에는 공개 URL 만 남깁니다. 로컬·운영 동일하게 MinIO 컨테이너를 사용.
+
+- **S3 API**: http://localhost:9100
+- **Web Console**: http://localhost:9101 (`woojoowash` / `woojoowash_minio_pw`)
+- **Bucket**: `woojoowash-images` (anonymous download 공개)
+- **공개 URL prefix**: `http://localhost:9100/woojoowash-images/<key>`
+- **업로드 헬퍼**: `src/lib/storage.ts` 의 `uploadImage(file, { prefix })`
+  · MIME 화이트리스트 (jpg/png/webp/gif), 5MB 제한
+  · 키 형식: `<prefix>/<timestamp>-<random>.<ext>`
+- **연동된 화면**:
+  · 파트너 매장 정보 — 다중 커버 (최대 5장) 파일 선택 → 미리보기 → 저장 시 업로드
+  · 앱 매장 상세 — 가로 스와이프 갤러리로 노출
+
 ## 주요 페이지
 
 ### 사용자 앱

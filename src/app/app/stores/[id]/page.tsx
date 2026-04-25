@@ -11,6 +11,7 @@ import {
 import { getStore, displayDist } from "@/lib/queries/stores";
 import { labelServices } from "@/lib/services";
 import { IMG } from "@/lib/images";
+import { StoreCoverGallery } from "./StoreCoverGallery";
 
 export const dynamic = "force-dynamic";
 
@@ -22,23 +23,16 @@ export default async function StoreDetailPage({
   const store = await getStore(params.id);
   if (!store) return notFound();
 
-  const cover = store.coverImages[0] ?? IMG.store1;
+  const images =
+    store.coverImages.length > 0 ? store.coverImages : [IMG.store1];
   const labels = labelServices(store.services);
 
   return (
     <div className="pb-[120px]">
-      <div className="relative h-[260px]">
-        <Image
-          src={cover}
-          alt={store.name}
-          fill
-          priority
-          className="object-cover"
-          sizes="(max-width: 480px) 100vw, 480px"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/20 to-transparent" />
+      <div className="relative">
+        <StoreCoverGallery images={images} storeName={store.name} />
         <AppBar dark border={false} showBack />
-        <div className="absolute left-4 right-4 bottom-4 text-white">
+        <div className="pointer-events-none absolute left-4 right-4 bottom-4 text-white">
           <div className="flex gap-2 mb-3">
             {labels.map((t) => (
               <span

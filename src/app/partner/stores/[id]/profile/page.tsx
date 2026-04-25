@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { AdminShell } from "@/components/partner/PartnerShell";
 import { requireOwnedStore, requireOwner } from "@/lib/admin";
 import { db } from "@/lib/db";
+import { uploadImage } from "@/lib/storage";
 import { ProfileEditor } from "./ProfileEditor";
 
 export const dynamic = "force-dynamic";
@@ -24,11 +25,29 @@ async function saveProfile(id: string, formData: FormData) {
   const lat = latRaw === "" ? null : Number(latRaw);
   const lng = lngRaw === "" ? null : Number(lngRaw);
 
-  const coverImages = formData
-    .getAll("coverUrls")
-    .map((v) => String(v).trim())
-    .filter((v) => v.length > 0)
-    .slice(0, MAX_IMAGES);
+  // 다중 커버 이미지: kind 배열에 맞춰 url/file 을 슬롯별 처리
+  const kinds = formData.getAll("coverItemKind").map((v) => String(v));
+  const urls = formData.getAll("coverItemUrl").map((v) => String(v));
+  const files = formData
+    .getAll("coverItemFile")
+    .filter((v): v is File => v instanceof File);
+
+  const coverImages: string[] = [];
+  let urlIdx = 0;
+  let fileIdx = 0;
+  for (const kind of kinds) {
+    if (coverImages.length >= MAX_IMAGES) break;
+    if (kind === "url") {
+      const u = urls[urlIdx++];
+      if (u && u.trim()) coverImages.push(u.trim());
+    } else if (kind === "file") {
+      const f = files[fileIdx++];
+      if (f && f.size > 0) {
+        const r = await uploadImage(f, { prefix: `stores/${id}` });
+        if (r.ok) coverImages.push(r.url);
+      }
+    }
+  }
 
   await db.store.update({
     where: { id },

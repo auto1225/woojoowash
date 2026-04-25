@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StoreLocationPicker } from "@/components/partner/StoreLocationPicker";
 import { labelServices } from "@/lib/services";
 
@@ -18,6 +18,14 @@ type Defaults = {
   services: string[];
 };
 
+// 이미지 슬롯 — 기존 URL 또는 새로 추가된 파일
+type ImageItem =
+  | { id: string; kind: "url"; url: string }
+  | { id: string; kind: "file"; file: File; previewUrl: string };
+
+const MAX_BYTES = 5 * 1024 * 1024;
+const ALLOWED_TYPE = /^image\/(jpeg|png|webp|gif)$/;
+
 export function ProfileEditor({
   action,
   clientId,
@@ -34,25 +42,77 @@ export function ProfileEditor({
   const [phone, setPhone] = useState(defaults.phone);
   const [promo, setPromo] = useState(defaults.promo);
   const [open, setOpen] = useState(defaults.open);
-  const [coverImages, setCoverImages] = useState<string[]>(
-    defaults.coverImages.length > 0 ? defaults.coverImages : [""],
+
+  const [items, setItems] = useState<ImageItem[]>(() =>
+    defaults.coverImages.map((url, i) => ({
+      id: `existing-${i}`,
+      kind: "url",
+      url,
+    })),
   );
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const visible = coverImages.slice(0, maxImages);
-  const validImages = visible.filter((u) => u.trim().length > 0);
+  // 파일 ObjectURL 정리
+  useEffect(() => {
+    return () => {
+      items.forEach((it) => {
+        if (it.kind === "file") URL.revokeObjectURL(it.previewUrl);
+      });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  function addImage() {
-    if (coverImages.length >= maxImages) return;
-    setCoverImages((cur) => [...cur, ""]);
+  const previewUrls = items
+    .map((it) => (it.kind === "url" ? it.url : it.previewUrl))
+    .filter(Boolean);
+
+  function onPickFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    setError(null);
+    const files = Array.from(e.target.files ?? []);
+    if (e.target) e.target.value = ""; // 같은 파일 재선택 가능
+
+    const room = maxImages - items.length;
+    if (files.length === 0) return;
+    if (room <= 0) {
+      setError(`이미지는 최대 ${maxImages}장까지 가능해요.`);
+      return;
+    }
+    const accepted: ImageItem[] = [];
+    for (const f of files.slice(0, room)) {
+      if (!ALLOWED_TYPE.test(f.type)) {
+        setError("JPG / PNG / WEBP / GIF 만 업로드 가능해요.");
+        continue;
+      }
+      if (f.size > MAX_BYTES) {
+        setError("5MB 이하의 이미지를 올려주세요.");
+        continue;
+      }
+      accepted.push({
+        id: `file-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        kind: "file",
+        file: f,
+        previewUrl: URL.createObjectURL(f),
+      });
+    }
+    if (files.length > room) {
+      setError(`최대 ${maxImages}장이라 ${room}개만 추가했어요.`);
+    }
+    if (accepted.length > 0) {
+      setItems((cur) => [...cur, ...accepted]);
+    }
   }
-  function removeImage(idx: number) {
-    setCoverImages((cur) => cur.filter((_, i) => i !== idx));
+
+  function removeAt(idx: number) {
+    setItems((cur) => {
+      const it = cur[idx];
+      if (it && it.kind === "file") URL.revokeObjectURL(it.previewUrl);
+      return cur.filter((_, i) => i !== idx);
+    });
   }
-  function updateImage(idx: number, value: string) {
-    setCoverImages((cur) => cur.map((v, i) => (i === idx ? value : v)));
-  }
-  function moveImage(idx: number, delta: number) {
-    setCoverImages((cur) => {
+
+  function move(idx: number, delta: number) {
+    setItems((cur) => {
       const next = [...cur];
       const target = idx + delta;
       if (target < 0 || target >= next.length) return cur;
@@ -117,68 +177,108 @@ export function ProfileEditor({
             <span className="text-[12px] font-bold">
               커버 이미지{" "}
               <span className="text-slate font-medium ml-1">
-                (최대 {maxImages}장)
+                (최대 {maxImages}장 · 5MB · JPG/PNG/WEBP)
               </span>
             </span>
             <span className="text-[11px] text-slate">
-              {visible.length} / {maxImages}
+              {items.length} / {maxImages}
             </span>
           </div>
           <div className="text-[11px] text-slate mb-3 leading-[1.6]">
-            첫 번째 이미지가 매장 카드 대표로, 나머지는 매장 상세 상단 슬라이드로
-            노출됩니다.
+            첫 번째 이미지가 매장 카드 대표로, 전체는 매장 상세 상단에 가로 슬라이드 갤러리로 노출됩니다.
+            저장을 누르면 이미지 서버에 업로드된 후 DB 에 URL 만 저장됩니다.
           </div>
 
-          <div className="flex flex-col gap-2">
-            {visible.map((url, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-slate w-5 text-center shrink-0 ww-num">
-                  {i + 1}
-                </span>
-                <input
-                  type="text"
-                  name="coverUrls"
-                  value={url}
-                  onChange={(e) => updateImage(i, e.target.value)}
-                  placeholder="https://…"
-                  className="flex-1 h-11 px-3 bg-paper border border-fog rounded-[10px] text-[13px] outline-none focus:border-brand-deep"
-                />
-                <div className="flex items-center gap-1 shrink-0">
-                  <IconBtn
-                    label="위로"
-                    disabled={i === 0}
-                    onClick={() => moveImage(i, -1)}
+          {items.length > 0 && (
+            <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
+              {items.map((it, i) => {
+                const url = it.kind === "url" ? it.url : it.previewUrl;
+                return (
+                  <li
+                    key={it.id}
+                    className="relative group rounded-[12px] overflow-hidden border border-fog bg-cloud aspect-[4/3]"
                   >
-                    ↑
-                  </IconBtn>
-                  <IconBtn
-                    label="아래로"
-                    disabled={i === visible.length - 1}
-                    onClick={() => moveImage(i, 1)}
-                  >
-                    ↓
-                  </IconBtn>
-                  <IconBtn
-                    label="삭제"
-                    onClick={() => removeImage(i)}
-                    danger
-                  >
-                    ×
-                  </IconBtn>
-                </div>
-              </div>
-            ))}
-          </div>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                    <span className="absolute left-2 top-2 text-[10px] font-bold bg-ink text-white rounded-full px-2 py-[2px] ww-num">
+                      {i + 1}
+                      {i === 0 && " · 대표"}
+                    </span>
+                    {it.kind === "file" && (
+                      <span className="absolute right-2 top-2 text-[9px] font-bold bg-brand text-ink rounded-full px-2 py-[2px]">
+                        NEW
+                      </span>
+                    )}
+                    <div className="absolute left-1 right-1 bottom-1 flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                      <SmallBtn
+                        disabled={i === 0}
+                        onClick={() => move(i, -1)}
+                        label="앞으로"
+                      >
+                        ←
+                      </SmallBtn>
+                      <SmallBtn
+                        disabled={i === items.length - 1}
+                        onClick={() => move(i, 1)}
+                        label="뒤로"
+                      >
+                        →
+                      </SmallBtn>
+                      <SmallBtn
+                        danger
+                        onClick={() => removeAt(i)}
+                        label="삭제"
+                      >
+                        ×
+                      </SmallBtn>
+                    </div>
 
-          {visible.length < maxImages && (
-            <button
-              type="button"
-              onClick={addImage}
-              className="mt-3 h-10 px-4 rounded-full border-[1.5px] border-dashed border-fog text-[12px] font-bold text-slate hover:border-brand-deep hover:text-brand-deep transition"
-            >
-              + 이미지 추가
-            </button>
+                    {/* 폼 제출 시 사용될 hidden 입력 */}
+                    <input type="hidden" name="coverItemKind" value={it.kind} />
+                    {it.kind === "url" && (
+                      <input
+                        type="hidden"
+                        name="coverItemUrl"
+                        value={it.url}
+                      />
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
           )}
+
+          {/* 새 파일 input — 별도 form field 로 다중 첨부 */}
+          {items.length < maxImages && (
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                name="coverNewFiles"
+                multiple
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={onPickFiles}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="h-10 px-4 rounded-full border-[1.5px] border-dashed border-fog text-[12px] font-bold text-slate hover:border-brand-deep hover:text-brand-deep transition"
+              >
+                + 이미지 파일 추가
+              </button>
+            </>
+          )}
+          {error && (
+            <div className="text-[12px] text-danger mt-2">{error}</div>
+          )}
+
+          {/* 파일 입력은 자동 hidden 첨부 — 폼 제출 시 file 의 순서를 보장하기 위해 */}
+          <FilePayloadFields items={items} />
         </div>
 
         <Field
@@ -235,7 +335,7 @@ export function ProfileEditor({
           PREVIEW
         </div>
         <div className="text-[11px] text-slate mb-3">
-          앱에서 고객에게 보이는 모습 (라이브 미리보기)
+          앱에서 고객에게 보이는 모습 (실시간 미리보기)
         </div>
         <AppPreview
           name={name || "매장 이름"}
@@ -243,7 +343,7 @@ export function ProfileEditor({
           phone={phone}
           promo={promo}
           open={open}
-          coverImages={validImages}
+          coverImages={previewUrls}
           rating={defaults.rating}
           reviewCount={defaults.reviewCount}
           services={defaults.services}
@@ -251,6 +351,39 @@ export function ProfileEditor({
       </aside>
     </div>
   );
+}
+
+/**
+ * 파일 항목들을 hidden input 으로 폼에 첨부.
+ * file 항목 순서를 유지하기 위해 별도 컴포넌트로 분리.
+ */
+function FilePayloadFields({ items }: { items: ImageItem[] }) {
+  // 파일은 file input 으로 직접 attach 하기 위해 ref 사용
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    // 모든 file input 비우고 다시 채움
+    containerRef.current.innerHTML = "";
+    items.forEach((it) => {
+      if (it.kind !== "file") return;
+      const input = document.createElement("input");
+      input.type = "file";
+      input.name = "coverItemFile";
+      input.style.display = "none";
+      // DataTransfer 로 File 을 file input 에 주입 (브라우저 지원: 모던 전부)
+      try {
+        const dt = new DataTransfer();
+        dt.items.add(it.file);
+        input.files = dt.files;
+        containerRef.current!.appendChild(input);
+      } catch {
+        // unsupported — 무시
+      }
+    });
+  }, [items]);
+
+  return <div ref={containerRef} className="hidden" />;
 }
 
 const inputCls =
@@ -281,7 +414,7 @@ function Field({
   );
 }
 
-function IconBtn({
+function SmallBtn({
   children,
   onClick,
   disabled,
@@ -300,10 +433,10 @@ function IconBtn({
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className={`w-8 h-8 rounded-full border text-[13px] font-bold transition disabled:opacity-30 ${
+      className={`flex-1 h-7 rounded-full text-[12px] font-bold backdrop-blur-sm transition disabled:opacity-30 ${
         danger
-          ? "border-fog text-danger hover:bg-danger/10"
-          : "border-fog text-slate hover:bg-cloud"
+          ? "bg-danger/85 text-white hover:bg-danger"
+          : "bg-white/90 text-ink hover:bg-white"
       }`}
     >
       {children}
@@ -313,6 +446,7 @@ function IconBtn({
 
 // ─────────────────────────────────────────────────────────────
 // 우측 미리보기 — 앱의 /app/stores/[id] 매장 상세 화면 단순 재현
+// 가로 스와이프 갤러리 형태
 // ─────────────────────────────────────────────────────────────
 function AppPreview({
   name,
@@ -337,17 +471,20 @@ function AppPreview({
 }) {
   const [activeImg, setActiveImg] = useState(0);
   const labels = labelServices(services);
-  const cover = coverImages[Math.min(activeImg, coverImages.length - 1)];
+  const hasImages = coverImages.length > 0;
+  const cover = hasImages
+    ? coverImages[Math.min(activeImg, coverImages.length - 1)]
+    : null;
 
   return (
     <div className="rounded-[28px] border-[6px] border-ink overflow-hidden bg-white shadow-[0_24px_60px_rgba(15,124,114,0.18)]">
-      {/* 폰 상단 노치 영역 */}
+      {/* 폰 상단 노치 */}
       <div className="h-[26px] bg-ink flex items-center justify-center">
         <span className="w-[80px] h-[14px] rounded-full bg-charcoal" />
       </div>
 
       <div className="bg-paper">
-        {/* 매장 상세 헤더 */}
+        {/* 매장 상세 헤더 — 갤러리 */}
         <div className="relative h-[300px] bg-cloud overflow-hidden">
           {cover ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -373,18 +510,14 @@ function AppPreview({
             ‹
           </span>
 
-          {/* 영업 상태 */}
           <span
             className={`absolute right-3 top-3 text-[10px] font-bold px-[8px] py-[3px] rounded-full ${
-              open
-                ? "bg-brand text-ink"
-                : "bg-ash/90 text-white"
+              open ? "bg-brand text-ink" : "bg-ash/90 text-white"
             }`}
           >
             {open ? "영업중" : "영업종료"}
           </span>
 
-          {/* 서비스 칩 + 매장명 */}
           <div className="absolute left-3 right-3 bottom-3 text-white">
             {labels.length > 0 && (
               <div className="flex gap-1 mb-2">
@@ -402,9 +535,16 @@ function AppPreview({
               {name}
             </div>
           </div>
+
+          {/* 카운터 */}
+          {coverImages.length > 1 && (
+            <span className="absolute right-3 bottom-3 text-[10px] bg-black/40 text-white rounded-full px-2 py-[2px] ww-num">
+              {activeImg + 1} / {coverImages.length}
+            </span>
+          )}
         </div>
 
-        {/* 이미지 인디케이터 */}
+        {/* 인디케이터 */}
         {coverImages.length > 1 && (
           <div className="flex justify-center gap-1 py-2 bg-paper">
             {coverImages.map((_, i) => (
@@ -412,8 +552,10 @@ function AppPreview({
                 type="button"
                 key={i}
                 onClick={() => setActiveImg(i)}
-                className={`w-[6px] h-[6px] rounded-full transition ${
-                  i === activeImg ? "bg-ink" : "bg-fog"
+                className={`h-[6px] rounded-full transition ${
+                  i === activeImg
+                    ? "w-[18px] bg-ink"
+                    : "w-[6px] bg-fog hover:bg-mist"
                 }`}
                 aria-label={`이미지 ${i + 1}`}
               />
@@ -421,7 +563,6 @@ function AppPreview({
           </div>
         )}
 
-        {/* 본문 */}
         <div className="bg-white px-4 pt-4 pb-5 min-h-[260px]">
           <div className="flex items-center gap-1 text-[11px]">
             <span className="text-ink">★</span>
