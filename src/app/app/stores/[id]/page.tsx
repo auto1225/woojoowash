@@ -16,6 +16,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { StoreCoverGallery } from "./StoreCoverGallery";
 import { StoreActions } from "./StoreActions";
+import { NavigationButton } from "./NavigationButton";
 
 export const dynamic = "force-dynamic";
 
@@ -79,19 +80,31 @@ export default async function StoreDetailPage({
             initialFavorited={favorited}
           />
         </div>
-        <div className="flex items-center gap-2 mt-3 text-[12px] text-slate">
-          <IconPin size={14} stroke={1.6} />
-          {store.address}
-        </div>
-        {store.phone && (
-          <div className="flex items-center gap-2 mt-1 text-[12px] text-slate ww-num">
-            <IconPhone size={14} stroke={1.6} />
-            {store.phone}
+        <div className="mt-3 flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0 flex flex-col gap-1">
+            <div className="flex items-center gap-2 text-[12px] text-slate">
+              <IconPin size={14} stroke={1.6} />
+              <span className="truncate">{store.address}</span>
+            </div>
+            {store.phone && (
+              <div className="flex items-center gap-2 text-[12px] text-slate ww-num">
+                <IconPhone size={14} stroke={1.6} />
+                {store.phone}
+              </div>
+            )}
+            <div className="flex items-center gap-2 text-[12px] text-slate">
+              <IconClock size={14} stroke={1.6} />
+              <span className="truncate">
+                오늘 10:00 — 22:00 (쉬는 시간 13:00 — 14:00)
+              </span>
+            </div>
           </div>
-        )}
-        <div className="flex items-center gap-2 mt-1 text-[12px] text-slate">
-          <IconClock size={14} stroke={1.6} />
-          오늘 10:00 — 22:00 (쉬는 시간 13:00 — 14:00)
+          <NavigationButton
+            destName={store.name}
+            destAddress={store.address}
+            lat={store.lat}
+            lng={store.lng}
+          />
         </div>
 
         {store.promo && (

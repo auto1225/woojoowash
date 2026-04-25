@@ -136,11 +136,9 @@ function IconBtn({
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
-      className={`w-10 h-10 rounded-full border flex items-center justify-center transition active:scale-[0.94] ${
-        active
-          ? "bg-danger/10 border-danger text-danger"
-          : "bg-white border-fog text-ink hover:bg-cloud"
-      } disabled:opacity-50`}
+      className={`w-10 h-10 inline-flex items-center justify-center transition active:scale-[0.92] disabled:opacity-50 ${
+        active ? "text-danger" : "text-ink hover:text-graphite"
+      }`}
     >
       {children}
     </button>
