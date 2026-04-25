@@ -19,15 +19,8 @@ services:
       - "3020:3000"
     volumes:
       - woojoowash_uploads:/app/public/uploads
-    networks:
-      - default
-      - bridge
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
 volumes:
   woojoowash_uploads:
-
-networks:
-  bridge:
-    external: true
