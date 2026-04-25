@@ -15,7 +15,7 @@ const STATUS_LABEL: Record<TicketStatus, string> = {
 };
 
 const STATUS_COLOR: Record<TicketStatus, string> = {
-  OPEN: "bg-accent/10 text-accent-deep",
+  OPEN: "bg-brand-bg text-brand-deep",
   ANSWERED: "bg-success/10 text-success",
   CLOSED: "bg-fog text-slate",
 };
@@ -68,7 +68,7 @@ export default async function SupportInboxPage({
               href={t.k ? `?status=${t.k}` : "?"}
               className={`text-[13px] font-semibold px-4 py-[7px] rounded-full border flex items-center gap-2 ${
                 active
-                  ? "bg-ink text-white border-ink"
+                  ? "admin-chip-active"
                   : "bg-white border-fog text-graphite"
               }`}
             >

@@ -43,7 +43,7 @@ export function InquiryRow({
           <span
             className={`text-[11px] font-bold px-2 py-[3px] rounded-full ${
               status === "NEW"
-                ? "bg-accent/10 text-accent-deep"
+                ? "bg-brand-bg text-brand-deep"
                 : status === "CONTACTED"
                   ? "bg-warning/10 text-warning"
                   : status === "APPROVED"
@@ -102,7 +102,7 @@ export function InquiryRow({
             type="button"
             onClick={save}
             disabled={pending}
-            className="h-10 px-5 rounded-full bg-ink text-white text-[13px] font-bold disabled:opacity-50"
+            className="h-10 px-5 rounded-full btn-brand text-[13px] disabled:opacity-50"
           >
             {pending ? "저장 중…" : "저장"}
           </button>

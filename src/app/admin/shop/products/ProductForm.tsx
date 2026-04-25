@@ -111,7 +111,7 @@ export function MarketProductForm({
       </label>
       <button
         type="submit"
-        className="md:col-span-2 justify-self-start h-11 px-6 rounded-full bg-ink text-white font-bold text-[13px]"
+        className="md:col-span-2 justify-self-start h-11 px-6 rounded-full btn-brand text-[13px]"
       >
         {submitLabel}
       </button>

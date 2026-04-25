@@ -11,11 +11,18 @@
   --ww-paper: #F7F7F8;
   --ww-white: #FFFFFF;
 
-  /* yper-inspired blue accents */
+  /* yper-inspired blue accents (사용자 앱·홈페이지) */
   --ww-accent: #1E40FF;
   --ww-accent-soft: #E6EAFF;
   --ww-accent-deep: #0B1F8C;
   --ww-accent-sky: #4D68FF;
+
+  /* Admin/CMS brand palette — 산뜻한 민트·스카이 */
+  --ww-brand: #6FE7DD;            /* 메인 민트 */
+  --ww-brand-sky: #B3F0FF;        /* 보조 라이트 블루 */
+  --ww-brand-bg: #E6FBF8;         /* 매우 옅은 민트 배경 */
+  --ww-brand-deep: #0E776E;       /* 다크 민트 (텍스트용) */
+  --ww-brand-grad: linear-gradient(135deg, #6FE7DD 0%, #B3F0FF 100%);
 
   /* Semantic */
   --ww-danger: #E4002B;
@@ -135,4 +142,32 @@ body {
   to {
     transform: translateX(-50%);
   }
+}
+
+/* Admin/CMS 전용 — 브랜드 그라데이션 버튼 */
+.btn-brand {
+  background: var(--ww-brand-grad);
+  color: var(--ww-ink);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  transition: filter 0.15s, transform 0.1s;
+  box-shadow: 0 4px 14px rgba(15, 124, 114, 0.18);
+}
+.btn-brand:hover {
+  filter: brightness(0.96);
+}
+.btn-brand:active {
+  transform: scale(0.98);
+}
+.btn-brand:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: none;
+  transform: none;
+}
+
+.admin-chip-active {
+  background: var(--ww-brand-grad);
+  color: var(--ww-ink);
+  border-color: transparent;
 }

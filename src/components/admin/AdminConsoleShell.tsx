@@ -17,10 +17,14 @@ export async function AdminConsoleShell({
   const flags = await getFlags();
 
   return (
-    <div className="min-h-screen h-screen flex bg-paper">
+    <div className="min-h-screen h-screen flex bg-brand-bg/40">
       <AdminSidebar flags={flags} />
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-[56px] shrink-0 bg-white border-b border-fog flex items-center justify-end gap-5 px-6">
+        <header className="relative h-[56px] shrink-0 bg-white border-b border-fog flex items-center justify-end gap-5 px-6">
+          <span
+            className="absolute left-0 right-0 top-0 h-[2px]"
+            style={{ background: "var(--ww-brand-grad)" }}
+          />
           {userName && (
             <span className="text-[13px] text-slate">{userName}</span>
           )}

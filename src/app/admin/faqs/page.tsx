@@ -85,7 +85,7 @@ export default async function FaqsPage() {
           />
           <button
             type="submit"
-            className="self-start h-10 px-5 rounded-full bg-ink text-white font-bold text-[13px]"
+            className="self-start h-10 px-5 rounded-full btn-brand text-[13px]"
           >
             추가
           </button>

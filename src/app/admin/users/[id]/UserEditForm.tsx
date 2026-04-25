@@ -156,7 +156,7 @@ export function UserEditForm({
         <button
           type="submit"
           disabled={pending}
-          className="h-12 px-6 rounded-full bg-ink text-white font-bold text-[14px] disabled:opacity-50"
+          className="h-12 px-6 rounded-full btn-brand text-[14px]"
         >
           {pending ? "저장 중…" : "저장"}
         </button>

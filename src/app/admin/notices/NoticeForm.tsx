@@ -62,7 +62,7 @@ export function NoticeForm({
       </div>
       <button
         type="submit"
-        className="self-start h-11 px-6 rounded-full bg-ink text-white font-bold text-[13px]"
+        className="self-start h-11 px-6 rounded-full btn-brand text-[13px]"
       >
         {submitLabel}
       </button>

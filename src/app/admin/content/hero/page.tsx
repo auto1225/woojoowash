@@ -102,7 +102,7 @@ export default async function HeroContentPage() {
           <div className="flex items-end">
             <button
               type="submit"
-              className="h-11 px-6 rounded-full bg-ink text-white font-bold text-[13px]"
+              className="h-11 px-6 rounded-full btn-brand text-[13px]"
             >
               추가
             </button>
@@ -191,7 +191,7 @@ export default async function HeroContentPage() {
                 <div className="flex gap-2">
                   <button
                     type="submit"
-                    className="h-10 px-5 rounded-full bg-ink text-white font-bold text-[13px]"
+                    className="h-10 px-5 rounded-full btn-brand text-[13px]"
                   >
                     저장
                   </button>

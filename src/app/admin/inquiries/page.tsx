@@ -54,7 +54,7 @@ export default async function InquiriesAdminPage({
               href={t.k ? `?status=${t.k}` : "?"}
               className={`text-[13px] font-semibold px-4 py-[7px] rounded-full border ${
                 active
-                  ? "bg-ink text-white border-ink"
+                  ? "admin-chip-active"
                   : "bg-white border-fog text-graphite"
               }`}
             >

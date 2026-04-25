@@ -81,7 +81,7 @@ export default async function UsersAdminPage({
         </select>
         <button
           type="submit"
-          className="h-10 px-5 rounded-full bg-ink text-white text-[13px] font-bold"
+          className="h-10 px-5 rounded-full btn-brand text-[13px]"
         >
           검색
         </button>
@@ -167,7 +167,7 @@ export default async function UsersAdminPage({
 function RoleTag({ role }: { role: "USER" | "OWNER" | "ADMIN" }) {
   const map = {
     USER: { l: "일반", c: "bg-cloud text-graphite" },
-    OWNER: { l: "운영자", c: "bg-accent/10 text-accent-deep" },
+    OWNER: { l: "운영자", c: "bg-brand-bg text-brand-deep" },
     ADMIN: { l: "관리자", c: "bg-ink text-white" },
   };
   const x = map[role];

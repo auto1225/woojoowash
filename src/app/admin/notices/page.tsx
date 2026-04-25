@@ -37,7 +37,7 @@ export default async function NoticesPage() {
       <div className="flex justify-end mb-4">
         <Link
           href="/admin/notices/new"
-          className="h-11 px-5 inline-flex items-center rounded-full bg-ink text-white text-[13px] font-bold"
+          className="h-11 px-5 inline-flex items-center rounded-full btn-brand text-[13px]"
         >
           + 새 공지
         </Link>

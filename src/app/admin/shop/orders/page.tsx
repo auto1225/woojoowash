@@ -21,7 +21,7 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
 
 const STATUS_COLOR: Record<OrderStatus, string> = {
   PENDING: "bg-fog text-slate",
-  PAID: "bg-accent/10 text-accent-deep",
+  PAID: "bg-brand-bg text-brand-deep",
   PREPARING: "bg-warning/10 text-warning",
   SHIPPED: "bg-accent text-white",
   DELIVERED: "bg-success/10 text-success",
@@ -102,7 +102,7 @@ export default async function OrdersAdminPage({
               href={t.k ? `?status=${t.k}` : "?"}
               className={`text-[13px] font-semibold px-4 py-[7px] rounded-full border flex items-center gap-2 ${
                 active
-                  ? "bg-ink text-white border-ink"
+                  ? "admin-chip-active"
                   : "bg-white border-fog text-graphite"
               }`}
             >

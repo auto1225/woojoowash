@@ -94,11 +94,18 @@ export function AdminSidebar({
 
   return (
     <aside className="w-[240px] shrink-0 bg-white border-r border-fog flex flex-col">
-      <div className="h-[56px] flex items-center gap-2 px-5 border-b border-fog">
+      <div className="relative h-[56px] flex items-center gap-2 px-5 border-b border-fog">
         <WWLogo size={16} compact />
-        <span className="text-[10px] font-bold text-white bg-ink rounded-full px-2 py-[2px]">
+        <span
+          className="text-[10px] font-extrabold text-ink rounded-full px-[10px] py-[3px] tracking-wide"
+          style={{ background: "var(--ww-brand-grad)" }}
+        >
           ADMIN
         </span>
+        <span
+          className="absolute left-0 right-0 bottom-0 h-[2px]"
+          style={{ background: "var(--ww-brand-grad)" }}
+        />
       </div>
 
       <nav className="flex-1 overflow-y-auto ww-no-scrollbar py-2">
@@ -145,12 +152,12 @@ export function AdminSidebar({
                           className={cn(
                             "flex items-center px-3 py-[9px] rounded-[8px] text-[13px] font-medium transition",
                             active
-                              ? "bg-accent/10 text-accent-deep font-bold"
+                              ? "bg-brand-bg text-brand-deep font-bold"
                               : "text-graphite hover:bg-cloud",
                           )}
                         >
                           {active && (
-                            <span className="w-[3px] h-4 bg-accent rounded-full mr-2 -ml-[2px]" />
+                            <span className="w-[3px] h-4 bg-brand rounded-full mr-2 -ml-[2px]" />
                           )}
                           {it.label}
                         </Link>

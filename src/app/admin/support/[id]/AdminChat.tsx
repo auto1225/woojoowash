@@ -166,7 +166,7 @@ export function AdminChat({
         <button
           type="submit"
           disabled={pending || !input.trim()}
-          className="h-12 px-5 rounded-full bg-ink text-white font-bold text-[13px] disabled:opacity-40"
+          className="h-12 px-5 rounded-full btn-brand text-[13px]"
         >
           전송
         </button>

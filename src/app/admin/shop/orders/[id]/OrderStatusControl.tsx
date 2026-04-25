@@ -92,7 +92,7 @@ export function OrderStatusControl({
         </label>
         <button
           type="submit"
-          className="mt-4 h-11 w-full rounded-full bg-ink text-white font-bold text-[13px]"
+          className="mt-4 h-11 w-full rounded-full btn-brand text-[13px]"
         >
           저장
         </button>

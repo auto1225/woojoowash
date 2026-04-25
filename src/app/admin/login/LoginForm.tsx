@@ -44,7 +44,7 @@ export function AdminConsoleLoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
-          className="w-full h-12 px-4 bg-paper border border-fog rounded-[12px] text-[14px] outline-none focus:border-ink"
+          className="w-full h-12 px-4 bg-paper border border-fog rounded-[12px] text-[14px] outline-none focus:border-brand-deep transition"
         />
       </label>
       <label className="block">
@@ -55,7 +55,7 @@ export function AdminConsoleLoginForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
-          className="w-full h-12 px-4 bg-paper border border-fog rounded-[12px] text-[14px] outline-none focus:border-ink"
+          className="w-full h-12 px-4 bg-paper border border-fog rounded-[12px] text-[14px] outline-none focus:border-brand-deep transition"
         />
       </label>
       {error && (
@@ -66,7 +66,8 @@ export function AdminConsoleLoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="h-12 rounded-full bg-ink text-white font-bold text-[14px] mt-2 disabled:opacity-50"
+        className="h-12 rounded-full text-ink font-extrabold text-[14px] mt-2 disabled:opacity-50 transition hover:brightness-95 shadow-[0_8px_24px_rgba(15,124,114,0.25)]"
+        style={{ background: "var(--ww-brand-grad)" }}
       >
         {loading ? "로그인 중…" : "로그인"}
       </button>

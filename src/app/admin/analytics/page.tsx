@@ -147,7 +147,7 @@ export default async function AnalyticsPage() {
                   <span className="text-accent font-bold ww-num w-8 text-right">
                     {d.reservations}
                   </span>
-                  <div className="h-2 flex-1 bg-accent/10 rounded-full overflow-hidden">
+                  <div className="h-2 flex-1 bg-brand-bg rounded-full overflow-hidden">
                     <div
                       className="h-full bg-accent"
                       style={{
