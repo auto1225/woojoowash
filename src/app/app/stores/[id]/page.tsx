@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { AppBar } from "@/components/app/AppBar";
 import {
   IconClock,
+  IconPhone,
   IconPin,
   IconShield,
   IconStarFill,
@@ -63,10 +64,27 @@ export default async function StoreDetailPage({
           <IconPin size={14} stroke={1.6} />
           {store.address}
         </div>
+        {store.phone && (
+          <div className="flex items-center gap-2 mt-1 text-[12px] text-slate ww-num">
+            <IconPhone size={14} stroke={1.6} />
+            {store.phone}
+          </div>
+        )}
         <div className="flex items-center gap-2 mt-1 text-[12px] text-slate">
           <IconClock size={14} stroke={1.6} />
           오늘 10:00 — 22:00 (쉬는 시간 13:00 — 14:00)
         </div>
+
+        {store.promo && (
+          <div className="mt-4 rounded-[12px] bg-brand-bg border border-brand/30 p-4">
+            <div className="text-[10px] font-bold text-brand-deep tracking-[0.05em] mb-1">
+              매장 안내
+            </div>
+            <div className="text-[13px] text-graphite leading-[1.6] whitespace-pre-wrap">
+              {store.promo}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="mt-6 px-5 flex gap-[2px] border-b border-fog">

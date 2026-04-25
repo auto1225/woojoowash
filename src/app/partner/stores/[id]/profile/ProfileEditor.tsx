@@ -564,16 +564,71 @@ function AppPreview({
         )}
 
         <div className="bg-white px-4 pt-4 pb-5 min-h-[260px]">
-          <div className="flex items-center gap-1 text-[11px]">
+          {/* ★ rating · 거리 — 실제 앱과 동일 구조 */}
+          <div className="flex items-center gap-[6px] text-[11px]">
             <span className="text-ink">★</span>
             <span className="font-bold">{rating.toFixed(1)}</span>
             <span className="text-slate">({reviewCount})</span>
+            <span className="text-ash">·</span>
+            <span className="text-slate">0.4km</span>
           </div>
-          <div className="text-[11px] text-slate mt-2 truncate">{address}</div>
+
+          {/* 📍 주소 */}
+          <div className="flex items-center gap-1 mt-2 text-[11px] text-slate">
+            <svg
+              width="11"
+              height="11"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 22s-7-7.5-7-13a7 7 0 0114 0c0 5.5-7 13-7 13z" />
+              <circle cx="12" cy="9" r="2.5" />
+            </svg>
+            <span className="truncate">{address}</span>
+          </div>
+
+          {/* 📞 전화 */}
           {phone && (
-            <div className="text-[11px] text-slate ww-num mt-1">{phone}</div>
+            <div className="flex items-center gap-1 mt-[3px] text-[11px] text-slate ww-num">
+              <svg
+                width="11"
+                height="11"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.37 1.9.72 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0122 16.92z" />
+              </svg>
+              {phone}
+            </div>
           )}
 
+          {/* 🕒 영업시간 */}
+          <div className="flex items-center gap-1 mt-[3px] text-[11px] text-slate">
+            <svg
+              width="11"
+              height="11"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+            오늘 10:00 — 22:00 (쉬는 시간 13:00 — 14:00)
+          </div>
+
+          {/* 매장 안내 (홍보 문구) */}
           {promo && (
             <div className="mt-3 rounded-[10px] bg-brand-bg border border-brand/30 p-3">
               <div className="text-[10px] font-bold text-brand-deep tracking-[0.05em] mb-1">
@@ -585,6 +640,7 @@ function AppPreview({
             </div>
           )}
 
+          {/* 탭 */}
           <div className="grid grid-cols-3 mt-4 border-t border-fog">
             {["상품", "정보", "리뷰"].map((t, i) => (
               <div
@@ -597,8 +653,26 @@ function AppPreview({
               </div>
             ))}
           </div>
-          <div className="text-[10px] text-slate text-center py-6">
-            (상품 리스트 영역)
+
+          {/* 상품 리스트 mock — 실제 앱의 첫 카드 모양 */}
+          <div className="mt-3">
+            <div className="rounded-[12px] border border-fog p-2 flex gap-2">
+              <div className="w-[64px] h-[64px] rounded-[10px] bg-gradient-to-br from-cloud to-fog shrink-0" />
+              <div className="flex-1 min-w-0 py-[2px]">
+                <div className="text-[9px] text-slate font-medium">
+                  60분 소요
+                </div>
+                <div className="text-[12px] font-extrabold tracking-[-0.2px]">
+                  기본(베이직) 디테일링
+                </div>
+                <div className="text-[10px] text-slate truncate">
+                  외부 손세차 + 실내 청소
+                </div>
+                <div className="text-[12px] font-extrabold ww-num mt-[2px]">
+                  55,000원
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
