@@ -31,7 +31,9 @@ export default async function StoreDetailPage({
     <div className="pb-[120px]">
       <div className="relative">
         <StoreCoverGallery images={images} storeName={store.name} />
-        <AppBar dark border={false} showBack />
+        <div className="absolute left-0 right-0 top-0 z-30">
+          <AppBar dark border={false} showBack />
+        </div>
         <div className="pointer-events-none absolute left-4 right-4 bottom-4 text-white">
           <div className="flex gap-2 mb-3">
             {labels.map((t) => (
