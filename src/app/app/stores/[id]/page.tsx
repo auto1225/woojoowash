@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { AppBar } from "@/components/app/AppBar";
 import {
   IconClock,
-  IconPhone,
   IconPin,
   IconShield,
   IconStarFill,
@@ -17,6 +16,7 @@ import { db } from "@/lib/db";
 import { StoreCoverGallery } from "./StoreCoverGallery";
 import { StoreActions } from "./StoreActions";
 import { NavigationButton } from "./NavigationButton";
+import { PhoneCallButton } from "./PhoneCallButton";
 
 export const dynamic = "force-dynamic";
 
@@ -87,10 +87,7 @@ export default async function StoreDetailPage({
               <span className="truncate">{store.address}</span>
             </div>
             {store.phone && (
-              <div className="flex items-center gap-2 text-[12px] text-slate ww-num">
-                <IconPhone size={14} stroke={1.6} />
-                {store.phone}
-              </div>
+              <PhoneCallButton storeName={store.name} phone={store.phone} />
             )}
             <div className="flex items-center gap-2 text-[12px] text-slate">
               <IconClock size={14} stroke={1.6} />
