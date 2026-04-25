@@ -12,7 +12,10 @@ import {
 import { getStore, displayDist } from "@/lib/queries/stores";
 import { labelServices } from "@/lib/services";
 import { IMG } from "@/lib/images";
+import { auth } from "@/auth";
+import { db } from "@/lib/db";
 import { StoreCoverGallery } from "./StoreCoverGallery";
+import { StoreActions } from "./StoreActions";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +30,15 @@ export default async function StoreDetailPage({
   const images =
     store.coverImages.length > 0 ? store.coverImages : [IMG.store1];
   const labels = labelServices(store.services);
+
+  const session = await auth();
+  const favorited = session?.user
+    ? !!(await db.favorite.findUnique({
+        where: {
+          userId_storeId: { userId: session.user.id, storeId: store.id },
+        },
+      }))
+    : false;
 
   return (
     <div className="pb-[120px]">
@@ -53,12 +65,19 @@ export default async function StoreDetailPage({
       </div>
 
       <div className="px-5 pt-5">
-        <div className="flex items-center gap-[6px] text-[12px]">
-          <IconStarFill size={12} />
-          <span className="font-bold">{store.rating.toFixed(1)}</span>
-          <span className="text-slate">({store.reviewCount})</span>
-          <span className="text-ash">·</span>
-          <span className="text-slate">{displayDist(store.id)}</span>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-[6px] text-[12px]">
+            <IconStarFill size={12} />
+            <span className="font-bold">{store.rating.toFixed(1)}</span>
+            <span className="text-slate">({store.reviewCount})</span>
+            <span className="text-ash">·</span>
+            <span className="text-slate">{displayDist(store.id)}</span>
+          </div>
+          <StoreActions
+            storeId={store.id}
+            storeName={store.name}
+            initialFavorited={favorited}
+          />
         </div>
         <div className="flex items-center gap-2 mt-3 text-[12px] text-slate">
           <IconPin size={14} stroke={1.6} />
