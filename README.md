@@ -150,6 +150,121 @@ NEXT_PUBLIC_NAVER_MAP_CLIENT_ID=여기에_Client_ID_붙여넣기
 - `.env.example` — 키 이름만 있는 템플릿
 - 위 README 에 적힌 데모 계정/Docker 기본값 (로컬 전용)
 
+## 프로덕션 배포 (회사 개발 서버)
+
+운영 환경: **회사 사내 Linux 서버** (Ubuntu 20.04 / 32 core / 125GB RAM).
+Docker 컨테이너로 배포하며 기존 사내 `pg_server`(PostgreSQL 15) 인스턴스에
+별도 데이터베이스로 격리.
+
+### 공개 URL
+
+```
+http://csmakers.iptime.org:3020
+```
+
+| 진입점 | URL |
+|---|---|
+| 홈페이지 | http://csmakers.iptime.org:3020/home |
+| 모바일 웹앱 | http://csmakers.iptime.org:3020/app |
+| 매장 운영자 CMS | http://csmakers.iptime.org:3020/partner/login |
+| 서비스 관리자 CMS | http://csmakers.iptime.org:3020/admin/login |
+
+> 사내망: `http://192.168.0.100:3020` 으로 직접 접근 가능
+> (외부 접근은 iptime 공유기 3020 → 192.168.0.100:3020 포트포워딩 사용)
+
+### 인프라 구성
+
+```
+[ user ]
+   │
+   ▼ 3020/tcp
+[ iptime router (csmakers.iptime.org) ]
+   │  port-forward 3020 → 192.168.0.100:3020
+   ▼
+[ Linux server 192.168.0.100 ]
+   ├─ docker: woojoowash_app  (Next.js, port 3020:3000)
+   │       │ extra_hosts: host.docker.internal:host-gateway
+   │       ▼
+   ├─ docker: pg_server  (postgis/postgis:15, port 5432, 사내 공용)
+   │       └─ database: woojoowash (전용 user/pw)
+   └─ docker: gitlab, gitlab-runner, woojoocha_*, ...
+```
+
+- 앱 → DB 경로: `host.docker.internal:5432` 로 호스트 게이트웨이를 통해
+  같은 호스트의 `pg_server` 컨테이너에 접근
+- 업로드 파일: `woojoowash_uploads` 도커 볼륨에 영구 저장
+- 시작 시 자동: `prisma migrate deploy` → `next start`
+
+### 시크릿 위치
+
+| 항목 | 위치 |
+|---|---|
+| `.env.production` | 서버: `~/projects/woojoowash/.env.production` (chmod 600) |
+| DB user / password | 위 파일 안에만, **랜덤 생성된 값** |
+| `NEXTAUTH_SECRET` | 위 파일 안에만, `openssl rand -base64 32` |
+| `NEXT_PUBLIC_NAVER_MAP_CLIENT_ID` | 위 파일 + 빌드 인자 (공개 키) |
+
+> 시크릿은 git·README에 절대 포함하지 않음. 서버에서만 `.env.production` 으로 관리.
+
+### 첫 배포 절차 (이미 완료, 참고용)
+
+```bash
+# 1. pg_server 에 DB+user 생성 (postgres admin 권한 필요)
+docker exec -it pg_server psql -U postgres <<'SQL'
+CREATE USER woojoowash WITH PASSWORD '<random>';
+CREATE DATABASE woojoowash OWNER woojoowash;
+GRANT ALL PRIVILEGES ON DATABASE woojoowash TO woojoowash;
+SQL
+
+# 2. 코드 클론 + .env.production 작성
+ssh -p 2022 ucsit-dl@csmakers.iptime.org
+mkdir -p ~/projects && cd ~/projects
+git clone https://github.com/auto1225/woojoowash.git
+cd woojoowash
+cat > .env.production <<EOF
+DATABASE_URL="postgresql://woojoowash:<password>@host.docker.internal:5432/woojoowash?schema=public"
+NEXTAUTH_URL="http://csmakers.iptime.org:3020"
+NEXTAUTH_SECRET="<openssl rand -base64 32>"
+NEXT_PUBLIC_NAVER_MAP_CLIENT_ID="<naver client id>"
+EOF
+chmod 600 .env.production
+
+# 3. 빌드 + 기동 (마이그레이션은 컨테이너 시작 시 자동)
+docker compose --env-file .env.production -f docker-compose.prod.yml build
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d
+
+# 4. 초기 시드 (한 번만)
+docker exec woojoowash_app sh -c "npm i -g tsx && tsx prisma/seed.ts"
+```
+
+### 코드 업데이트 후 재배포
+
+```bash
+ssh -p 2022 ucsit-dl@csmakers.iptime.org
+cd ~/projects/woojoowash
+git pull
+docker compose --env-file .env.production -f docker-compose.prod.yml build
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d
+docker logs woojoowash_app --tail 30  # 정상 부팅 확인
+```
+
+### 운영 명령
+
+```bash
+# 상태 확인
+docker ps --filter name=woojoowash
+docker logs -f woojoowash_app
+
+# 재시작
+docker compose --env-file .env.production -f docker-compose.prod.yml restart app
+
+# DB 접속
+docker exec -it pg_server psql -U woojoowash -d woojoowash
+
+# 외부 도달 테스트
+curl -I http://csmakers.iptime.org:3020/home
+```
+
 ## 핸드오프
 
 디자인 레퍼런스(JSX)와 설계 문서는 `design_handoff/` 참고. 루트의 `CLAUDE.md` 가 Claude Code 컨텍스트입니다.
@@ -164,6 +279,8 @@ NEXT_PUBLIC_NAVER_MAP_CLIENT_ID=여기에_Client_ID_붙여넣기
 - [x] Sprint 3.3 — mock → DB 실제 연동 (매장·상품·예약·마이)
 - [x] Sprint 4 — yper 스타일 앱 UI + 운영자 CMS (매장·상품·스케줄·예약 관리)
 - [x] Sprint 4.5 — 네이버 지도 (Web Dynamic Map) + 내 위치 + bbox 재검색
+- [x] Sprint 4.6 — 1:1 문의 채팅 + 프로필/차량 CRUD + 프로필 이미지 업로드
+- [x] Sprint 4.7 — 회사 개발 서버 Docker 배포 (csmakers.iptime.org:3020)
 - [ ] Sprint 5 — 카카오 OAuth · 토스페이먼츠
 - [ ] Sprint 6 — Polish (skeleton · error · empty · push 알림)
 - [ ] Sprint 7 — Capacitor 래핑
