@@ -563,69 +563,132 @@ function AppPreview({
           </div>
         )}
 
-        <div className="bg-white px-4 pt-4 pb-5 min-h-[260px]">
-          {/* ★ rating · 거리 — 실제 앱과 동일 구조 */}
-          <div className="flex items-center gap-[6px] text-[11px]">
-            <span className="text-ink">★</span>
-            <span className="font-bold">{rating.toFixed(1)}</span>
-            <span className="text-slate">({reviewCount})</span>
-            <span className="text-ash">·</span>
-            <span className="text-slate">0.4km</span>
+        <div className="bg-white px-4 pt-3 pb-5 min-h-[260px]">
+          {/* ★ rating · 거리 + 즐겨찾기/공유 (실제 앱과 동일) */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-[6px] text-[11px]">
+              <span className="text-ink">★</span>
+              <span className="font-bold">{rating.toFixed(1)}</span>
+              <span className="text-slate">({reviewCount})</span>
+              <span className="text-ash">·</span>
+              <span className="text-slate">0.4km</span>
+            </div>
+            <div className="flex items-center gap-1 text-ink pointer-events-none">
+              {/* 즐겨찾기 */}
+              <span className="w-7 h-7 inline-flex items-center justify-center">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 20s-7-4.5-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.5-7 10-7 10z" />
+                </svg>
+              </span>
+              {/* 공유 */}
+              <span className="w-7 h-7 inline-flex items-center justify-center">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+              </span>
+            </div>
           </div>
 
-          {/* 📍 주소 */}
-          <div className="flex items-center gap-1 mt-2 text-[11px] text-slate">
-            <svg
-              width="11"
-              height="11"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 22s-7-7.5-7-13a7 7 0 0114 0c0 5.5-7 13-7 13z" />
-              <circle cx="12" cy="9" r="2.5" />
-            </svg>
-            <span className="truncate">{address}</span>
-          </div>
+          {/* 주소·전화·영업시간 + 우측 길찾기 버튼 (실제 앱과 동일) */}
+          <div className="mt-2 flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0 flex flex-col gap-[3px]">
+              {/* 📍 주소 */}
+              <div className="flex items-center gap-1 text-[11px] text-slate">
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 22s-7-7.5-7-13a7 7 0 0114 0c0 5.5-7 13-7 13z" />
+                  <circle cx="12" cy="9" r="2.5" />
+                </svg>
+                <span className="truncate">{address}</span>
+              </div>
 
-          {/* 📞 전화 */}
-          {phone && (
-            <div className="flex items-center gap-1 mt-[3px] text-[11px] text-slate ww-num">
+              {/* 📞 전화 */}
+              {phone && (
+                <div className="flex items-center gap-1 text-[11px] text-slate ww-num underline underline-offset-[3px] decoration-from-font">
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.37 1.9.72 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0122 16.92z" />
+                  </svg>
+                  {phone}
+                </div>
+              )}
+
+              {/* 🕒 영업시간 */}
+              <div className="flex items-center gap-1 text-[11px] text-slate">
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 2" />
+                </svg>
+                <span className="truncate">
+                  오늘 10:00 — 22:00 (쉬는 시간 13:00 — 14:00)
+                </span>
+              </div>
+            </div>
+
+            {/* 길찾기 버튼 mock */}
+            <div className="shrink-0 w-[52px] h-[52px] rounded-[10px] border border-fog bg-white flex flex-col items-center justify-center gap-[2px] pointer-events-none">
               <svg
-                width="11"
-                height="11"
+                width="16"
+                height="16"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.6"
+                strokeWidth="1.7"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                className="text-brand-deep"
               >
-                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.37 1.9.72 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0122 16.92z" />
+                <polygon points="3 11 22 2 13 21 11 13 3 11" />
               </svg>
-              {phone}
+              <span className="text-[9px] font-bold text-ink">길찾기</span>
             </div>
-          )}
-
-          {/* 🕒 영업시간 */}
-          <div className="flex items-center gap-1 mt-[3px] text-[11px] text-slate">
-            <svg
-              width="11"
-              height="11"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 7v5l3 2" />
-            </svg>
-            오늘 10:00 — 22:00 (쉬는 시간 13:00 — 14:00)
           </div>
 
           {/* 매장 안내 (홍보 문구) */}
