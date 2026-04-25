@@ -502,7 +502,7 @@ function AppPreview({
             </div>
           )}
           {cover && (
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/70" />
           )}
 
           {/* 좌상단 뒤로가기 mock */}
