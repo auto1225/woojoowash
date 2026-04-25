@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { AdminConsoleShell } from "@/components/admin/AdminConsoleShell";
@@ -138,12 +139,20 @@ export default async function UsersAdminPage({
                     </span>
                   </Td>
                   <Td className="text-right">
-                    <UserRowActions
-                      userId={u.id}
-                      role={u.role}
-                      status={u.status}
-                      selfId={me.id}
-                    />
+                    <div className="inline-flex items-center gap-3">
+                      <UserRowActions
+                        userId={u.id}
+                        role={u.role}
+                        status={u.status}
+                        selfId={me.id}
+                      />
+                      <Link
+                        href={`/admin/users/${u.id}`}
+                        className="text-[12px] font-semibold text-accent hover:underline"
+                      >
+                        수정
+                      </Link>
+                    </div>
                   </Td>
                 </tr>
               ))}
