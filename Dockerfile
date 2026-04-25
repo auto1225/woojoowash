@@ -13,6 +13,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# git 으로 추적되지 않는 빈 폴더 보장
+RUN mkdir -p public/uploads/profile
+
 # Prisma 클라이언트 생성 (스키마 → @prisma/client)
 RUN npx prisma generate
 
