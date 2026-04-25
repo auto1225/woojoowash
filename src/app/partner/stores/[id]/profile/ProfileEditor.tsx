@@ -348,7 +348,7 @@ function AppPreview({
 
       <div className="bg-paper">
         {/* 매장 상세 헤더 */}
-        <div className="relative h-[200px] bg-cloud overflow-hidden">
+        <div className="relative h-[300px] bg-cloud overflow-hidden">
           {cover ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -422,7 +422,7 @@ function AppPreview({
         )}
 
         {/* 본문 */}
-        <div className="bg-white px-4 pt-4 pb-5">
+        <div className="bg-white px-4 pt-4 pb-5 min-h-[260px]">
           <div className="flex items-center gap-1 text-[11px]">
             <span className="text-ink">★</span>
             <span className="font-bold">{rating.toFixed(1)}</span>
@@ -456,7 +456,7 @@ function AppPreview({
               </div>
             ))}
           </div>
-          <div className="text-[10px] text-slate text-center py-3">
+          <div className="text-[10px] text-slate text-center py-6">
             (상품 리스트 영역)
           </div>
         </div>
