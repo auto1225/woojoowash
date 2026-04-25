@@ -50,7 +50,7 @@ export function StoreCoverGallery({
               className="object-cover"
               sizes="(max-width: 480px) 100vw, 480px"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/70 pointer-events-none" />
           </div>
         ))}
       </div>
