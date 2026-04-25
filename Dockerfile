@@ -31,8 +31,8 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-# 프로덕션 deps 만 다시 (빌드 산출물 외엔 슬림)
-COPY --from=deps /app/node_modules ./node_modules
+# 빌더 단계에서 prisma generate 까지 끝난 node_modules 를 그대로 사용
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
