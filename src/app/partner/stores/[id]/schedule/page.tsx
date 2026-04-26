@@ -6,7 +6,7 @@ import {
   type SaveActionState,
   withSaveResult,
 } from "@/components/admin/save-action";
-import { ScheduleEditor } from "./ScheduleEditor";
+import { ScheduleEditor, ScheduleSaveButton } from "./ScheduleEditor";
 import { ClosedCalendar, type ClosedDayItem } from "./ClosedCalendar";
 import { normalizeHours, parseScheduleForm } from "./types";
 
@@ -97,6 +97,7 @@ export default async function SchedulePage({
           addAction={addClosedDay.bind(null, store.id)}
           removeAction={removeClosedDay.bind(null, store.id)}
         />
+        <ScheduleSaveButton />
       </section>
     </AdminShell>
   );

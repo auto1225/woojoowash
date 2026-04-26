@@ -170,7 +170,7 @@ export function ClosedCalendar({
             return (
               <div
                 key={i}
-                className={`relative aspect-square rounded-[8px] flex flex-col items-center justify-start py-1 text-[12px] transition ${
+                className={`relative aspect-[2/1] rounded-[8px] flex flex-row items-center justify-center gap-1 text-[12px] transition ${
                   !inMonth
                     ? "text-ash bg-paper/40"
                     : specificClosed
@@ -200,10 +200,10 @@ export function ClosedCalendar({
                   {d.getDate()}
                 </span>
                 {specificClosed && (
-                  <span className="text-[9px] font-bold mt-[1px]">휴무</span>
+                  <span className="text-[9px] font-bold">휴무</span>
                 )}
                 {!specificClosed && weeklyClosed && inMonth && (
-                  <span className="text-[9px] font-bold mt-[1px]">휴무</span>
+                  <span className="text-[9px] font-bold">휴무</span>
                 )}
               </div>
             );

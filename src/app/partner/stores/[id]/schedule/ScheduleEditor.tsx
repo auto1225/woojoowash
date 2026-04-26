@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useFormState } from "react-dom";
 import {
   INITIAL_SAVE_STATE,
-  SaveButton,
   SaveToast,
   type SaveActionState,
 } from "@/components/admin/SaveToast";
@@ -68,7 +67,12 @@ export function ScheduleEditor({
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-6">
+    <>
+    <form
+      id="schedule-form"
+      action={formAction}
+      className="flex flex-col gap-6"
+    >
       <div className="bg-white border border-fog rounded-[20px] p-8">
         <div className="text-[15px] font-extrabold mb-3">영업 시간</div>
 
@@ -221,11 +225,25 @@ export function ScheduleEditor({
         <input key={d} type="hidden" name="weeklyClosed" value={d} />
       ))}
 
-      <div className="px-1">
-        <SaveButton />
-      </div>
-      <SaveToast state={saveState} />
     </form>
+    <SaveToast state={saveState} />
+    </>
+  );
+}
+
+/**
+ * 폼 밖에 둘 수 있는 영업시간 저장 버튼.
+ * `form="schedule-form"` 으로 ScheduleEditor 의 form 에 연결.
+ */
+export function ScheduleSaveButton() {
+  return (
+    <button
+      type="submit"
+      form="schedule-form"
+      className="self-start h-12 px-6 rounded-full bg-ink text-white font-bold text-[14px] inline-flex items-center gap-2 hover:bg-graphite transition"
+    >
+      영업시간 · 휴무 저장
+    </button>
   );
 }
 
