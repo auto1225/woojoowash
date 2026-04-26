@@ -426,7 +426,7 @@ export function ProductForm({
             {options.map((o, i) => (
               <li
                 key={o.uid}
-                className="rounded-[12px] border border-fog bg-paper p-3 grid grid-cols-1 md:grid-cols-[1fr_auto_90px_70px_auto] gap-2 items-stretch"
+                className="rounded-[12px] border border-fog bg-paper p-3 grid grid-cols-1 md:grid-cols-[1fr_auto_108px_84px_auto] gap-2 items-stretch"
               >
                 <input
                   type="text"
