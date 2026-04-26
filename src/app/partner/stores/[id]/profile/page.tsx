@@ -3,6 +3,7 @@ import { AdminShell } from "@/components/partner/PartnerShell";
 import { requireOwnedStore, requireOwner } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { uploadImage } from "@/lib/storage";
+import { SELECTABLE_SERVICES } from "@/lib/services";
 import { ProfileEditor } from "./ProfileEditor";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +31,17 @@ async function saveProfile(
   const phone = String(formData.get("phone") ?? "").trim() || null;
   const promo = String(formData.get("promo") ?? "").trim() || null;
   const open = formData.get("open") === "on";
+
+  // 서비스 카테고리 (멀티)
+  const validCodes = new Set(SELECTABLE_SERVICES.map((s) => s.code));
+  const services = Array.from(
+    new Set(
+      formData
+        .getAll("services")
+        .map((v) => String(v).trim())
+        .filter((c) => validCodes.has(c)),
+    ),
+  );
 
   // 정보 섹션 (최대 5) — title/subtitle/content + images (섹션별 최대 6)
   const titles = formData.getAll("infoTitle").map((v) => String(v));
@@ -140,6 +152,7 @@ async function saveProfile(
       lng: Number.isFinite(lng as number) ? lng : null,
       coverImages,
       infoSections,
+      services,
     },
   });
   revalidatePath(`/partner/stores/${id}`);

@@ -65,7 +65,7 @@ export default async function StoreDetailPage({
           <AppBar dark border={false} showBack />
         </div>
         <div className="pointer-events-none absolute left-4 right-4 bottom-4 text-white">
-          <div className="flex gap-2 mb-3">
+          <div className="flex flex-wrap gap-2 mb-3">
             {labels.map((t) => (
               <span
                 key={t}

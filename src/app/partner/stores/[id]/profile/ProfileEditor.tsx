@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { StoreLocationPicker } from "@/components/partner/StoreLocationPicker";
-import { labelServices } from "@/lib/services";
+import { labelServices, SELECTABLE_SERVICES } from "@/lib/services";
 
 type SaveProfileState = {
   ok: boolean;
@@ -99,6 +99,16 @@ export function ProfileEditor({
   const [phone, setPhone] = useState(defaults.phone);
   const [promo, setPromo] = useState(defaults.promo);
   const [open, setOpen] = useState(defaults.open);
+  const [services, setServices] = useState<string[]>(() => {
+    // 정의된 코드만 유지하면서 SELECTABLE_SERVICES 순서대로
+    const valid = new Set(SELECTABLE_SERVICES.map((s) => s.code));
+    return defaults.services.filter((c) => valid.has(c));
+  });
+  function toggleService(code: string) {
+    setServices((cur) =>
+      cur.includes(code) ? cur.filter((c) => c !== code) : [...cur, code],
+    );
+  }
 
   const [items, setItems] = useState<ImageItem[]>(() =>
     defaults.coverImages.map((url, i) => ({
@@ -344,6 +354,62 @@ export function ProfileEditor({
             />
           }
         />
+
+        {/* 서비스 카테고리 (멀티 셀렉트) */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[12px] font-bold">
+              서비스 가능 카테고리{" "}
+              <span className="text-slate font-medium ml-1">
+                (앱 매장 카드/상세 상단 배지로 노출)
+              </span>
+            </span>
+            <span className="text-[11px] text-slate">
+              {services.length} 개 선택
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {SELECTABLE_SERVICES.map((s) => {
+              const active = services.includes(s.code);
+              return (
+                <button
+                  key={s.code}
+                  type="button"
+                  onClick={() => toggleService(s.code)}
+                  aria-pressed={active}
+                  className={`h-10 px-4 rounded-full text-[13px] font-bold transition border ${
+                    active
+                      ? "bg-ink text-white border-ink"
+                      : "bg-white text-graphite border-fog hover:border-ink hover:text-ink"
+                  }`}
+                >
+                  {active && (
+                    <span className="inline-block mr-1 align-middle">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{ verticalAlign: "-2px" }}
+                      >
+                        <path d="M5 12l5 5L20 7" />
+                      </svg>
+                    </span>
+                  )}
+                  {s.label}
+                </button>
+              );
+            })}
+          </div>
+          {/* 폼 제출 — 선택된 코드만 hidden input 으로 */}
+          {services.map((c) => (
+            <input key={c} type="hidden" name="services" value={c} />
+          ))}
+        </div>
 
         {/* 다중 커버 이미지 */}
         <div>
@@ -631,7 +697,7 @@ export function ProfileEditor({
           infoSections={infoSections}
           rating={defaults.rating}
           reviewCount={defaults.reviewCount}
-          services={defaults.services}
+          services={services}
         />
       </aside>
 
@@ -1070,8 +1136,8 @@ function AppPreview({
 
           <div className="absolute left-3 right-3 bottom-3 text-white">
             {labels.length > 0 && (
-              <div className="flex gap-1 mb-2">
-                {labels.slice(0, 3).map((t) => (
+              <div className="flex flex-wrap gap-1 mb-2">
+                {labels.map((t) => (
                   <span
                     key={t}
                     className="text-[9px] font-bold px-2 py-[2px] rounded-full bg-white/20 ww-backdrop-glass border border-white/20"
