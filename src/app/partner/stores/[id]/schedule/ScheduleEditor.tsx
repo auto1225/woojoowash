@@ -144,36 +144,45 @@ export function ScheduleEditor({
         )}
       </div>
 
-      {/* 폼 제출용 직렬화 (주간 정기 휴무 토글 UI 는 휴무일 캘린더 카드 안에 위치) */}
-      <input type="hidden" name="mode" value={mode} />
-      <input type="hidden" name="allOpen" value={all.open} />
-      <input type="hidden" name="allClose" value={all.close} />
-      <input type="hidden" name="allBreakStart" value={all.breakStart} />
-      <input type="hidden" name="allBreakEnd" value={all.breakEnd} />
-      {DAY_KEYS.map((d) => (
-        <span key={d}>
-          <input type="hidden" name={`day_${d}_open`} value={perDay[d].open} />
-          <input
-            type="hidden"
-            name={`day_${d}_close`}
-            value={perDay[d].close}
-          />
-          <input
-            type="hidden"
-            name={`day_${d}_breakStart`}
-            value={perDay[d].breakStart}
-          />
-          <input
-            type="hidden"
-            name={`day_${d}_breakEnd`}
-            value={perDay[d].breakEnd}
-          />
-        </span>
-      ))}
-      {weeklyClosed.map((d) => (
-        <input key={d} type="hidden" name="weeklyClosed" value={d} />
-      ))}
-
+      {/*
+        폼 제출용 직렬화 — display:contents 로 form 이 평탄화돼 있어서
+        hidden input/wrapper 가 section 의 flex item 으로 카운트되지 않게
+        하나의 hidden div 로 묶어 레이아웃에서 완전히 제외.
+      */}
+      <div className="hidden">
+        <input type="hidden" name="mode" value={mode} />
+        <input type="hidden" name="allOpen" value={all.open} />
+        <input type="hidden" name="allClose" value={all.close} />
+        <input type="hidden" name="allBreakStart" value={all.breakStart} />
+        <input type="hidden" name="allBreakEnd" value={all.breakEnd} />
+        {DAY_KEYS.map((d) => (
+          <span key={d}>
+            <input
+              type="hidden"
+              name={`day_${d}_open`}
+              value={perDay[d].open}
+            />
+            <input
+              type="hidden"
+              name={`day_${d}_close`}
+              value={perDay[d].close}
+            />
+            <input
+              type="hidden"
+              name={`day_${d}_breakStart`}
+              value={perDay[d].breakStart}
+            />
+            <input
+              type="hidden"
+              name={`day_${d}_breakEnd`}
+              value={perDay[d].breakEnd}
+            />
+          </span>
+        ))}
+        {weeklyClosed.map((d) => (
+          <input key={d} type="hidden" name="weeklyClosed" value={d} />
+        ))}
+      </div>
     </form>
     <SaveToast state={saveState} />
     </>
