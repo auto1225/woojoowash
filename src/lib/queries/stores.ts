@@ -59,7 +59,8 @@ export async function getProduct(storeId: string, productId: string) {
           id: string;
           label: string;
           price: number;
-          priceMode?: "amount" | "free" | "ask";
+          // 레거시 "free" 가 들어있을 수 있어 union 으로 받음 — 표시 시 amount + price 0 과 동일하게 처리
+          priceMode?: "amount" | "ask" | "free";
           durationMin?: number;
         }>)
       : [],

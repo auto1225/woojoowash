@@ -93,7 +93,7 @@ function parseOptions(fd: FormData) {
   const out: Array<{
     id: string;
     label: string;
-    priceMode: "amount" | "free" | "ask";
+    priceMode: "amount" | "ask";
     price: number;
     durationMin?: number;
   }> = [];
@@ -101,8 +101,8 @@ function parseOptions(fd: FormData) {
     const label = (labels[i] ?? "").trim();
     if (!label) continue;
     const m = modes[i];
-    const priceMode: "amount" | "free" | "ask" =
-      m === "free" || m === "ask" ? m : "amount";
+    // "free" 는 폐기 — 금액 + price 0 으로 정규화 (앱에서 "무료" 로 표시)
+    const priceMode: "amount" | "ask" = m === "ask" ? "ask" : "amount";
     let price = 0;
     if (priceMode === "amount") {
       const n = Number(prices[i] ?? 0);
@@ -150,7 +150,7 @@ export default async function EditProductPage({
     id: string;
     label: string;
     price: number;
-    priceMode?: "amount" | "free" | "ask";
+    priceMode?: "amount" | "ask";
     durationMin?: number | null;
   }> = Array.isArray(product.options)
     ? (product.options as Array<Record<string, unknown>>)
@@ -159,8 +159,9 @@ export default async function EditProductPage({
           if (!label) return null;
           const priceRaw = typeof o?.price === "number" ? o.price : 0;
           const modeRaw = typeof o?.priceMode === "string" ? o.priceMode : "";
-          const priceMode: "amount" | "free" | "ask" =
-            modeRaw === "free" || modeRaw === "ask" ? modeRaw : "amount";
+          // 레거시 "free" 는 amount + price 0 으로 정규화
+          const priceMode: "amount" | "ask" =
+            modeRaw === "ask" ? "ask" : "amount";
           const durationRaw =
             typeof o?.durationMin === "number" ? o.durationMin : null;
           return {

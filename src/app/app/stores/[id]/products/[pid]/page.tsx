@@ -109,11 +109,13 @@ export default async function ProductDetailPage({
           <div className="flex flex-col rounded-[14px] border border-fog overflow-hidden">
             {product.options.map((o, i) => {
               const mode = o.priceMode ?? "amount";
+              // amount 모드에서 가격이 0(혹은 미설정)이면 "무료"
+              const isFree = mode !== "ask" && (!o.price || o.price <= 0);
               const priceLabel =
-                mode === "free"
-                  ? "무료"
-                  : mode === "ask"
-                    ? "가격 협의"
+                mode === "ask"
+                  ? "가격 협의"
+                  : isFree
+                    ? "무료"
                     : `+${o.price.toLocaleString("ko-KR")}원`;
               return (
                 <div
@@ -139,7 +141,7 @@ export default async function ProductDetailPage({
                     className={`text-[13px] font-bold ww-num shrink-0 ml-3 ${
                       mode === "ask"
                         ? "text-slate"
-                        : mode === "free"
+                        : isFree
                           ? "text-success"
                           : ""
                     }`}

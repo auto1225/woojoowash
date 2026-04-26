@@ -30,7 +30,7 @@ type ImageItem =
   | { id: string; kind: "url"; url: string }
   | { id: string; kind: "file"; file: File; previewUrl: string };
 
-type OptionPriceMode = "amount" | "free" | "ask";
+type OptionPriceMode = "amount" | "ask";
 
 type OptionItem = {
   uid: string; // 클라이언트 키
@@ -46,8 +46,7 @@ const PRICE_MODE_TABS: ReadonlyArray<{
   label: string;
 }> = [
   { value: "amount", label: "금액" },
-  { value: "free", label: "무료" },
-  { value: "ask", label: "가격 협의" },
+  { value: "ask", label: "협의" },
 ];
 
 export function ProductForm({
@@ -71,7 +70,8 @@ export function ProductForm({
       id: string;
       label: string;
       price: number;
-      priceMode?: OptionPriceMode;
+      // 레거시 "free" 가 들어올 수 있어 union 으로 받음 → 내부에서 amount 로 정규화
+      priceMode?: "amount" | "ask" | "free";
       durationMin?: number | null;
     }>;
   };
@@ -95,8 +95,8 @@ export function ProductForm({
       uid: `existing-opt-${i}-${o.id || ""}`,
       id: o.id ?? "",
       label: o.label ?? "",
-      priceMode:
-        (o.priceMode ?? (o.price > 0 ? "amount" : "amount")) as OptionPriceMode,
+      // 레거시 "free" 는 amount + 가격 0 으로 정규화 (UI 에서는 빈 가격으로 표시)
+      priceMode: (o.priceMode === "ask" ? "ask" : "amount") as OptionPriceMode,
       price: o.price > 0 ? String(o.price) : "",
       durationMin:
         o.durationMin != null && o.durationMin > 0 ? String(o.durationMin) : "",
@@ -415,8 +415,10 @@ export function ProductForm({
           </span>
         </div>
         <div className="text-[11px] text-slate mb-3 leading-[1.6]">
-          가격을 비워두려면 <strong>무료</strong> 또는 <strong>가격 협의</strong>{" "}
-          모드를 선택하세요. 소요시간은 비워두면 표시되지 않아요.
+          <strong>금액</strong> 모드에서 가격을 비워두면 자동으로{" "}
+          <strong>무료</strong> 로 표시돼요. 가격이 정해지지 않았다면{" "}
+          <strong>협의</strong> 모드를 선택하세요. 소요시간은 비워두면 표시되지
+          않아요.
         </div>
 
         {options.length > 0 && (
@@ -424,7 +426,7 @@ export function ProductForm({
             {options.map((o, i) => (
               <li
                 key={o.uid}
-                className="rounded-[12px] border border-fog bg-paper p-3 grid grid-cols-1 md:grid-cols-[1fr_auto_180px_140px_auto] gap-2 items-stretch"
+                className="rounded-[12px] border border-fog bg-paper p-3 grid grid-cols-1 md:grid-cols-[1fr_auto_90px_70px_auto] gap-2 items-stretch"
               >
                 <input
                   type="text"
@@ -471,9 +473,9 @@ export function ProductForm({
                     placeholder={
                       o.priceMode === "amount" ? "가격" : "—"
                     }
-                    className="h-11 w-full pr-9 pl-3 bg-white border border-fog rounded-[10px] text-[14px] ww-num text-right outline-none focus:border-ink disabled:bg-cloud disabled:text-slate"
+                    className="h-11 w-full pr-6 pl-2 bg-white border border-fog rounded-[10px] text-[14px] ww-num text-right outline-none focus:border-ink disabled:bg-cloud disabled:text-slate"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-slate ww-num pointer-events-none">
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-slate ww-num pointer-events-none">
                     원
                   </span>
                 </div>
@@ -487,9 +489,9 @@ export function ProductForm({
                       updateOption(i, "durationMin", e.target.value)
                     }
                     placeholder="소요"
-                    className="h-11 w-full pr-9 pl-3 bg-white border border-fog rounded-[10px] text-[14px] ww-num text-right outline-none focus:border-ink"
+                    className="h-11 w-full pr-6 pl-2 bg-white border border-fog rounded-[10px] text-[14px] ww-num text-right outline-none focus:border-ink"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-slate pointer-events-none">
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-slate pointer-events-none">
                     분
                   </span>
                 </div>

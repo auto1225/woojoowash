@@ -98,7 +98,7 @@ function parseOptions(fd: FormData) {
   const out: Array<{
     id: string;
     label: string;
-    priceMode: "amount" | "free" | "ask";
+    priceMode: "amount" | "ask";
     price: number;
     durationMin?: number;
   }> = [];
@@ -106,8 +106,8 @@ function parseOptions(fd: FormData) {
     const label = (labels[i] ?? "").trim();
     if (!label) continue;
     const m = modes[i];
-    const priceMode: "amount" | "free" | "ask" =
-      m === "free" || m === "ask" ? m : "amount";
+    // "free" 는 폐기 — 금액 + price 0 으로 정규화 (앱에서 "무료" 로 표시)
+    const priceMode: "amount" | "ask" = m === "ask" ? "ask" : "amount";
     let price = 0;
     if (priceMode === "amount") {
       const n = Number(prices[i] ?? 0);
