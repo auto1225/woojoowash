@@ -74,7 +74,7 @@ export function ScheduleEditor({
     <form
       id="schedule-form"
       action={formAction}
-      className="flex flex-col gap-6"
+      className="contents"
     >
       <div className="bg-white border border-fog rounded-[20px] p-8">
         <div className="text-[15px] font-extrabold mb-3">영업 시간</div>
