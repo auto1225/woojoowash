@@ -78,6 +78,7 @@ function clampDurationDigits(raw: string): string {
 export function ProductForm({
   action,
   defaults,
+  storeName,
 }: {
   action: (
     prev: SaveActionState,
@@ -101,11 +102,16 @@ export function ProductForm({
       durationMin?: number | null;
     }>;
   };
+  storeName?: string;
 }) {
   const d = defaults ?? {};
   const initialType: ProductTypeValue =
     d.type && VALID_TYPES.has(d.type) ? (d.type as ProductTypeValue) : "HAND";
   const [type, setType] = useState<ProductTypeValue>(initialType);
+  const [title, setTitle] = useState<string>(d.title ?? "");
+  const [subtitle, setSubtitle] = useState<string>(d.subtitle ?? "");
+  const [description, setDescription] = useState<string>(d.description ?? "");
+  const [cautionsStr, setCautionsStr] = useState<string>(d.cautions ?? "");
   const [priceStr, setPriceStr] = useState<string>(
     d.price && d.price > 0 ? String(d.price) : "",
   );
@@ -238,10 +244,34 @@ export function ProductForm({
     });
   }
 
+  // 미리보기용 — 신규 파일/기존 url 통합한 이미지 URL 배열
+  const previewImageUrls = items
+    .map((it) => (it.kind === "url" ? it.url : it.previewUrl))
+    .filter(Boolean);
+
+  // 유의사항을 줄바꿈으로 분리
+  const cautionsList = cautionsStr
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  // 옵션 — preview 표시용 (state 의 OptionItem → 표시 데이터)
+  const previewOptions = options
+    .filter((o) => o.label.trim().length > 0)
+    .map((o) => ({
+      id: o.uid,
+      label: o.label,
+      priceMode: o.priceMode,
+      price:
+        o.priceMode === "amount" && o.price ? Number(o.price) || 0 : 0,
+      durationMin: o.durationMin ? Number(o.durationMin) || 0 : 0,
+    }));
+
   return (
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
     <form
       action={formAction}
-      className="bg-white border border-fog rounded-[20px] p-8 max-w-[760px] grid grid-cols-1 md:grid-cols-2 gap-5"
+      className="bg-white border border-fog rounded-[20px] p-8 grid grid-cols-1 md:grid-cols-2 gap-5"
     >
       {/* 유형 — 가로 탭 (한 개만 선택) */}
       <div className="md:col-span-2">
@@ -276,26 +306,37 @@ export function ProductForm({
         <input type="hidden" name="type" value={type} />
       </div>
 
-      <Field
-        label="상품명"
-        name="title"
-        defaultValue={d.title}
-        required
-        className="md:col-span-2"
-      />
-      <Field
-        label="부제"
-        name="subtitle"
-        defaultValue={d.subtitle}
-        className="md:col-span-2"
-      />
+      <label className="block md:col-span-2">
+        <span className="text-[12px] font-bold mb-[6px] block">
+          상품명 <span className="text-danger ml-1">*</span>
+        </span>
+        <input
+          type="text"
+          name="title"
+          required
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full h-12 px-4 bg-paper border border-fog rounded-[12px] text-[14px] outline-none focus:border-ink"
+        />
+      </label>
+      <label className="block md:col-span-2">
+        <span className="text-[12px] font-bold mb-[6px] block">부제</span>
+        <input
+          type="text"
+          name="subtitle"
+          value={subtitle}
+          onChange={(e) => setSubtitle(e.target.value)}
+          className="w-full h-12 px-4 bg-paper border border-fog rounded-[12px] text-[14px] outline-none focus:border-ink"
+        />
+      </label>
       <label className="block md:col-span-2">
         <span className="text-[12px] font-bold mb-[6px] block">
           상품 설명
         </span>
         <textarea
           name="description"
-          defaultValue={d.description}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           rows={4}
           className="w-full p-4 bg-paper border border-fog rounded-[12px] text-[14px] outline-none focus:border-ink resize-none"
         />
@@ -462,7 +503,8 @@ export function ProductForm({
         </span>
         <textarea
           name="cautions"
-          defaultValue={d.cautions}
+          value={cautionsStr}
+          onChange={(e) => setCautionsStr(e.target.value)}
           rows={3}
           className="w-full p-4 bg-paper border border-fog rounded-[12px] text-[14px] outline-none focus:border-ink resize-none"
           placeholder="예:&#10;차량 상태에 따라 추가요금이 발생할 수 있어요&#10;잔여물 제거는 기본 범위에 포함돼요"
@@ -632,6 +674,27 @@ export function ProductForm({
       </div>
       <SaveToast state={saveState} />
     </form>
+
+    <aside className="lg:sticky lg:top-[120px] lg:h-fit">
+      <div className="text-[12px] font-bold text-brand-deep tracking-[0.1em] mb-2">
+        PREVIEW
+      </div>
+      <div className="text-[11px] text-slate mb-3">
+        앱에서 고객에게 보이는 모습 (실시간 미리보기)
+      </div>
+      <ProductAppPreview
+        title={title || "상품명"}
+        subtitle={subtitle}
+        description={description}
+        durationMin={Number(durationStr) || 0}
+        price={Number(priceStr) || 0}
+        images={previewImageUrls}
+        cautions={cautionsList}
+        options={previewOptions}
+        storeName={storeName ?? "매장 이름"}
+      />
+    </aside>
+    </div>
   );
 }
 
@@ -764,4 +827,212 @@ function FilePayloadFields({ items }: { items: ImageItem[] }) {
   }, [items]);
 
   return <div ref={containerRef} className="hidden" />;
+}
+
+// ─────────────────────────────────────────────────────────────
+// 앱 상품 상세 화면 미리보기 — /app/stores/[id]/products/[pid] 와 동일 레이아웃
+// ─────────────────────────────────────────────────────────────
+function ProductAppPreview({
+  storeName,
+  title,
+  subtitle,
+  description,
+  durationMin,
+  price,
+  images,
+  cautions,
+  options,
+}: {
+  storeName: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  durationMin: number;
+  price: number;
+  images: string[];
+  cautions: string[];
+  options: Array<{
+    id: string;
+    label: string;
+    priceMode: OptionPriceMode;
+    price: number;
+    durationMin: number;
+  }>;
+}) {
+  const heroImg = images[0];
+
+  return (
+    <div className="rounded-[28px] border-[6px] border-ink overflow-hidden bg-white shadow-[0_24px_60px_rgba(15,124,114,0.18)]">
+      {/* 폰 상단 노치 */}
+      <div className="h-[26px] bg-ink flex items-center justify-center">
+        <span className="w-[80px] h-[14px] rounded-full bg-charcoal" />
+      </div>
+
+      <div className="bg-paper">
+        {/* 히어로 이미지 */}
+        <div className="relative h-[200px] bg-cloud overflow-hidden">
+          {heroImg ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={heroImg}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = "none";
+              }}
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-[12px] text-slate">
+              상품 이미지를 추가해 주세요
+            </div>
+          )}
+          {heroImg && (
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/50 via-transparent to-transparent" />
+          )}
+          <span className="absolute left-3 top-3 w-7 h-7 rounded-full bg-black/30 ww-backdrop-glass flex items-center justify-center text-white text-[12px]">
+            ‹
+          </span>
+        </div>
+
+        {/* 제목 영역 */}
+        <div className="px-4 pt-4 bg-white">
+          <div className="text-[10px] text-accent font-bold mb-1">
+            {storeName}
+          </div>
+          <div className="ww-disp text-[18px] tracking-[-0.02em] leading-[1.25] mb-1">
+            {title}
+          </div>
+          <div className="text-[11px] text-slate mb-3">
+            {durationMin > 0 ? `${durationMin}분 소요` : "소요시간 미설정"}
+            {subtitle ? ` · ${subtitle}` : ""}
+          </div>
+          {description && (
+            <p className="text-[12px] leading-[1.6] text-graphite whitespace-pre-wrap mb-3">
+              {description}
+            </p>
+          )}
+        </div>
+
+        {/* 유의사항 카드 */}
+        {cautions.length > 0 && (
+          <div className="mx-4 mt-3 rounded-[10px] bg-cloud p-3">
+            <div className="text-[10px] font-bold mb-1">
+              이용 전 확인해 주세요
+            </div>
+            <ul className="text-[11px] text-graphite leading-[1.5] flex flex-col gap-[2px]">
+              {cautions.map((c, i) => (
+                <li key={i} className="truncate">
+                  · {c}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* 내 차량 mock */}
+        <div className="px-4 mt-4">
+          <div className="text-[11px] font-bold mb-2">내 차량</div>
+          <div className="rounded-[10px] border border-fog bg-white p-2.5 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-[8px] bg-cloud flex items-center justify-center text-[14px]">
+              🚗
+            </div>
+            <div className="flex-1 text-[11px] text-slate">
+              로그인 후 차량을 선택할 수 있어요
+            </div>
+            <span className="text-[10px] text-slate">변경</span>
+          </div>
+        </div>
+
+        {/* 추가 옵션 */}
+        {options.length > 0 && (
+          <div className="px-4 mt-4">
+            <div className="text-[11px] font-bold mb-2">추가 옵션</div>
+            <div className="flex flex-col rounded-[10px] border border-fog overflow-hidden">
+              {options.map((o, i) => {
+                const isFree =
+                  o.priceMode !== "ask" && (!o.price || o.price <= 0);
+                const priceLabel =
+                  o.priceMode === "ask"
+                    ? "가격 협의"
+                    : isFree
+                      ? "무료"
+                      : `+${o.price.toLocaleString("ko-KR")}원`;
+                return (
+                  <div
+                    key={o.id}
+                    className={`flex items-center justify-between px-3 py-2.5 bg-white ${
+                      i < options.length - 1 ? "border-b border-fog" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="w-3.5 h-3.5 rounded border border-fog shrink-0" />
+                      <div className="min-w-0">
+                        <div className="text-[11px] truncate">{o.label}</div>
+                        {o.durationMin > 0 && (
+                          <div className="text-[9px] text-slate ww-num mt-[1px]">
+                            소요 +{o.durationMin}분
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div
+                      className={`text-[11px] font-bold ww-num shrink-0 ml-2 ${
+                        o.priceMode === "ask"
+                          ? "text-slate"
+                          : isFree
+                            ? "text-success"
+                            : ""
+                      }`}
+                    >
+                      {priceLabel}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 예약 일시 mock */}
+        <div className="px-4 mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-[11px] font-bold">예약 일시</div>
+            <span className="text-[10px] text-accent font-bold">
+              선택해 주세요
+            </span>
+          </div>
+          <div className="h-10 rounded-[10px] border border-fog bg-white px-3 flex items-center justify-between">
+            <span className="text-[11px] text-slate">
+              원하는 날짜·시간 선택
+            </span>
+            <span className="text-[10px] font-bold text-ink">변경</span>
+          </div>
+        </div>
+
+        {/* 요청사항 mock */}
+        <div className="px-4 mt-4">
+          <div className="text-[11px] font-bold mb-2">요청사항 (선택)</div>
+          <div className="min-h-[60px] rounded-[10px] border border-fog bg-white p-3 text-[11px] text-slate">
+            요청사항을 100자 이내로 남겨주세요.
+          </div>
+        </div>
+
+        {/* 하단 결제 바 */}
+        <div className="mt-5 border-t border-fog bg-white p-3 flex gap-2">
+          <div className="flex-1 h-11 rounded-full bg-cloud flex items-center justify-between px-3">
+            <span className="text-[10px] text-slate">총 결제금액</span>
+            <span className="ww-disp text-[14px] ww-num">
+              {price.toLocaleString("ko-KR")}원
+            </span>
+          </div>
+          <button
+            type="button"
+            className="h-11 px-4 rounded-full bg-ink text-white font-bold text-[12px]"
+          >
+            예약하기
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }

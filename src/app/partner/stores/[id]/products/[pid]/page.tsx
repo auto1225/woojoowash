@@ -199,6 +199,7 @@ export default async function EditProductPage({
       </h1>
       <ProductForm
         action={updateProduct.bind(null, store.id, product.id)}
+        storeName={store.name}
         defaults={{
           title: product.title,
           subtitle: product.subtitle ?? "",

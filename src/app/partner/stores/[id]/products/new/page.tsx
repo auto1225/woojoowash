@@ -161,7 +161,10 @@ export default async function NewProductPage({
       <h1 className="ww-disp text-[24px] tracking-[-0.02em] mb-6">
         상품 추가
       </h1>
-      <ProductForm action={createProduct.bind(null, store.id)} />
+      <ProductForm
+        action={createProduct.bind(null, store.id)}
+        storeName={store.name}
+      />
     </AdminShell>
   );
 }
