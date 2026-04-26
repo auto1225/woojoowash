@@ -6,7 +6,6 @@ import { useEffect, useState, useTransition } from "react";
 const STATUS_TABS = [
   { value: "", label: "전체" },
   { value: "CONFIRMED", label: "예약 확정" },
-  { value: "PENDING", label: "결제 대기" },
   { value: "DONE", label: "완료" },
   { value: "CANCELED", label: "취소" },
 ] as const;

@@ -9,7 +9,7 @@ type ReservationRow = {
   startAt: string; // ISO string
   durationMin: number;
   price: number;
-  status: "PENDING" | "CONFIRMED" | "DONE" | "CANCELED";
+  status: "CONFIRMED" | "DONE" | "CANCELED";
   productTitle: string;
   customerName: string;
   customerPhone: string | null;
@@ -17,7 +17,6 @@ type ReservationRow = {
 };
 
 const STATUS_META = {
-  PENDING: { label: "결제 대기", cls: "bg-fog text-slate" },
   CONFIRMED: { label: "예약 확정", cls: "bg-accent/10 text-accent-deep" },
   DONE: { label: "완료", cls: "bg-success/10 text-success" },
   CANCELED: { label: "취소", cls: "bg-danger/10 text-danger" },
@@ -323,7 +322,6 @@ export function CalendarReservations({
                         disabled={pending}
                         className="h-9 px-2 bg-paper border border-fog rounded-[8px] text-[12px] font-semibold"
                       >
-                        <option value="PENDING">결제 대기</option>
                         <option value="CONFIRMED">예약 확정</option>
                         <option value="DONE">완료</option>
                         <option value="CANCELED">취소</option>

@@ -6,7 +6,6 @@ import { db } from "@/lib/db";
 import type { ReservationStatus } from "@prisma/client";
 
 const VALID_STATUSES: ReservationStatus[] = [
-  "PENDING",
   "CONFIRMED",
   "DONE",
   "CANCELED",

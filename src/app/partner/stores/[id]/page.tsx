@@ -8,7 +8,6 @@ import { db } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 const STATUS_LABEL = {
-  PENDING: "결제 대기",
   CONFIRMED: "예약 확정",
   DONE: "완료",
   CANCELED: "취소",

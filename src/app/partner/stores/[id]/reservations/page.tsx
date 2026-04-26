@@ -44,7 +44,7 @@ export default async function ReservationsAdminPage({
   const { start, end } = monthRange(month);
 
   // 필터 파싱
-  const VALID_STATUS = ["PENDING", "CONFIRMED", "DONE", "CANCELED"] as const;
+  const VALID_STATUS = ["CONFIRMED", "DONE", "CANCELED"] as const;
   const VALID_TYPE = ["SELF", "HAND", "PICKUP", "VISIT"] as const;
   const statusFilter = (VALID_STATUS as readonly string[]).includes(
     searchParams.status ?? "",
@@ -107,7 +107,6 @@ export default async function ReservationsAdminPage({
 
   // 이번 달 전체(필터 무관) 상태별 분포
   const statusBreakdown: Record<string, number> = {
-    PENDING: 0,
     CONFIRMED: 0,
     DONE: 0,
     CANCELED: 0,
