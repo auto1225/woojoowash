@@ -86,7 +86,7 @@ export default async function SchedulePage({
         영업시간 · 휴무일
       </h1>
 
-      <section className="grid gap-6 lg:grid-cols-2">
+      <section className="flex flex-col gap-6 max-w-[960px]">
         <ScheduleEditor
           defaults={hours}
           action={saveSchedule.bind(null, store.id)}

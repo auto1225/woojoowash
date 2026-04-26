@@ -280,12 +280,12 @@ function DayHoursForm({
 }) {
   return (
     <div
-      className={`grid grid-cols-2 gap-${compact ? "2" : "3"} ${
+      className={`grid grid-cols-2 sm:grid-cols-4 gap-${compact ? "2" : "3"} ${
         label ? "p-3 bg-paper border border-fog rounded-[12px]" : ""
       }`}
     >
       {label && (
-        <div className="col-span-2 text-[11px] font-bold text-slate mb-1">
+        <div className="col-span-2 sm:col-span-4 text-[11px] font-bold text-slate mb-1">
           {label}
         </div>
       )}
