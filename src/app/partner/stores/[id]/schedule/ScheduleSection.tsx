@@ -39,11 +39,11 @@ export function ScheduleSection({
         defaults={defaults}
         action={saveAction}
         weeklyClosed={weeklyClosed}
-        onWeeklyClosedChange={setWeeklyClosed}
       />
       <ClosedCalendar
         closedDays={closedDays}
         weeklyClosedDays={weeklyClosed}
+        onWeeklyClosedChange={setWeeklyClosed}
         addAction={addClosedAction}
         removeAction={removeClosedAction}
       />

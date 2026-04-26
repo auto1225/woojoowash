@@ -32,17 +32,26 @@ const WEEKDAY_HEADERS: DayKey[] = [
 export function ClosedCalendar({
   closedDays,
   weeklyClosedDays,
+  onWeeklyClosedChange,
   addAction,
   removeAction,
 }: {
   closedDays: ClosedDayItem[];
   weeklyClosedDays: DayKey[];
+  onWeeklyClosedChange: (next: DayKey[]) => void;
   addAction: (
     prev: SaveActionState,
     formData: FormData,
   ) => Promise<SaveActionState>;
   removeAction: (id: string) => Promise<void>;
 }) {
+  function toggleWeekly(day: DayKey) {
+    onWeeklyClosedChange(
+      weeklyClosedDays.includes(day)
+        ? weeklyClosedDays.filter((d) => d !== day)
+        : [...weeklyClosedDays, day],
+    );
+  }
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [addState, addFormAction] = useFormState(addAction, INITIAL_SAVE_STATE);
@@ -116,6 +125,53 @@ export function ClosedCalendar({
   return (
     <div className="bg-white border border-fog rounded-[20px] p-8 flex flex-col gap-6">
       <div className="text-[15px] font-extrabold">휴무일 캘린더</div>
+
+      {/* 주간 정기 휴무 (요일 토글) */}
+      <div>
+        <div className="text-[13px] font-extrabold mb-2">주간 정기 휴무</div>
+        <div className="text-[12px] text-slate mb-3 leading-[1.6]">
+          체크한 요일은 매주 휴무로 표시되고, 앱에서 예약을 받지 않아요.
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {DAY_KEYS.map((d) => {
+            const checked = weeklyClosedDays.includes(d);
+            return (
+              <button
+                key={d}
+                type="button"
+                onClick={() => toggleWeekly(d)}
+                aria-pressed={checked}
+                className={`h-11 min-w-[72px] px-4 rounded-full text-[13px] font-bold inline-flex items-center justify-center gap-2 transition border ${
+                  checked
+                    ? "bg-danger text-white border-danger shadow-[0_4px_12px_rgba(255,75,85,0.3)]"
+                    : "bg-white text-graphite border-fog hover:border-ink hover:text-ink"
+                }`}
+              >
+                {checked && (
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M5 12l5 5L20 7" />
+                  </svg>
+                )}
+                {DAY_LABEL[d]}
+                {checked && (
+                  <span className="text-[10px] font-bold opacity-80">
+                    휴무
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* 캘린더 본체 */}
       <div>

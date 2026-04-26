@@ -20,7 +20,6 @@ export function ScheduleEditor({
   defaults,
   action,
   weeklyClosed,
-  onWeeklyClosedChange,
 }: {
   defaults: StoreHoursV2;
   action: (
@@ -28,7 +27,6 @@ export function ScheduleEditor({
     formData: FormData,
   ) => Promise<SaveActionState>;
   weeklyClosed: DayKey[];
-  onWeeklyClosedChange: (next: DayKey[]) => void;
 }) {
   const [mode, setMode] = useState<"all" | "perDay">(defaults.mode);
   const [all, setAll] = useState<DayHours>(defaults.all);
@@ -47,13 +45,6 @@ export function ScheduleEditor({
     v: DayHours[K],
   ) {
     setPerDay((cur) => ({ ...cur, [day]: { ...cur[day], [k]: v } }));
-  }
-  function toggleWeeklyClosed(day: DayKey) {
-    onWeeklyClosedChange(
-      weeklyClosed.includes(day)
-        ? weeklyClosed.filter((d) => d !== day)
-        : [...weeklyClosed, day],
-    );
   }
   // "전체 → 요일별" 로 처음 전환할 때 비어있는 perDay 슬롯에 all 값을 시드
   function switchToPerDay() {
@@ -153,52 +144,7 @@ export function ScheduleEditor({
         )}
       </div>
 
-      {/* 주간 정기 휴무 */}
-      <div className="bg-white border border-fog rounded-[20px] p-8">
-        <div className="text-[15px] font-extrabold mb-2">주간 정기 휴무</div>
-        <div className="text-[12px] text-slate mb-3 leading-[1.6]">
-          체크한 요일은 매주 휴무로 표시되고, 앱에서 예약을 받지 않아요.
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {DAY_KEYS.map((d) => {
-            const checked = weeklyClosed.includes(d);
-            return (
-              <button
-                key={d}
-                type="button"
-                onClick={() => toggleWeeklyClosed(d)}
-                aria-pressed={checked}
-                className={`h-11 min-w-[72px] px-4 rounded-full text-[13px] font-bold inline-flex items-center justify-center gap-2 transition border ${
-                  checked
-                    ? "bg-danger text-white border-danger shadow-[0_4px_12px_rgba(255,75,85,0.3)]"
-                    : "bg-white text-graphite border-fog hover:border-ink hover:text-ink"
-                }`}
-              >
-                {checked && (
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M5 12l5 5L20 7" />
-                  </svg>
-                )}
-                {DAY_LABEL[d]}
-                {checked && (
-                  <span className="text-[10px] font-bold opacity-80">휴무</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 폼 제출용 직렬화 */}
+      {/* 폼 제출용 직렬화 (주간 정기 휴무 토글 UI 는 휴무일 캘린더 카드 안에 위치) */}
       <input type="hidden" name="mode" value={mode} />
       <input type="hidden" name="allOpen" value={all.open} />
       <input type="hidden" name="allClose" value={all.close} />
