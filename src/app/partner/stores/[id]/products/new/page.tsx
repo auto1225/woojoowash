@@ -64,6 +64,9 @@ async function parseForm(storeId: string, fd: FormData) {
     }
   }
 
+  // 추가 옵션 (최대 20개)
+  const options = parseOptions(fd);
+
   return {
     type: String(fd.get("type") ?? "HAND") as
       | "SELF"
@@ -76,10 +79,58 @@ async function parseForm(storeId: string, fd: FormData) {
     durationMin: Number(fd.get("durationMin") ?? 60),
     price: Number(fd.get("price") ?? 0),
     images,
+    options,
     cautions: cautionsRaw
       ? cautionsRaw.split("\n").map((x) => x.trim()).filter(Boolean)
       : [],
   };
+}
+
+const MAX_OPTIONS = 20;
+
+function parseOptions(fd: FormData) {
+  const ids = fd.getAll("optionId").map((v) => String(v));
+  const labels = fd.getAll("optionLabel").map((v) => String(v));
+  const modes = fd.getAll("optionPriceMode").map((v) => String(v));
+  const prices = fd.getAll("optionPrice").map((v) => String(v));
+  const durations = fd.getAll("optionDurationMin").map((v) => String(v));
+
+  const out: Array<{
+    id: string;
+    label: string;
+    priceMode: "amount" | "free" | "ask";
+    price: number;
+    durationMin?: number;
+  }> = [];
+  for (let i = 0; i < labels.length && out.length < MAX_OPTIONS; i++) {
+    const label = (labels[i] ?? "").trim();
+    if (!label) continue;
+    const m = modes[i];
+    const priceMode: "amount" | "free" | "ask" =
+      m === "free" || m === "ask" ? m : "amount";
+    let price = 0;
+    if (priceMode === "amount") {
+      const n = Number(prices[i] ?? 0);
+      price = Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+    }
+    const dRaw = (durations[i] ?? "").trim();
+    let durationMin: number | undefined;
+    if (dRaw) {
+      const dn = Number(dRaw);
+      if (Number.isFinite(dn) && dn > 0) durationMin = Math.floor(dn);
+    }
+    const existingId = (ids[i] ?? "").trim();
+    out.push({
+      id:
+        existingId ||
+        `opt-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 7)}`,
+      label,
+      priceMode,
+      price,
+      ...(durationMin ? { durationMin } : {}),
+    });
+  }
+  return out;
 }
 
 export default async function NewProductPage({

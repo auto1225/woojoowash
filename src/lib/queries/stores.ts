@@ -55,7 +55,13 @@ export async function getProduct(storeId: string, productId: string) {
     ...product,
     images: Array.isArray(product.images) ? (product.images as string[]) : [],
     options: Array.isArray(product.options)
-      ? (product.options as Array<{ id: string; label: string; price: number }>)
+      ? (product.options as Array<{
+          id: string;
+          label: string;
+          price: number;
+          priceMode?: "amount" | "free" | "ask";
+          durationMin?: number;
+        }>)
       : [],
   };
 }

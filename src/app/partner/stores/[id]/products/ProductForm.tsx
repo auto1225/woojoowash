@@ -24,9 +24,31 @@ const MAX_IMAGES = 5;
 const MAX_BYTES = 5 * 1024 * 1024;
 const ALLOWED_TYPE = /^image\/(jpeg|png|webp|gif)$/;
 
+const MAX_OPTIONS = 20;
+
 type ImageItem =
   | { id: string; kind: "url"; url: string }
   | { id: string; kind: "file"; file: File; previewUrl: string };
+
+type OptionPriceMode = "amount" | "free" | "ask";
+
+type OptionItem = {
+  uid: string; // 클라이언트 키
+  id: string; // 기존 옵션 id (없으면 빈 문자열)
+  label: string;
+  priceMode: OptionPriceMode;
+  price: string; // input 입력값 (string)
+  durationMin: string; // 분 (string, 빈값 허용)
+};
+
+const PRICE_MODE_TABS: ReadonlyArray<{
+  value: OptionPriceMode;
+  label: string;
+}> = [
+  { value: "amount", label: "금액" },
+  { value: "free", label: "무료" },
+  { value: "ask", label: "가격 협의" },
+];
 
 export function ProductForm({
   action,
@@ -45,6 +67,13 @@ export function ProductForm({
     durationMin?: number;
     images?: string[];
     cautions?: string;
+    options?: Array<{
+      id: string;
+      label: string;
+      price: number;
+      priceMode?: OptionPriceMode;
+      durationMin?: number | null;
+    }>;
   };
 }) {
   const d = defaults ?? {};
@@ -60,6 +89,58 @@ export function ProductForm({
       url,
     })),
   );
+
+  const [options, setOptions] = useState<OptionItem[]>(() =>
+    (d.options ?? []).map((o, i) => ({
+      uid: `existing-opt-${i}-${o.id || ""}`,
+      id: o.id ?? "",
+      label: o.label ?? "",
+      priceMode:
+        (o.priceMode ?? (o.price > 0 ? "amount" : "amount")) as OptionPriceMode,
+      price: o.price > 0 ? String(o.price) : "",
+      durationMin:
+        o.durationMin != null && o.durationMin > 0 ? String(o.durationMin) : "",
+    })),
+  );
+
+  function addOption() {
+    setOptions((cur) =>
+      cur.length >= MAX_OPTIONS
+        ? cur
+        : [
+            ...cur,
+            {
+              uid: `opt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+              id: "",
+              label: "",
+              priceMode: "amount",
+              price: "",
+              durationMin: "",
+            },
+          ],
+    );
+  }
+  function removeOption(idx: number) {
+    setOptions((cur) => cur.filter((_, i) => i !== idx));
+  }
+  function moveOption(idx: number, delta: number) {
+    setOptions((cur) => {
+      const next = [...cur];
+      const t = idx + delta;
+      if (t < 0 || t >= next.length) return cur;
+      [next[idx], next[t]] = [next[t], next[idx]];
+      return next;
+    });
+  }
+  function updateOption<K extends keyof OptionItem>(
+    idx: number,
+    key: K,
+    value: OptionItem[K],
+  ) {
+    setOptions((cur) =>
+      cur.map((o, i) => (i === idx ? { ...o, [key]: value } : o)),
+    );
+  }
   const [imgError, setImgError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -320,6 +401,156 @@ export function ProductForm({
         />
       </label>
 
+      {/* 추가 옵션 — 앱 상품 상세에서 "추가 옵션" 영역에 노출 */}
+      <div className="md:col-span-2">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[12px] font-bold">
+            추가 옵션{" "}
+            <span className="text-slate font-medium ml-1">
+              (앱 상품 상세 "추가 옵션" 영역에 노출 · 최대 {MAX_OPTIONS}개)
+            </span>
+          </span>
+          <span className="text-[11px] text-slate">
+            {options.length} / {MAX_OPTIONS}
+          </span>
+        </div>
+        <div className="text-[11px] text-slate mb-3 leading-[1.6]">
+          가격을 비워두려면 <strong>무료</strong> 또는 <strong>가격 협의</strong>{" "}
+          모드를 선택하세요. 소요시간은 비워두면 표시되지 않아요.
+        </div>
+
+        {options.length > 0 && (
+          <ul className="flex flex-col gap-3 mb-3">
+            {options.map((o, i) => (
+              <li
+                key={o.uid}
+                className="rounded-[12px] border border-fog bg-paper p-3 grid grid-cols-1 md:grid-cols-[1fr_auto_180px_140px_auto] gap-2 items-stretch"
+              >
+                <input
+                  type="text"
+                  value={o.label}
+                  onChange={(e) =>
+                    updateOption(i, "label", e.target.value)
+                  }
+                  placeholder="옵션명 (예: 유리 코팅 (6개월))"
+                  className="h-11 px-3 bg-white border border-fog rounded-[10px] text-[14px] outline-none focus:border-ink"
+                />
+                <div
+                  role="tablist"
+                  aria-label="가격 모드"
+                  className="inline-flex h-11 p-[3px] bg-white border border-fog rounded-[10px]"
+                >
+                  {PRICE_MODE_TABS.map((m) => {
+                    const active = o.priceMode === m.value;
+                    return (
+                      <button
+                        key={m.value}
+                        type="button"
+                        role="tab"
+                        aria-selected={active}
+                        onClick={() => updateOption(i, "priceMode", m.value)}
+                        className={`px-3 rounded-[8px] text-[12px] font-bold transition ${
+                          active
+                            ? "bg-ink text-white"
+                            : "text-graphite hover:text-ink"
+                        }`}
+                      >
+                        {m.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="relative">
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    value={o.priceMode === "amount" ? o.price : ""}
+                    onChange={(e) => updateOption(i, "price", e.target.value)}
+                    disabled={o.priceMode !== "amount"}
+                    placeholder={
+                      o.priceMode === "amount" ? "가격" : "—"
+                    }
+                    className="h-11 w-full pr-9 pl-3 bg-white border border-fog rounded-[10px] text-[14px] ww-num text-right outline-none focus:border-ink disabled:bg-cloud disabled:text-slate"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-slate ww-num pointer-events-none">
+                    원
+                  </span>
+                </div>
+                <div className="relative">
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    value={o.durationMin}
+                    onChange={(e) =>
+                      updateOption(i, "durationMin", e.target.value)
+                    }
+                    placeholder="소요"
+                    className="h-11 w-full pr-9 pl-3 bg-white border border-fog rounded-[10px] text-[14px] ww-num text-right outline-none focus:border-ink"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-slate pointer-events-none">
+                    분
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <SmallSquareBtn
+                    disabled={i === 0}
+                    onClick={() => moveOption(i, -1)}
+                    label="위로"
+                  >
+                    ↑
+                  </SmallSquareBtn>
+                  <SmallSquareBtn
+                    disabled={i === options.length - 1}
+                    onClick={() => moveOption(i, 1)}
+                    label="아래로"
+                  >
+                    ↓
+                  </SmallSquareBtn>
+                  <SmallSquareBtn
+                    danger
+                    onClick={() => removeOption(i)}
+                    label="삭제"
+                  >
+                    ×
+                  </SmallSquareBtn>
+                </div>
+
+                {/* 폼 제출용 hidden 평행 배열 */}
+                <input type="hidden" name="optionId" value={o.id} />
+                <input type="hidden" name="optionLabel" value={o.label} />
+                <input
+                  type="hidden"
+                  name="optionPriceMode"
+                  value={o.priceMode}
+                />
+                <input
+                  type="hidden"
+                  name="optionPrice"
+                  value={o.priceMode === "amount" ? o.price : ""}
+                />
+                <input
+                  type="hidden"
+                  name="optionDurationMin"
+                  value={o.durationMin}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {options.length < MAX_OPTIONS && (
+          <button
+            type="button"
+            onClick={addOption}
+            className="h-10 px-4 rounded-full border-[1.5px] border-dashed border-fog text-[12px] font-bold text-slate hover:border-brand-deep hover:text-brand-deep transition"
+          >
+            + 추가 옵션
+          </button>
+        )}
+      </div>
+
       <div className="md:col-span-2">
         <SaveButton />
       </div>
@@ -386,6 +617,36 @@ function SmallBtn({
         danger
           ? "bg-danger/85 text-white hover:bg-danger"
           : "bg-white/90 text-ink hover:bg-white"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function SmallSquareBtn({
+  children,
+  onClick,
+  disabled,
+  danger,
+  label,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  danger?: boolean;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className={`w-9 h-11 rounded-[8px] text-[14px] font-bold transition disabled:opacity-30 shrink-0 ${
+        danger
+          ? "bg-danger/10 text-danger hover:bg-danger/20"
+          : "bg-white border border-fog text-ink hover:border-brand-deep hover:text-brand-deep"
       }`}
     >
       {children}

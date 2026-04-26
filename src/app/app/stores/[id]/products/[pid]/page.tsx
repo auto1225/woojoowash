@@ -107,22 +107,48 @@ export default async function ProductDetailPage({
         <section className="px-5 mt-7">
           <div className="text-[14px] font-bold mb-3">추가 옵션</div>
           <div className="flex flex-col rounded-[14px] border border-fog overflow-hidden">
-            {product.options.map((o, i) => (
-              <div
-                key={o.id}
-                className={`flex items-center justify-between px-4 py-4 bg-white ${
-                  i < product.options.length - 1 ? "border-b border-fog" : ""
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="w-5 h-5 rounded border border-fog" />
-                  <span className="text-[14px]">{o.label}</span>
+            {product.options.map((o, i) => {
+              const mode = o.priceMode ?? "amount";
+              const priceLabel =
+                mode === "free"
+                  ? "무료"
+                  : mode === "ask"
+                    ? "가격 협의"
+                    : `+${o.price.toLocaleString("ko-KR")}원`;
+              return (
+                <div
+                  key={o.id}
+                  className={`flex items-center justify-between px-4 py-4 bg-white ${
+                    i < product.options.length - 1
+                      ? "border-b border-fog"
+                      : ""
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <span className="w-5 h-5 rounded border border-fog shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-[14px] truncate">{o.label}</div>
+                      {o.durationMin && o.durationMin > 0 && (
+                        <div className="text-[11px] text-slate ww-num mt-[2px]">
+                          소요 +{o.durationMin}분
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div
+                    className={`text-[13px] font-bold ww-num shrink-0 ml-3 ${
+                      mode === "ask"
+                        ? "text-slate"
+                        : mode === "free"
+                          ? "text-success"
+                          : ""
+                    }`}
+                  >
+                    {priceLabel}
+                  </div>
                 </div>
-                <div className="text-[13px] font-bold ww-num">
-                  +{o.price.toLocaleString("ko-KR")}원
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}
