@@ -1101,7 +1101,17 @@ function AppPreview({
 
       <div className="bg-paper">
         {/* 매장 상세 헤더 — 갤러리 */}
-        <div className="relative h-[300px] bg-cloud overflow-hidden">
+        <div
+          className={`relative h-[260px] bg-cloud overflow-hidden ${
+            coverImages.length > 1 ? "cursor-pointer" : ""
+          }`}
+          onClick={() => {
+            if (coverImages.length > 1) {
+              setActiveImg((a) => (a + 1) % coverImages.length);
+            }
+          }}
+          title={coverImages.length > 1 ? "클릭해서 다음 이미지 보기" : ""}
+        >
           {cover ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -1159,25 +1169,6 @@ function AppPreview({
             </span>
           )}
         </div>
-
-        {/* 인디케이터 */}
-        {coverImages.length > 1 && (
-          <div className="flex justify-center gap-1 py-2 bg-paper">
-            {coverImages.map((_, i) => (
-              <button
-                type="button"
-                key={i}
-                onClick={() => setActiveImg(i)}
-                className={`h-[6px] rounded-full transition ${
-                  i === activeImg
-                    ? "w-[18px] bg-ink"
-                    : "w-[6px] bg-fog hover:bg-mist"
-                }`}
-                aria-label={`이미지 ${i + 1}`}
-              />
-            ))}
-          </div>
-        )}
 
         <div className="bg-white px-4 pt-3 pb-5 min-h-[260px]">
           {/* ★ rating · 거리 + 즐겨찾기/공유 (실제 앱과 동일) */}
