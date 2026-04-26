@@ -9,7 +9,7 @@ const DEMO_EMAIL = "demo@woojoowash.kr";
 // Unsplash 차/세차 관련 — next.config 의 remotePatterns 와 일치
 const PHOTO_PRESETS: string[][] = [
   [
-    "https://images.unsplash.com/photo-1605618826115-fb9e775cf81b?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=900&q=80",
     "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?auto=format&fit=crop&w=900&q=80",
   ],
   [
@@ -17,7 +17,7 @@ const PHOTO_PRESETS: string[][] = [
   ],
   [],
   [
-    "https://images.unsplash.com/photo-1572312284726-a1aa9d2bd5dd?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80",
     "https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=900&q=80",
     "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=900&q=80",
   ],
