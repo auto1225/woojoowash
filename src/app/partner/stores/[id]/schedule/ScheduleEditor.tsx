@@ -19,20 +19,21 @@ import {
 export function ScheduleEditor({
   defaults,
   action,
+  weeklyClosed,
+  onWeeklyClosedChange,
 }: {
   defaults: StoreHoursV2;
   action: (
     prev: SaveActionState,
     formData: FormData,
   ) => Promise<SaveActionState>;
+  weeklyClosed: DayKey[];
+  onWeeklyClosedChange: (next: DayKey[]) => void;
 }) {
   const [mode, setMode] = useState<"all" | "perDay">(defaults.mode);
   const [all, setAll] = useState<DayHours>(defaults.all);
   const [perDay, setPerDay] = useState<Record<DayKey, DayHours>>(
     defaults.perDay,
-  );
-  const [weeklyClosed, setWeeklyClosed] = useState<DayKey[]>(
-    defaults.weeklyClosedDays,
   );
 
   const [saveState, formAction] = useFormState(action, INITIAL_SAVE_STATE);
@@ -48,8 +49,10 @@ export function ScheduleEditor({
     setPerDay((cur) => ({ ...cur, [day]: { ...cur[day], [k]: v } }));
   }
   function toggleWeeklyClosed(day: DayKey) {
-    setWeeklyClosed((cur) =>
-      cur.includes(day) ? cur.filter((d) => d !== day) : [...cur, day],
+    onWeeklyClosedChange(
+      weeklyClosed.includes(day)
+        ? weeklyClosed.filter((d) => d !== day)
+        : [...weeklyClosed, day],
     );
   }
   // "전체 → 요일별" 로 처음 전환할 때 비어있는 perDay 슬롯에 all 값을 시드

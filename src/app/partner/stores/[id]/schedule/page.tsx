@@ -6,8 +6,8 @@ import {
   type SaveActionState,
   withSaveResult,
 } from "@/components/admin/save-action";
-import { ScheduleEditor, ScheduleSaveButton } from "./ScheduleEditor";
-import { ClosedCalendar, type ClosedDayItem } from "./ClosedCalendar";
+import { ScheduleSection } from "./ScheduleSection";
+import { type ClosedDayItem } from "./ClosedCalendar";
 import { normalizeHours, parseScheduleForm } from "./types";
 
 export const dynamic = "force-dynamic";
@@ -87,17 +87,13 @@ export default async function SchedulePage({
       </h1>
 
       <section className="flex flex-col gap-6 max-w-[960px]">
-        <ScheduleEditor
+        <ScheduleSection
           defaults={hours}
-          action={saveSchedule.bind(null, store.id)}
-        />
-        <ClosedCalendar
           closedDays={closedDays}
-          weeklyClosedDays={hours.weeklyClosedDays}
-          addAction={addClosedDay.bind(null, store.id)}
-          removeAction={removeClosedDay.bind(null, store.id)}
+          saveAction={saveSchedule.bind(null, store.id)}
+          addClosedAction={addClosedDay.bind(null, store.id)}
+          removeClosedAction={removeClosedDay.bind(null, store.id)}
         />
-        <ScheduleSaveButton />
       </section>
     </AdminShell>
   );

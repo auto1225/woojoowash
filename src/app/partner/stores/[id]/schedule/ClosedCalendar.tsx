@@ -165,44 +165,38 @@ export function ClosedCalendar({
             const isPast = d < today;
             const dayKey = WEEKDAY_HEADERS[d.getDay()];
             const weeklyClosed = weeklyClosedDays.includes(dayKey);
-            const specificClosed = closedDateMap.get(iso);
+            const specificClosed = !!closedDateMap.get(iso);
             const isToday = d.getTime() === today.getTime();
+            // 오늘부터의 휴무만 빨갛게 강조 — 과거 날짜는 그대로 둠
+            const showAsClosed =
+              inMonth && !isPast && (specificClosed || weeklyClosed);
             return (
               <div
                 key={i}
                 className={`relative aspect-[2/1] rounded-[8px] flex flex-row items-center justify-center gap-1 text-[12px] transition ${
                   !inMonth
                     ? "text-ash bg-paper/40"
-                    : specificClosed
+                    : showAsClosed
                       ? "bg-danger/10 text-danger font-bold"
-                      : weeklyClosed
-                        ? "bg-cloud text-graphite font-semibold"
-                        : isPast
-                          ? "bg-paper text-slate"
-                          : "bg-white border border-fog text-ink"
+                      : isPast
+                        ? "bg-paper text-slate"
+                        : "bg-white border border-fog text-ink"
                 } ${isToday ? "ring-2 ring-ink ring-offset-1" : ""}`}
               >
                 <span
                   className={`ww-num ${
-                    inMonth && d.getDay() === 0
-                      ? specificClosed
-                        ? ""
-                        : "text-danger"
+                    inMonth && !showAsClosed && !isPast && d.getDay() === 0
+                      ? "text-danger"
                       : ""
                   } ${
-                    inMonth && d.getDay() === 6
-                      ? specificClosed
-                        ? ""
-                        : "text-accent"
+                    inMonth && !showAsClosed && !isPast && d.getDay() === 6
+                      ? "text-accent"
                       : ""
                   }`}
                 >
                   {d.getDate()}
                 </span>
-                {specificClosed && (
-                  <span className="text-[9px] font-bold">휴무</span>
-                )}
-                {!specificClosed && weeklyClosed && inMonth && (
+                {showAsClosed && (
                   <span className="text-[9px] font-bold">휴무</span>
                 )}
               </div>
@@ -210,14 +204,14 @@ export function ClosedCalendar({
           })}
         </div>
 
-        <div className="mt-3 flex items-center gap-3 text-[11px] text-slate">
-          <span className="inline-flex items-center gap-1">
-            <span className="w-3 h-3 rounded bg-cloud border border-fog" />
-            정기 휴무 (요일)
-          </span>
+        <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px] text-slate">
           <span className="inline-flex items-center gap-1">
             <span className="w-3 h-3 rounded bg-danger/30 border border-danger/40" />
-            지정 휴무
+            휴무 (정기 · 지정)
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="w-3 h-3 rounded bg-paper border border-fog" />
+            지난 날짜
           </span>
         </div>
       </div>
