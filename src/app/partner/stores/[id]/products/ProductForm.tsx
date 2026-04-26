@@ -868,7 +868,7 @@ function ProductAppPreview({
         <span className="w-[80px] h-[14px] rounded-full bg-charcoal" />
       </div>
 
-      <div className="bg-paper">
+      <div className="bg-white">
         {/* 히어로 이미지 */}
         <div className="relative h-[200px] bg-cloud overflow-hidden">
           {heroImg ? (
