@@ -65,6 +65,15 @@ function clampPriceDigits(raw: string): string {
   const n = Number(digits);
   return Number.isFinite(n) ? String(Math.min(MAX_PRICE, Math.max(0, n))) : "";
 }
+const MAX_DURATION = 1440; // 분, 24시간
+function clampDurationDigits(raw: string): string {
+  const digits = raw.replace(/[^\d]/g, "").slice(0, 4); // 1440 = 4 자리
+  if (!digits) return "";
+  const n = Number(digits);
+  return Number.isFinite(n)
+    ? String(Math.min(MAX_DURATION, Math.max(0, n)))
+    : "";
+}
 
 export function ProductForm({
   action,
@@ -99,6 +108,9 @@ export function ProductForm({
   const [type, setType] = useState<ProductTypeValue>(initialType);
   const [priceStr, setPriceStr] = useState<string>(
     d.price && d.price > 0 ? String(d.price) : "",
+  );
+  const [durationStr, setDurationStr] = useState<string>(
+    d.durationMin != null ? String(d.durationMin) : "60",
   );
   const [saveState, formAction] = useFormState(action, INITIAL_SAVE_STATE);
 
@@ -289,13 +301,35 @@ export function ProductForm({
         />
       </label>
 
-      <Field
-        label="소요 (분)"
-        name="durationMin"
-        type="number"
-        defaultValue={String(d.durationMin ?? 60)}
-        required
-      />
+      <label className="block">
+        <span className="text-[12px] font-bold mb-[6px] block">
+          소요 (분) <span className="text-danger ml-1">*</span>
+        </span>
+        <div className="relative">
+          <input
+            type="text"
+            inputMode="numeric"
+            required
+            value={durationStr}
+            onChange={(e) =>
+              setDurationStr(clampDurationDigits(e.target.value))
+            }
+            placeholder="60"
+            className="w-full h-12 pl-4 pr-9 bg-paper border border-fog rounded-[12px] text-[14px] ww-num text-right outline-none focus:border-ink"
+          />
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-slate pointer-events-none">
+            분
+          </span>
+          <input
+            type="hidden"
+            name="durationMin"
+            value={durationStr || "0"}
+          />
+        </div>
+        <span className="text-[11px] text-slate mt-1 block">
+          최대 1,440분 (24시간)
+        </span>
+      </label>
       <label className="block">
         <span className="text-[12px] font-bold mb-[6px] block">
           가격 (원) <span className="text-danger ml-1">*</span>
@@ -518,12 +552,15 @@ export function ProductForm({
                 </div>
                 <div className="relative">
                   <input
-                    type="number"
+                    type="text"
                     inputMode="numeric"
-                    min={0}
                     value={o.durationMin}
                     onChange={(e) =>
-                      updateOption(i, "durationMin", e.target.value)
+                      updateOption(
+                        i,
+                        "durationMin",
+                        clampDurationDigits(e.target.value),
+                      )
                     }
                     placeholder="소요"
                     className="h-11 w-full pr-6 pl-2 bg-white border border-fog rounded-[10px] text-[14px] ww-num text-right outline-none focus:border-ink"
