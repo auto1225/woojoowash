@@ -30,8 +30,7 @@ function parseForm(fd: FormData) {
       | "SELF"
       | "HAND"
       | "PICKUP"
-      | "VISIT"
-      | "PREMIUM",
+      | "VISIT",
     title: String(fd.get("title") ?? "").trim(),
     subtitle: String(fd.get("subtitle") ?? "").trim() || null,
     description: String(fd.get("description") ?? "").trim() || null,

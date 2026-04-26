@@ -158,7 +158,6 @@ enum ProductType {
   HAND
   PICKUP
   VISIT
-  PREMIUM
 }
 
 model Product {

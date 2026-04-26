@@ -71,11 +71,6 @@ export function ProductForm({
         </div>
         {/* 폼 제출용 */}
         <input type="hidden" name="type" value={type} />
-        {d.type && !VALID_TYPES.has(d.type) && (
-          <div className="mt-2 text-[11px] text-slate">
-            기존 유형 ({d.type}) 은 더 이상 지원되지 않아 손세차로 자동 전환됐어요. 저장 시 변경됩니다.
-          </div>
-        )}
       </div>
 
       <Field

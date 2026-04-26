@@ -107,7 +107,7 @@ const PRODUCTS_BY_STORE: Record<
     },
     {
       id: "gangnam_premium",
-      type: "PREMIUM",
+      type: "HAND",
       title: "프리미엄 디테일링",
       subtitle: "외·내부 풀케어 + 폴리싱",
       description:
