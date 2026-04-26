@@ -1,8 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useFormState, useFormStatus } from "react-dom";
 import { StoreLocationPicker } from "@/components/partner/StoreLocationPicker";
 import { labelServices } from "@/lib/services";
+
+type SaveProfileState = {
+  ok: boolean;
+  ts: number;
+  error?: string;
+};
+
+const INITIAL_SAVE_STATE: SaveProfileState = { ok: false, ts: 0 };
 
 // DB·미리보기/앱 표시용 — 직렬화 후의 형태
 type InfoSection = {
@@ -56,11 +65,35 @@ export function ProfileEditor({
   defaults,
   maxImages,
 }: {
-  action: (formData: FormData) => void | Promise<void>;
+  action: (
+    prev: SaveProfileState,
+    formData: FormData,
+  ) => Promise<SaveProfileState>;
   clientId: string | null;
   defaults: Defaults;
   maxImages: number;
 }) {
+  const [saveState, formAction] = useFormState(action, INITIAL_SAVE_STATE);
+  const [toast, setToast] = useState<
+    | { kind: "ok" | "err"; msg: string }
+    | null
+  >(null);
+
+  // 저장 결과 → 토스트
+  useEffect(() => {
+    if (saveState.ts === 0) return; // 초기 상태
+    if (saveState.ok) {
+      setToast({ kind: "ok", msg: "저장이 완료되었습니다." });
+    } else {
+      setToast({
+        kind: "err",
+        msg: saveState.error ?? "저장에 실패했어요.",
+      });
+    }
+    const t = setTimeout(() => setToast(null), 2600);
+    return () => clearTimeout(t);
+  }, [saveState.ts, saveState.ok, saveState.error]);
+
   const [name, setName] = useState(defaults.name);
   const [address, setAddress] = useState(defaults.address);
   const [phone, setPhone] = useState(defaults.phone);
@@ -266,7 +299,7 @@ export function ProfileEditor({
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
       {/* 좌측: 입력 폼 */}
       <form
-        action={action}
+        action={formAction}
         className="bg-white border border-fog rounded-[20px] p-8 flex flex-col gap-5"
       >
         <Field
@@ -577,12 +610,7 @@ export function ProfileEditor({
           현재 영업 중 (체크 해제 시 앱에 "영업종료"로 표시)
         </label>
 
-        <button
-          type="submit"
-          className="self-start h-11 px-6 rounded-full btn-brand text-[14px]"
-        >
-          저장
-        </button>
+        <SaveButton />
       </form>
 
       {/* 우측: 미리보기 */}
@@ -606,7 +634,76 @@ export function ProfileEditor({
           services={defaults.services}
         />
       </aside>
+
+      {toast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed left-1/2 -translate-x-1/2 bottom-8 z-[100] pointer-events-none"
+        >
+          <div
+            className={`pointer-events-auto px-5 py-3 rounded-full shadow-[0_12px_36px_rgba(15,124,114,0.25)] flex items-center gap-2 text-[13px] font-bold ww-fade-up ${
+              toast.kind === "ok"
+                ? "bg-ink text-white"
+                : "bg-danger text-white"
+            }`}
+          >
+            <span
+              className={`inline-flex items-center justify-center w-5 h-5 rounded-full ${
+                toast.kind === "ok"
+                  ? "bg-brand text-ink"
+                  : "bg-white/20 text-white"
+              }`}
+            >
+              {toast.kind === "ok" ? (
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12l5 5L20 7" />
+                </svg>
+              ) : (
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M6 6l12 12M6 18L18 6" />
+                </svg>
+              )}
+            </span>
+            <span>{toast.msg}</span>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+function SaveButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="self-start h-11 px-6 rounded-full btn-brand text-[14px] disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2"
+    >
+      {pending && (
+        <span className="inline-block w-3 h-3 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+      )}
+      {pending ? "저장 중..." : "저장"}
+    </button>
   );
 }
 
