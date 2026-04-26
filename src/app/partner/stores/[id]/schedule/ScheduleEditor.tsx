@@ -68,11 +68,8 @@ export function ScheduleEditor({
   }
 
   return (
-    <form
-      action={formAction}
-      className="bg-white border border-fog rounded-[20px] p-8 flex flex-col gap-6"
-    >
-      <div>
+    <form action={formAction} className="flex flex-col gap-6">
+      <div className="bg-white border border-fog rounded-[20px] p-8">
         <div className="text-[15px] font-extrabold mb-3">영업 시간</div>
 
         {/* 전체 / 요일별 탭 */}
@@ -150,7 +147,7 @@ export function ScheduleEditor({
       </div>
 
       {/* 주간 정기 휴무 */}
-      <div>
+      <div className="bg-white border border-fog rounded-[20px] p-8">
         <div className="text-[15px] font-extrabold mb-2">주간 정기 휴무</div>
         <div className="text-[12px] text-slate mb-3 leading-[1.6]">
           체크한 요일은 매주 휴무로 표시되고, 앱에서 예약을 받지 않아요.
@@ -224,7 +221,7 @@ export function ScheduleEditor({
         <input key={d} type="hidden" name="weeklyClosed" value={d} />
       ))}
 
-      <div>
+      <div className="px-1">
         <SaveButton />
       </div>
       <SaveToast state={saveState} />
