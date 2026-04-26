@@ -72,7 +72,7 @@ async function parseForm(storeId: string, fd: FormData) {
     subtitle: String(fd.get("subtitle") ?? "").trim() || null,
     description: String(fd.get("description") ?? "").trim() || null,
     durationMin: Number(fd.get("durationMin") ?? 60),
-    price: Number(fd.get("price") ?? 0),
+    price: Number(String(fd.get("price") ?? 0).replace(/[^\d]/g, "")) || 0,
     images,
     options,
     cautions: cautionsRaw
@@ -105,7 +105,7 @@ function parseOptions(fd: FormData) {
     const priceMode: "amount" | "ask" = m === "ask" ? "ask" : "amount";
     let price = 0;
     if (priceMode === "amount") {
-      const n = Number(prices[i] ?? 0);
+      const n = Number(String(prices[i] ?? 0).replace(/[^\d]/g, ""));
       price = Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
     }
     const dRaw = (durations[i] ?? "").trim();

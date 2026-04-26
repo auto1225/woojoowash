@@ -49,6 +49,17 @@ const PRICE_MODE_TABS: ReadonlyArray<{
   { value: "ask", label: "협의" },
 ];
 
+// 가격 표시용 — 입력은 raw digit string ("40000") 으로 보관, 표시만 ko-KR 쉼표 포맷.
+function formatComma(s: string): string {
+  if (!s) return "";
+  const n = Number(s);
+  if (!Number.isFinite(n)) return s;
+  return n.toLocaleString("ko-KR");
+}
+function digitsOnly(s: string): string {
+  return s.replace(/[^\d]/g, "");
+}
+
 export function ProductForm({
   action,
   defaults,
@@ -80,6 +91,9 @@ export function ProductForm({
   const initialType: ProductTypeValue =
     d.type && VALID_TYPES.has(d.type) ? (d.type as ProductTypeValue) : "HAND";
   const [type, setType] = useState<ProductTypeValue>(initialType);
+  const [priceStr, setPriceStr] = useState<string>(
+    d.price && d.price > 0 ? String(d.price) : "",
+  );
   const [saveState, formAction] = useFormState(action, INITIAL_SAVE_STATE);
 
   const [items, setItems] = useState<ImageItem[]>(() =>
@@ -276,15 +290,27 @@ export function ProductForm({
         defaultValue={String(d.durationMin ?? 60)}
         required
       />
-      <Field
-        label="가격 (원)"
-        name="price"
-        type="number"
-        defaultValue={String(d.price ?? 0)}
-        required
-        min={0}
-        step={1000}
-      />
+      <label className="block">
+        <span className="text-[12px] font-bold mb-[6px] block">
+          가격 (원) <span className="text-danger ml-1">*</span>
+        </span>
+        <div className="relative">
+          <input
+            type="text"
+            inputMode="numeric"
+            required
+            value={formatComma(priceStr)}
+            onChange={(e) => setPriceStr(digitsOnly(e.target.value))}
+            placeholder="0"
+            className="w-full h-12 pl-4 pr-9 bg-paper border border-fog rounded-[12px] text-[14px] ww-num text-right outline-none focus:border-ink"
+          />
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-slate ww-num pointer-events-none">
+            원
+          </span>
+          {/* 폼 제출 — 쉼표 없는 raw 값 */}
+          <input type="hidden" name="price" value={priceStr || "0"} />
+        </div>
+      </label>
 
       {/* 상품 이미지 — 다중 업로드 (최대 5장) */}
       <div className="md:col-span-2">
@@ -466,12 +492,14 @@ export function ProductForm({
                 </div>
                 <div className="relative">
                   <input
-                    type="number"
+                    type="text"
                     inputMode="numeric"
-                    min={0}
-                    step={1000}
-                    value={o.priceMode === "amount" ? o.price : ""}
-                    onChange={(e) => updateOption(i, "price", e.target.value)}
+                    value={
+                      o.priceMode === "amount" ? formatComma(o.price) : ""
+                    }
+                    onChange={(e) =>
+                      updateOption(i, "price", digitsOnly(e.target.value))
+                    }
                     disabled={o.priceMode !== "amount"}
                     placeholder={
                       o.priceMode === "amount" ? "가격" : "—"
