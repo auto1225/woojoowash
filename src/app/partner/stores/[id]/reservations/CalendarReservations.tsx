@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { updateReservationStatus } from "./actions";
 
 type ReservationRow = {
@@ -49,6 +49,7 @@ export function CalendarReservations({
     [weeklyClosedDays],
   );
   const router = useRouter();
+  const sp = useSearchParams();
   const today = new Date();
   const todayKey = toDateKey(today);
 
@@ -95,13 +96,19 @@ export function CalendarReservations({
     const [y, m] = month.split("-").map(Number);
     const d = new Date(y, m - 1 + delta, 1);
     const next = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
-    router.push(`?month=${next}`);
+    const params = new URLSearchParams(sp.toString());
+    params.set("month", next);
+    router.push(`?${params.toString()}`);
   }
 
   function gotoToday() {
     const ym = `${today.getFullYear()}-${pad(today.getMonth() + 1)}`;
     setSelectedKey(todayKey);
-    if (ym !== month) router.push(`?month=${ym}`);
+    if (ym !== month) {
+      const params = new URLSearchParams(sp.toString());
+      params.set("month", ym);
+      router.push(`?${params.toString()}`);
+    }
   }
 
   function changeStatus(reservationId: string, status: string) {

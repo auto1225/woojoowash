@@ -1,8 +1,10 @@
+import type { Prisma } from "@prisma/client";
 import { AdminShell } from "@/components/partner/PartnerShell";
 import { requireOwnedStore, requireOwner } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { normalizeHours } from "../schedule/types";
 import { CalendarReservations } from "./CalendarReservations";
+import { ReservationsFilter } from "./ReservationsFilter";
 
 export const dynamic = "force-dynamic";
 
@@ -29,16 +31,63 @@ export default async function ReservationsAdminPage({
   searchParams,
 }: {
   params: { id: string };
-  searchParams: { month?: string };
+  searchParams: {
+    month?: string;
+    status?: string;
+    type?: string;
+    q?: string;
+  };
 }) {
   const user = await requireOwner();
   const store = await requireOwnedStore(params.id);
   const month = parseMonth(searchParams.month);
   const { start, end } = monthRange(month);
 
-  const [reservations, closedRows] = await Promise.all([
+  // 필터 파싱
+  const VALID_STATUS = ["PENDING", "CONFIRMED", "DONE", "CANCELED"] as const;
+  const VALID_TYPE = ["SELF", "HAND", "PICKUP", "VISIT"] as const;
+  const statusFilter = (VALID_STATUS as readonly string[]).includes(
+    searchParams.status ?? "",
+  )
+    ? (searchParams.status as (typeof VALID_STATUS)[number])
+    : null;
+  const typeFilter = (VALID_TYPE as readonly string[]).includes(
+    searchParams.type ?? "",
+  )
+    ? (searchParams.type as (typeof VALID_TYPE)[number])
+    : null;
+  const q = (searchParams.q ?? "").trim();
+
+  const monthBaseWhere: Prisma.ReservationWhereInput = {
+    storeId: store.id,
+    startAt: { gte: start, lt: end },
+  };
+  const filteredWhere: Prisma.ReservationWhereInput = {
+    ...monthBaseWhere,
+    ...(statusFilter ? { status: statusFilter } : {}),
+    ...(typeFilter ? { product: { type: typeFilter } } : {}),
+    ...(q
+      ? {
+          OR: [
+            {
+              user: {
+                name: { contains: q, mode: "insensitive" as const },
+              },
+            },
+            { user: { phone: { contains: q } } },
+            {
+              product: {
+                title: { contains: q, mode: "insensitive" as const },
+              },
+            },
+          ],
+        }
+      : {}),
+  };
+
+  const [reservations, closedRows, monthAll] = await Promise.all([
     db.reservation.findMany({
-      where: { storeId: store.id, startAt: { gte: start, lt: end } },
+      where: filteredWhere,
       orderBy: { startAt: "asc" },
       include: {
         user: { select: { name: true, email: true, phone: true } },
@@ -50,7 +99,28 @@ export default async function ReservationsAdminPage({
       where: { storeId: store.id, date: { gte: start, lt: end } },
       select: { date: true },
     }),
+    db.reservation.findMany({
+      where: monthBaseWhere,
+      select: { status: true, price: true },
+    }),
   ]);
+
+  // 이번 달 전체(필터 무관) 상태별 분포
+  const statusBreakdown: Record<string, number> = {
+    PENDING: 0,
+    CONFIRMED: 0,
+    DONE: 0,
+    CANCELED: 0,
+  };
+  for (const r of monthAll) {
+    statusBreakdown[r.status] = (statusBreakdown[r.status] ?? 0) + 1;
+  }
+  const monthTotalCount = monthAll.length;
+
+  // 필터된 결과의 매출 (취소 제외, CONFIRMED+DONE 만 합산)
+  const filteredRevenue = reservations
+    .filter((r) => r.status === "CONFIRMED" || r.status === "DONE")
+    .reduce((sum, r) => sum + r.price, 0);
 
   // 휴무 정보 — 주간 정기 + 별도 지정
   const hours = normalizeHours(store.hours);
@@ -81,9 +151,16 @@ export default async function ReservationsAdminPage({
       <div className="flex items-baseline justify-between mb-6">
         <h1 className="ww-disp text-[24px] tracking-[-0.02em]">예약 관리</h1>
         <div className="text-[11px] text-slate">
-          날짜를 선택하면 아래에 예약 목록이 나옵니다.
+          상단 필터로 좁히고, 날짜를 선택하면 아래에 그 날의 예약 목록이 나옵니다.
         </div>
       </div>
+
+      <ReservationsFilter
+        totalCount={monthTotalCount}
+        filteredCount={reservations.length}
+        filteredRevenue={filteredRevenue}
+        statusBreakdown={statusBreakdown}
+      />
 
       <CalendarReservations
         storeId={store.id}
