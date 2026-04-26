@@ -94,50 +94,20 @@ export function ScheduleEditor({
           <DayHoursForm
             value={all}
             onChange={(k, v) => updateAll(k, v)}
-            label="전체 요일"
+            badge="전체"
           />
         ) : (
           <div className="flex flex-col gap-2">
             {DAY_KEYS.map((d) => {
               const isClosed = weeklyClosed.includes(d);
               return (
-                <div
+                <DayHoursForm
                   key={d}
-                  className={`rounded-[12px] border p-3 transition ${
-                    isClosed
-                      ? "bg-cloud border-fog opacity-60"
-                      : "bg-paper border-fog"
-                  }`}
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <span
-                      className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-[13px] font-extrabold ${
-                        d === "sat"
-                          ? "bg-accent/10 text-accent"
-                          : d === "sun"
-                            ? "bg-danger/10 text-danger"
-                            : "bg-ink text-white"
-                      }`}
-                    >
-                      {DAY_LABEL[d]}
-                    </span>
-                    <span className="text-[13px] font-bold flex-1">
-                      {DAY_LABEL[d]}요일
-                      {isClosed && (
-                        <span className="ml-2 text-[11px] font-bold text-danger">
-                          정기 휴무
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  {!isClosed && (
-                    <DayHoursForm
-                      value={perDay[d]}
-                      onChange={(k, v) => updateDay(d, k, v)}
-                      compact
-                    />
-                  )}
-                </div>
+                  value={perDay[d]}
+                  onChange={(k, v) => updateDay(d, k, v)}
+                  badge={DAY_LABEL[d]}
+                  closed={isClosed}
+                />
               );
             })}
           </div>
@@ -243,48 +213,72 @@ function ModeTab({
 function DayHoursForm({
   value,
   onChange,
-  label,
-  compact,
+  badge,
+  closed,
 }: {
   value: DayHours;
   onChange: <K extends keyof DayHours>(k: K, v: DayHours[K]) => void;
-  label?: string;
-  compact?: boolean;
+  badge: string;
+  closed?: boolean;
 }) {
   return (
     <div
-      className={`grid grid-cols-2 sm:grid-cols-4 gap-${compact ? "2" : "3"} ${
-        label ? "p-3 bg-paper border border-fog rounded-[12px]" : ""
+      className={`flex items-end gap-3 p-3 border rounded-[12px] ${
+        closed
+          ? "bg-cloud border-fog opacity-70"
+          : "bg-paper border-fog"
       }`}
     >
-      {label && (
-        <div className="col-span-2 sm:col-span-4 text-[11px] font-bold text-slate mb-1">
-          {label}
+      <DayBadge dim={closed}>{badge}</DayBadge>
+      {closed ? (
+        <div className="flex-1 h-11 inline-flex items-center text-[13px] font-bold text-danger">
+          정기 휴무 — 영업하지 않아요
+        </div>
+      ) : (
+        <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <TimeInput
+            label="오픈"
+            value={value.open}
+            onChange={(v) => onChange("open", v)}
+          />
+          <TimeInput
+            label="마감"
+            value={value.close}
+            onChange={(v) => onChange("close", v)}
+          />
+          <TimeInput
+            label="브레이크 시작"
+            optional
+            value={value.breakStart}
+            onChange={(v) => onChange("breakStart", v)}
+          />
+          <TimeInput
+            label="브레이크 종료"
+            optional
+            value={value.breakEnd}
+            onChange={(v) => onChange("breakEnd", v)}
+          />
         </div>
       )}
-      <TimeInput
-        label="오픈"
-        value={value.open}
-        onChange={(v) => onChange("open", v)}
-      />
-      <TimeInput
-        label="마감"
-        value={value.close}
-        onChange={(v) => onChange("close", v)}
-      />
-      <TimeInput
-        label="브레이크 시작"
-        optional
-        value={value.breakStart}
-        onChange={(v) => onChange("breakStart", v)}
-      />
-      <TimeInput
-        label="브레이크 종료"
-        optional
-        value={value.breakEnd}
-        onChange={(v) => onChange("breakEnd", v)}
-      />
     </div>
+  );
+}
+
+function DayBadge({
+  children,
+  dim,
+}: {
+  children: React.ReactNode;
+  dim?: boolean;
+}) {
+  return (
+    <span
+      className={`shrink-0 w-11 h-11 rounded-full inline-flex items-center justify-center text-[13px] font-extrabold ${
+        dim ? "bg-fog text-slate" : "bg-ink text-white"
+      }`}
+    >
+      {children}
+    </span>
   );
 }
 
