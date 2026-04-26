@@ -6,6 +6,8 @@ import { AdminShell } from "@/components/partner/PartnerShell";
 import { requireOwnedStore, requireOwner } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { ReviewReplyForm } from "./ReviewReplyForm";
+import { ReviewsFilter } from "./ReviewsFilter";
+import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -39,33 +41,83 @@ async function deleteReply(reviewId: string) {
 
 export default async function ReviewsAdminPage({
   params,
+  searchParams,
 }: {
   params: { id: string };
+  searchParams: { rating?: string; from?: string; to?: string; q?: string };
 }) {
   const user = await requireOwner();
   const store = await requireOwnedStore(params.id);
 
-  const reviews = await db.review.findMany({
-    where: { storeId: store.id },
-    orderBy: { createdAt: "desc" },
-    include: {
-      user: { select: { name: true, email: true } },
-      reservation: {
-        select: {
-          startAt: true,
-          product: { select: { title: true } },
+  // 필터 파싱
+  const ratingNum = Number(searchParams.rating);
+  const ratingFilter =
+    Number.isInteger(ratingNum) && ratingNum >= 1 && ratingNum <= 5
+      ? ratingNum
+      : null;
+
+  const fromDate = parseDate(searchParams.from);
+  const toDate = parseDate(searchParams.to);
+  if (toDate) toDate.setHours(23, 59, 59, 999); // 그 날 23:59:59 까지 포함
+
+  const q = (searchParams.q ?? "").trim();
+
+  // 전체 / 필터 where
+  const baseWhere: Prisma.ReviewWhereInput = { storeId: store.id };
+  const filteredWhere: Prisma.ReviewWhereInput = {
+    storeId: store.id,
+    ...(ratingFilter !== null ? { rating: ratingFilter } : {}),
+    ...(fromDate || toDate
+      ? {
+          createdAt: {
+            ...(fromDate ? { gte: fromDate } : {}),
+            ...(toDate ? { lte: toDate } : {}),
+          },
+        }
+      : {}),
+    ...(q
+      ? {
+          OR: [
+            { body: { contains: q, mode: "insensitive" as const } },
+            { reply: { contains: q, mode: "insensitive" as const } },
+            {
+              user: {
+                name: { contains: q, mode: "insensitive" as const },
+              },
+            },
+          ],
+        }
+      : {}),
+  };
+
+  const [reviews, totalCount, allRatings] = await Promise.all([
+    db.review.findMany({
+      where: filteredWhere,
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: { select: { name: true, email: true } },
+        reservation: {
+          select: {
+            startAt: true,
+            product: { select: { title: true } },
+          },
         },
       },
-    },
-  });
+    }),
+    db.review.count({ where: baseWhere }),
+    db.review.findMany({
+      where: baseWhere,
+      select: { rating: true, reply: true },
+    }),
+  ]);
 
-  // 통계
-  const totalCount = reviews.length;
-  const repliedCount = reviews.filter((r) => r.reply).length;
+  // 전체 매장 통계 (필터 무관)
+  const repliedCount = allRatings.filter((r) => r.reply).length;
   const avgRating =
     totalCount === 0
       ? 0
-      : reviews.reduce((sum, r) => sum + r.rating, 0) / totalCount;
+      : allRatings.reduce((sum, r) => sum + r.rating, 0) / totalCount;
+  const filteredCount = reviews.length;
 
   return (
     <AdminShell
@@ -92,10 +144,16 @@ export default async function ReviewsAdminPage({
         </div>
       </div>
 
+      <ReviewsFilter
+        totalCount={totalCount}
+        filteredCount={filteredCount}
+      />
+
       {reviews.length === 0 ? (
         <div className="bg-white border border-fog rounded-[20px] py-16 text-center text-slate text-[14px]">
-          아직 등록된 리뷰가 없어요. 고객이 예약 완료 후 리뷰를 남기면 여기에
-          표시됩니다.
+          {totalCount === 0
+            ? "아직 등록된 리뷰가 없어요. 고객이 예약 완료 후 리뷰를 남기면 여기에 표시됩니다."
+            : "필터 조건에 맞는 리뷰가 없어요. 검색어나 기간을 조정해보세요."}
         </div>
       ) : (
         <div className="flex flex-col gap-4">
@@ -187,6 +245,12 @@ export default async function ReviewsAdminPage({
       )}
     </AdminShell>
   );
+}
+
+function parseDate(s: string | undefined): Date | null {
+  if (!s || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+  const d = new Date(s);
+  return Number.isFinite(d.getTime()) ? d : null;
 }
 
 function Stat({
