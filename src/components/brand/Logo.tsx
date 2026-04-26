@@ -3,8 +3,9 @@ import Image from "next/image";
 
 /**
  * 브랜드 글리프 — public/brand/logo.png (육각형 + 자동차 + 물보라)
- * 기존 SVG 글리프를 대체.
+ * 기존 SVG 글리프를 대체. 표시 크기는 입력 size 의 1.5배로 확대.
  */
+const GLYPH_SCALE = 1.5;
 export function WWGlyph({
   size = 24,
 }: {
@@ -12,14 +13,19 @@ export function WWGlyph({
   /** 호환을 위해 받기는 하지만 이미지에는 적용되지 않음 */
   color?: string;
 }) {
+  const visualSize = Math.round(size * GLYPH_SCALE);
   return (
     <Image
       src="/brand/logo.png"
       alt="우주워시"
-      width={size}
-      height={size}
+      width={visualSize}
+      height={visualSize}
       priority
-      style={{ width: size, height: size, objectFit: "contain" }}
+      style={{
+        width: visualSize,
+        height: visualSize,
+        objectFit: "contain",
+      }}
     />
   );
 }
