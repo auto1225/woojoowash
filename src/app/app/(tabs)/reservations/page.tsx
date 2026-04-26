@@ -25,6 +25,7 @@ export default async function ReservationsPage() {
     include: {
       store: { select: { name: true } },
       product: { select: { title: true } },
+      review: { select: { id: true, rating: true } },
     },
   });
 
@@ -60,37 +61,72 @@ export default async function ReservationsPage() {
         </div>
       ) : (
         <div className="px-5 flex flex-col gap-3">
-          {reservations.map((r) => (
-            <Link key={r.id} href={`/app/booking/${r.id}/confirmed`}>
-              <Card className="p-5">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <div className="text-[11px] text-slate font-medium">
-                      {STATUS_LABEL[r.status]}
+          {reservations.map((r) => {
+            const canReview = r.status === "DONE" && !r.review;
+            return (
+              <Card key={r.id} className="p-5">
+                <Link href={`/app/booking/${r.id}/confirmed`} className="block">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <div className="text-[11px] text-slate font-medium">
+                        {STATUS_LABEL[r.status]}
+                      </div>
+                      <div className="text-[16px] font-extrabold mt-[2px] tracking-[-0.3px]">
+                        {r.store.name}
+                      </div>
                     </div>
-                    <div className="text-[16px] font-extrabold mt-[2px] tracking-[-0.3px]">
-                      {r.store.name}
+                    <div className="text-[11px] text-slate">보기</div>
+                  </div>
+                  <div className="text-[13px] text-graphite">
+                    {r.product.title}
+                  </div>
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-fog">
+                    <div className="text-[12px] text-slate ww-num">
+                      {format(r.startAt, "yyyy-MM-dd (EEE) HH:mm", {
+                        locale: ko,
+                      })}{" "}
+                      · {r.durationMin}분
+                    </div>
+                    <div className="text-[14px] font-extrabold ww-num">
+                      {r.price.toLocaleString("ko-KR")}원
                     </div>
                   </div>
-                  <div className="text-[11px] text-slate">보기</div>
-                </div>
-                <div className="text-[13px] text-graphite">
-                  {r.product.title}
-                </div>
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-fog">
-                  <div className="text-[12px] text-slate ww-num">
-                    {format(r.startAt, "yyyy-MM-dd (EEE) HH:mm", {
-                      locale: ko,
-                    })}{" "}
-                    · {r.durationMin}분
+                </Link>
+                {(canReview || r.review) && (
+                  <div className="mt-3 pt-3 border-t border-fog">
+                    {canReview ? (
+                      <Link
+                        href={`/app/reservations/${r.id}/review`}
+                        className="inline-flex h-10 items-center gap-2 px-4 rounded-full bg-ink text-white text-[12px] font-bold"
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M12 3l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.8l-5.8 3.1 1.1-6.5L2.6 9.8l6.5-.9L12 3z" />
+                        </svg>
+                        리뷰 작성하기
+                      </Link>
+                    ) : (
+                      <div className="text-[12px] text-slate inline-flex items-center gap-1.5">
+                        <svg
+                          width="13"
+                          height="13"
+                          viewBox="0 0 24 24"
+                          fill="#FFB400"
+                        >
+                          <path d="M12 3l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.8l-5.8 3.1 1.1-6.5L2.6 9.8l6.5-.9L12 3z" />
+                        </svg>
+                        리뷰 작성 완료 ({r.review?.rating}점)
+                      </div>
+                    )}
                   </div>
-                  <div className="text-[14px] font-extrabold ww-num">
-                    {r.price.toLocaleString("ko-KR")}원
-                  </div>
-                </div>
+                )}
               </Card>
-            </Link>
-          ))}
+            );
+          })}
         </div>
       )}
     </>

@@ -75,6 +75,12 @@ export function AdminShell({
             >
               예약 관리
             </Link>
+            <Link
+              href={`/partner/stores/${storeId}/reviews`}
+              className="hover:text-accent"
+            >
+              리뷰 관리
+            </Link>
           </nav>
         )}
       </header>

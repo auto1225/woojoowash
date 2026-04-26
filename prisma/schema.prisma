@@ -299,15 +299,17 @@ model Favorite {
 }
 
 model Review {
-  id            String   @id @default(cuid())
-  reservationId String   @unique
+  id            String    @id @default(cuid())
+  reservationId String    @unique
   userId        String
   storeId       String
   rating        Int
-  body          String?  @db.Text
-  tags          String[] @default([])
-  photos        Json     @default("[]")
-  createdAt     DateTime @default(now())
+  body          String?   @db.Text
+  tags          String[]  @default([])
+  photos        Json      @default("[]")
+  reply         String?   @db.Text
+  repliedAt     DateTime?
+  createdAt     DateTime  @default(now())
 
   reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)

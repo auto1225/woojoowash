@@ -17,7 +17,7 @@ import { StoreCoverGallery } from "./StoreCoverGallery";
 import { StoreActions } from "./StoreActions";
 import { NavigationButton } from "./NavigationButton";
 import { PhoneCallButton } from "./PhoneCallButton";
-import { StoreTabs, type InfoSection } from "./StoreTabs";
+import { StoreTabs, type InfoSection, type ReviewItem } from "./StoreTabs";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +47,27 @@ export default async function StoreDetailPage({
     : [];
   const defaultTab: "products" | "info" =
     infoSections.length > 0 ? "info" : "products";
+
+  const reviewRows = await db.review.findMany({
+    where: { storeId: store.id },
+    orderBy: { createdAt: "desc" },
+    take: 30,
+    include: { user: { select: { name: true, email: true } } },
+  });
+  const reviews: ReviewItem[] = reviewRows.map((r) => ({
+    id: r.id,
+    rating: r.rating,
+    body: r.body,
+    photos: Array.isArray(r.photos)
+      ? (r.photos as unknown[]).filter(
+          (u): u is string => typeof u === "string",
+        )
+      : [],
+    createdAt: r.createdAt.toISOString(),
+    authorName: r.user.name || maskEmail(r.user.email) || "고객",
+    reply: r.reply,
+    repliedAt: r.repliedAt ? r.repliedAt.toISOString() : null,
+  }));
 
   const session = await auth();
   const favorited = session?.user
@@ -135,6 +156,7 @@ export default async function StoreDetailPage({
       <StoreTabs
         defaultTab={defaultTab}
         infoSections={infoSections}
+        reviews={reviews}
         productsSlot={
           store.products.length === 0 ? (
             <div className="py-16 text-center text-slate text-[13px]">
@@ -193,4 +215,14 @@ export default async function StoreDetailPage({
       />
     </div>
   );
+}
+
+function maskEmail(email: string | null): string | null {
+  if (!email) return null;
+  const at = email.indexOf("@");
+  if (at <= 0) return email;
+  const head = email.slice(0, at);
+  const masked =
+    head.length <= 2 ? head[0] + "*" : head[0] + "*".repeat(head.length - 2) + head.slice(-1);
+  return masked;
 }
