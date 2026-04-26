@@ -56,8 +56,14 @@ function formatComma(s: string): string {
   if (!Number.isFinite(n)) return s;
   return n.toLocaleString("ko-KR");
 }
-function digitsOnly(s: string): string {
-  return s.replace(/[^\d]/g, "");
+const MAX_PRICE = 99_999_999; // 8 자리 — 가격 상한
+function clampPriceDigits(raw: string): string {
+  // 숫자만 추출 → 8 자리로 컷
+  const digits = raw.replace(/[^\d]/g, "").slice(0, 8);
+  if (!digits) return "";
+  // 안전하게 한 번 더 클램프
+  const n = Number(digits);
+  return Number.isFinite(n) ? String(Math.min(MAX_PRICE, Math.max(0, n))) : "";
 }
 
 export function ProductForm({
@@ -300,7 +306,7 @@ export function ProductForm({
             inputMode="numeric"
             required
             value={formatComma(priceStr)}
-            onChange={(e) => setPriceStr(digitsOnly(e.target.value))}
+            onChange={(e) => setPriceStr(clampPriceDigits(e.target.value))}
             placeholder="0"
             className="w-full h-12 pl-4 pr-9 bg-paper border border-fog rounded-[12px] text-[14px] ww-num text-right outline-none focus:border-ink"
           />
@@ -498,7 +504,7 @@ export function ProductForm({
                       o.priceMode === "amount" ? formatComma(o.price) : ""
                     }
                     onChange={(e) =>
-                      updateOption(i, "price", digitsOnly(e.target.value))
+                      updateOption(i, "price", clampPriceDigits(e.target.value))
                     }
                     disabled={o.priceMode !== "amount"}
                     placeholder={

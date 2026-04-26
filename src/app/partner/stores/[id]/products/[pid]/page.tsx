@@ -72,7 +72,7 @@ async function parseForm(storeId: string, fd: FormData) {
     subtitle: String(fd.get("subtitle") ?? "").trim() || null,
     description: String(fd.get("description") ?? "").trim() || null,
     durationMin: Number(fd.get("durationMin") ?? 60),
-    price: Number(String(fd.get("price") ?? 0).replace(/[^\d]/g, "")) || 0,
+    price: clampPriceServer(fd.get("price")),
     images,
     options,
     cautions: cautionsRaw
@@ -82,6 +82,15 @@ async function parseForm(storeId: string, fd: FormData) {
 }
 
 const MAX_OPTIONS = 20;
+const MAX_PRICE = 99_999_999;
+
+function clampPriceServer(raw: FormDataEntryValue | null): number {
+  const digits = String(raw ?? "").replace(/[^\d]/g, "");
+  if (!digits) return 0;
+  const n = Number(digits);
+  if (!Number.isFinite(n)) return 0;
+  return Math.min(MAX_PRICE, Math.max(0, Math.floor(n)));
+}
 
 function parseOptions(fd: FormData) {
   const ids = fd.getAll("optionId").map((v) => String(v));
@@ -105,8 +114,7 @@ function parseOptions(fd: FormData) {
     const priceMode: "amount" | "ask" = m === "ask" ? "ask" : "amount";
     let price = 0;
     if (priceMode === "amount") {
-      const n = Number(String(prices[i] ?? 0).replace(/[^\d]/g, ""));
-      price = Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+      price = clampPriceServer(prices[i] ?? "");
     }
     const dRaw = (durations[i] ?? "").trim();
     let durationMin: number | undefined;
