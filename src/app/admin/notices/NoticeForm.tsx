@@ -1,9 +1,22 @@
+"use client";
+
+import { useFormState } from "react-dom";
+import {
+  INITIAL_SAVE_STATE,
+  SaveButton,
+  SaveToast,
+  type SaveActionState,
+} from "@/components/admin/SaveToast";
+
 export function NoticeForm({
   action,
   defaults,
   submitLabel = "저장",
 }: {
-  action: (formData: FormData) => void | Promise<void>;
+  action: (
+    prev: SaveActionState,
+    formData: FormData,
+  ) => Promise<SaveActionState>;
   defaults?: {
     title?: string;
     body?: string;
@@ -13,9 +26,10 @@ export function NoticeForm({
   submitLabel?: string;
 }) {
   const d = defaults ?? {};
+  const [saveState, formAction] = useFormState(action, INITIAL_SAVE_STATE);
   return (
     <form
-      action={action}
+      action={formAction}
       className="bg-white border border-fog rounded-[20px] p-8 max-w-[820px] flex flex-col gap-5"
     >
       <label className="block">
@@ -60,12 +74,8 @@ export function NoticeForm({
           />
         </label>
       </div>
-      <button
-        type="submit"
-        className="self-start h-11 px-6 rounded-full btn-brand text-[13px]"
-      >
-        {submitLabel}
-      </button>
+      <SaveButton label={submitLabel} />
+      <SaveToast state={saveState} />
     </form>
   );
 }

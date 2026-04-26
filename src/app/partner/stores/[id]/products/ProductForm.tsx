@@ -1,6 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useFormState } from "react-dom";
+import {
+  INITIAL_SAVE_STATE,
+  SaveButton,
+  SaveToast,
+  type SaveActionState,
+} from "@/components/admin/SaveToast";
 
 const TYPE_TABS = [
   { value: "SELF", label: "셀프세차" },
@@ -25,7 +32,10 @@ export function ProductForm({
   action,
   defaults,
 }: {
-  action: (formData: FormData) => void | Promise<void>;
+  action: (
+    prev: SaveActionState,
+    formData: FormData,
+  ) => Promise<SaveActionState>;
   defaults?: {
     title?: string;
     subtitle?: string;
@@ -41,6 +51,7 @@ export function ProductForm({
   const initialType: ProductTypeValue =
     d.type && VALID_TYPES.has(d.type) ? (d.type as ProductTypeValue) : "HAND";
   const [type, setType] = useState<ProductTypeValue>(initialType);
+  const [saveState, formAction] = useFormState(action, INITIAL_SAVE_STATE);
 
   const [items, setItems] = useState<ImageItem[]>(() =>
     (d.images ?? []).map((url, i) => ({
@@ -116,7 +127,7 @@ export function ProductForm({
 
   return (
     <form
-      action={action}
+      action={formAction}
       className="bg-white border border-fog rounded-[20px] p-8 max-w-[760px] grid grid-cols-1 md:grid-cols-2 gap-5"
     >
       {/* 유형 — 가로 탭 (한 개만 선택) */}
@@ -309,12 +320,10 @@ export function ProductForm({
         />
       </label>
 
-      <button
-        type="submit"
-        className="md:col-span-2 justify-self-start h-11 px-6 rounded-full bg-ink text-white font-bold text-[14px]"
-      >
-        저장
-      </button>
+      <div className="md:col-span-2">
+        <SaveButton />
+      </div>
+      <SaveToast state={saveState} />
     </form>
   );
 }

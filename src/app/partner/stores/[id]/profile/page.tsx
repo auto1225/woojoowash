@@ -4,25 +4,23 @@ import { requireOwnedStore, requireOwner } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { uploadImage } from "@/lib/storage";
 import { SELECTABLE_SERVICES } from "@/lib/services";
+import {
+  type SaveActionState,
+  withSaveResult,
+} from "@/components/admin/SaveToast";
 import { ProfileEditor } from "./ProfileEditor";
 
 export const dynamic = "force-dynamic";
 
 const MAX_IMAGES = 5;
 
-export type SaveProfileState = {
-  ok: boolean;
-  ts: number;
-  error?: string;
-};
-
 async function saveProfile(
   id: string,
-  _prev: SaveProfileState,
+  _prev: SaveActionState,
   formData: FormData,
-): Promise<SaveProfileState> {
+): Promise<SaveActionState> {
   "use server";
-  try {
+  return withSaveResult(async () => {
   const { requireOwnedStore: guard } = await import("@/lib/admin");
   await guard(id);
 
@@ -160,12 +158,7 @@ async function saveProfile(
   revalidatePath(`/app/stores/${id}`);
   revalidatePath(`/app/stores`);
   revalidatePath(`/stores`);
-    return { ok: true, ts: Date.now() };
-  } catch (e) {
-    const error =
-      e instanceof Error ? e.message : "저장 중 알 수 없는 오류가 발생했어요.";
-    return { ok: false, ts: Date.now(), error };
-  }
+  });
 }
 
 export default async function ProfilePage({

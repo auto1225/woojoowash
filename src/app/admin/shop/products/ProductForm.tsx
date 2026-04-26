@@ -1,9 +1,22 @@
+"use client";
+
+import { useFormState } from "react-dom";
+import {
+  INITIAL_SAVE_STATE,
+  SaveButton,
+  SaveToast,
+  type SaveActionState,
+} from "@/components/admin/SaveToast";
+
 export function MarketProductForm({
   action,
   defaults,
   submitLabel = "저장",
 }: {
-  action: (fd: FormData) => void | Promise<void>;
+  action: (
+    prev: SaveActionState,
+    formData: FormData,
+  ) => Promise<SaveActionState>;
   defaults?: {
     name?: string;
     price?: number;
@@ -17,9 +30,10 @@ export function MarketProductForm({
   submitLabel?: string;
 }) {
   const d = defaults ?? {};
+  const [saveState, formAction] = useFormState(action, INITIAL_SAVE_STATE);
   return (
     <form
-      action={action}
+      action={formAction}
       className="bg-white border border-fog rounded-[20px] p-8 max-w-[820px] grid gap-5 md:grid-cols-2"
     >
       <label className="block md:col-span-2">
@@ -109,12 +123,10 @@ export function MarketProductForm({
         />
         활성 (앱과 홈페이지에 노출)
       </label>
-      <button
-        type="submit"
-        className="md:col-span-2 justify-self-start h-11 px-6 rounded-full btn-brand text-[13px]"
-      >
-        {submitLabel}
-      </button>
+      <div className="md:col-span-2">
+        <SaveButton label={submitLabel} />
+      </div>
+      <SaveToast state={saveState} />
     </form>
   );
 }

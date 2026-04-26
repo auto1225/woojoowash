@@ -4,6 +4,10 @@ import { AdminShell } from "@/components/partner/PartnerShell";
 import { requireOwnedStore, requireOwner } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { uploadImage } from "@/lib/storage";
+import {
+  type SaveActionState,
+  withSaveResult,
+} from "@/components/admin/SaveToast";
 import { ProductForm } from "../ProductForm";
 
 export const dynamic = "force-dynamic";
@@ -13,16 +17,19 @@ const MAX_IMAGES = 5;
 async function updateProduct(
   storeId: string,
   productId: string,
+  _prev: SaveActionState,
   formData: FormData,
-) {
+): Promise<SaveActionState> {
   "use server";
-  await requireOwnedStore(storeId);
-  const data = await parseForm(storeId, formData);
-  await db.product.update({ where: { id: productId }, data });
-  revalidatePath(`/partner/stores/${storeId}/products`);
-  revalidatePath(`/partner/stores/${storeId}/products/${productId}`);
-  revalidatePath(`/app/stores/${storeId}`);
-  revalidatePath(`/app/stores/${storeId}/products/${productId}`);
+  return withSaveResult(async () => {
+    await requireOwnedStore(storeId);
+    const data = await parseForm(storeId, formData);
+    await db.product.update({ where: { id: productId }, data });
+    revalidatePath(`/partner/stores/${storeId}/products`);
+    revalidatePath(`/partner/stores/${storeId}/products/${productId}`);
+    revalidatePath(`/app/stores/${storeId}`);
+    revalidatePath(`/app/stores/${storeId}/products/${productId}`);
+  });
 }
 
 async function parseForm(storeId: string, fd: FormData) {

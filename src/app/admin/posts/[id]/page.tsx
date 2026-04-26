@@ -3,25 +3,37 @@ import { revalidatePath } from "next/cache";
 import { AdminConsoleShell } from "@/components/admin/AdminConsoleShell";
 import { requireAdmin } from "@/lib/console";
 import { db } from "@/lib/db";
+import {
+  type SaveActionState,
+  withSaveResult,
+} from "@/components/admin/SaveToast";
 import { PostForm } from "../PostForm";
 
 export const dynamic = "force-dynamic";
 
-async function updatePost(id: string, formData: FormData) {
+async function updatePost(
+  id: string,
+  _prev: SaveActionState,
+  formData: FormData,
+): Promise<SaveActionState> {
   "use server";
-  await requireAdmin();
-  const title = String(formData.get("title") ?? "").trim();
-  const body = String(formData.get("body") ?? "").trim();
-  const authorName = String(formData.get("authorName") ?? "").trim();
-  const category = String(formData.get("category") ?? "").trim() || null;
-  const pinned = formData.get("pinned") === "on";
-  if (!title || !body || !authorName) return;
-  await db.post.update({
-    where: { id },
-    data: { title, body, authorName, category, pinned },
+  return withSaveResult(async () => {
+    await requireAdmin();
+    const title = String(formData.get("title") ?? "").trim();
+    const body = String(formData.get("body") ?? "").trim();
+    const authorName = String(formData.get("authorName") ?? "").trim();
+    const category = String(formData.get("category") ?? "").trim() || null;
+    const pinned = formData.get("pinned") === "on";
+    if (!title || !body || !authorName) {
+      throw new Error("제목·본문·작성자를 모두 입력해주세요.");
+    }
+    await db.post.update({
+      where: { id },
+      data: { title, body, authorName, category, pinned },
+    });
+    revalidatePath("/admin/posts");
+    revalidatePath(`/admin/posts/${id}`);
   });
-  revalidatePath("/admin/posts");
-  revalidatePath(`/admin/posts/${id}`);
 }
 
 export default async function EditPostPage({

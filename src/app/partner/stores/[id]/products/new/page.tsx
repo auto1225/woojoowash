@@ -4,22 +4,37 @@ import { AdminShell } from "@/components/partner/PartnerShell";
 import { requireOwnedStore, requireOwner } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { uploadImage } from "@/lib/storage";
+import {
+  type SaveActionState,
+  withSaveResult,
+} from "@/components/admin/SaveToast";
 import { ProductForm } from "../ProductForm";
 
 export const dynamic = "force-dynamic";
 
 const MAX_IMAGES = 5;
 
-async function createProduct(storeId: string, formData: FormData) {
+async function createProduct(
+  storeId: string,
+  _prev: SaveActionState,
+  formData: FormData,
+): Promise<SaveActionState> {
   "use server";
-  await requireOwnedStore(storeId);
-  const data = await parseForm(storeId, formData);
-  const created = await db.product.create({
-    data: { ...data, storeId },
+  let createdId: string | null = null;
+  const result = await withSaveResult(async () => {
+    await requireOwnedStore(storeId);
+    const data = await parseForm(storeId, formData);
+    const created = await db.product.create({
+      data: { ...data, storeId },
+    });
+    createdId = created.id;
+    revalidatePath(`/partner/stores/${storeId}/products`);
+    revalidatePath(`/app/stores/${storeId}`);
   });
-  revalidatePath(`/partner/stores/${storeId}/products`);
-  revalidatePath(`/app/stores/${storeId}`);
-  redirect(`/partner/stores/${storeId}/products/${created.id}`);
+  if (result.ok && createdId) {
+    redirect(`/partner/stores/${storeId}/products/${createdId}`);
+  }
+  return result;
 }
 
 async function parseForm(storeId: string, fd: FormData) {

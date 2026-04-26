@@ -2,6 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import {
+  INITIAL_SAVE_STATE,
+  SaveToast,
+  type SaveActionState,
+} from "@/components/admin/SaveToast";
 import { toggleUserStatus, updateUser } from "../actions";
 
 type Role = "USER" | "OWNER" | "ADMIN";
@@ -28,13 +33,11 @@ export function UserEditForm({
   const [role, setRole] = useState<Role>(defaults.role);
   const [status, setStatus] = useState<Status>(defaults.status);
   const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [saveState, setSaveState] =
+    useState<SaveActionState>(INITIAL_SAVE_STATE);
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
-    setSaved(false);
     startTransition(async () => {
       const r = await updateUser(userId, {
         name: name.trim() || null,
@@ -42,12 +45,11 @@ export function UserEditForm({
         role,
       });
       if (r?.error) {
-        setError(r.error);
+        setSaveState({ ok: false, ts: Date.now(), error: r.error });
         return;
       }
-      setSaved(true);
+      setSaveState({ ok: true, ts: Date.now() });
       router.refresh();
-      setTimeout(() => setSaved(false), 2000);
     });
   }
 
@@ -146,26 +148,20 @@ export function UserEditForm({
         </div>
       </Field>
 
-      {error && (
-        <div className="text-[13px] text-danger bg-danger/5 border border-danger/20 rounded-[10px] px-3 py-2">
-          {error}
-        </div>
-      )}
-
       <div className="flex items-center gap-3 pt-2">
         <button
           type="submit"
           disabled={pending}
-          className="h-12 px-6 rounded-full btn-brand text-[14px]"
+          className="h-12 px-6 rounded-full btn-brand text-[14px] disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2"
         >
+          {pending && (
+            <span className="inline-block w-3 h-3 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+          )}
           {pending ? "저장 중…" : "저장"}
         </button>
-        {saved && (
-          <span className="text-[12px] text-success font-semibold">
-            저장됐어요
-          </span>
-        )}
       </div>
+
+      <SaveToast state={saveState} />
     </form>
   );
 }

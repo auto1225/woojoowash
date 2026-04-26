@@ -1,9 +1,22 @@
+"use client";
+
+import { useFormState } from "react-dom";
+import {
+  INITIAL_SAVE_STATE,
+  SaveButton,
+  SaveToast,
+  type SaveActionState,
+} from "@/components/admin/SaveToast";
+
 export function PostForm({
   action,
   defaults,
   submitLabel = "저장",
 }: {
-  action: (fd: FormData) => void | Promise<void>;
+  action: (
+    prev: SaveActionState,
+    formData: FormData,
+  ) => Promise<SaveActionState>;
   defaults?: {
     title?: string;
     body?: string;
@@ -14,9 +27,10 @@ export function PostForm({
   submitLabel?: string;
 }) {
   const d = defaults ?? {};
+  const [saveState, formAction] = useFormState(action, INITIAL_SAVE_STATE);
   return (
     <form
-      action={action}
+      action={formAction}
       className="bg-white border border-fog rounded-[20px] p-8 max-w-[820px] flex flex-col gap-5"
     >
       <div className="grid md:grid-cols-[1fr_200px] gap-3">
@@ -70,12 +84,8 @@ export function PostForm({
         />
         상단 고정
       </label>
-      <button
-        type="submit"
-        className="self-start h-11 px-6 rounded-full btn-brand text-[13px]"
-      >
-        {submitLabel}
-      </button>
+      <SaveButton label={submitLabel} />
+      <SaveToast state={saveState} />
     </form>
   );
 }
