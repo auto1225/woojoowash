@@ -17,6 +17,7 @@ import { StoreCoverGallery } from "./StoreCoverGallery";
 import { StoreActions } from "./StoreActions";
 import { NavigationButton } from "./NavigationButton";
 import { PhoneCallButton } from "./PhoneCallButton";
+import { StoreTabs, type InfoSection } from "./StoreTabs";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,16 @@ export default async function StoreDetailPage({
   const images =
     store.coverImages.length > 0 ? store.coverImages : [IMG.store1];
   const labels = labelServices(store.services);
+
+  const infoSections: InfoSection[] = Array.isArray(store.infoSections)
+    ? (store.infoSections as Array<Record<string, unknown>>).map((s) => ({
+        title: typeof s?.title === "string" ? s.title : "",
+        subtitle: typeof s?.subtitle === "string" ? s.subtitle : "",
+        content: typeof s?.content === "string" ? s.content : "",
+      }))
+    : [];
+  const defaultTab: "products" | "info" =
+    infoSections.length > 0 ? "info" : "products";
 
   const session = await auth();
   const favorited = session?.user
@@ -116,72 +127,65 @@ export default async function StoreDetailPage({
         )}
       </div>
 
-      <div className="mt-6 px-5 flex gap-[2px] border-b border-fog">
-        {["상품", "정보", "리뷰"].map((t, i) => (
-          <div
-            key={t}
-            className={`flex-1 text-center py-3 text-[14px] font-bold ${
-              i === 0 ? "text-ink border-b-2 border-ink" : "text-slate"
-            }`}
-          >
-            {t}
-          </div>
-        ))}
-      </div>
-
-      <div className="px-5 pt-5 flex flex-col gap-3">
-        {store.products.length === 0 ? (
-          <div className="py-16 text-center text-slate text-[13px]">
-            등록된 상품이 없어요.
-          </div>
-        ) : (
-          store.products.map((p) => {
-            const images = Array.isArray(p.images) ? (p.images as string[]) : [];
-            const img = images[0];
-            return (
-              <Link
-                key={p.id}
-                href={`/app/stores/${store.id}/products/${p.id}`}
-                className="rounded-[16px] border border-fog p-3 bg-white flex gap-3 active:bg-paper transition"
-              >
-                <div className="relative w-[92px] h-[92px] rounded-[12px] shrink-0 overflow-hidden bg-cloud">
-                  {img ? (
-                    <Image
-                      src={img}
-                      alt={p.title}
-                      fill
-                      className="object-cover"
-                      sizes="100px"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <IconShield
-                        size={30}
-                        stroke={1.3}
-                        className="text-graphite opacity-60"
+      <StoreTabs
+        defaultTab={defaultTab}
+        infoSections={infoSections}
+        productsSlot={
+          store.products.length === 0 ? (
+            <div className="py-16 text-center text-slate text-[13px]">
+              등록된 상품이 없어요.
+            </div>
+          ) : (
+            store.products.map((p) => {
+              const productImages = Array.isArray(p.images)
+                ? (p.images as string[])
+                : [];
+              const img = productImages[0];
+              return (
+                <Link
+                  key={p.id}
+                  href={`/app/stores/${store.id}/products/${p.id}`}
+                  className="rounded-[16px] border border-fog p-3 bg-white flex gap-3 active:bg-paper transition"
+                >
+                  <div className="relative w-[92px] h-[92px] rounded-[12px] shrink-0 overflow-hidden bg-cloud">
+                    {img ? (
+                      <Image
+                        src={img}
+                        alt={p.title}
+                        fill
+                        className="object-cover"
+                        sizes="100px"
                       />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <IconShield
+                          size={30}
+                          stroke={1.3}
+                          className="text-graphite opacity-60"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0 py-1">
+                    <div className="text-[11px] text-slate font-medium mb-[2px]">
+                      {p.durationMin}분 소요
                     </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0 py-1">
-                  <div className="text-[11px] text-slate font-medium mb-[2px]">
-                    {p.durationMin}분 소요
+                    <div className="text-[15px] font-extrabold tracking-[-0.3px] mb-1">
+                      {p.title}
+                    </div>
+                    <div className="text-[12px] text-slate line-clamp-1 mb-2">
+                      {p.subtitle}
+                    </div>
+                    <div className="text-[15px] font-extrabold ww-num">
+                      {p.price.toLocaleString("ko-KR")}원
+                    </div>
                   </div>
-                  <div className="text-[15px] font-extrabold tracking-[-0.3px] mb-1">
-                    {p.title}
-                  </div>
-                  <div className="text-[12px] text-slate line-clamp-1 mb-2">
-                    {p.subtitle}
-                  </div>
-                  <div className="text-[15px] font-extrabold ww-num">
-                    {p.price.toLocaleString("ko-KR")}원
-                  </div>
-                </div>
-              </Link>
-            );
-          })
-        )}
-      </div>
+                </Link>
+              );
+            })
+          )
+        }
+      />
     </div>
   );
 }

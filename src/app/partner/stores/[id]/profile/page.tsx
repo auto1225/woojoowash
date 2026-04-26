@@ -20,6 +20,23 @@ async function saveProfile(id: string, formData: FormData) {
   const promo = String(formData.get("promo") ?? "").trim() || null;
   const open = formData.get("open") === "on";
 
+  // 정보 섹션 (최대 5) — title/subtitle/content
+  const titles = formData.getAll("infoTitle").map((v) => String(v));
+  const subtitles = formData.getAll("infoSubtitle").map((v) => String(v));
+  const contents = formData.getAll("infoContent").map((v) => String(v));
+  const infoSections: Array<{
+    title: string;
+    subtitle: string;
+    content: string;
+  }> = [];
+  for (let i = 0; i < titles.length && infoSections.length < 5; i++) {
+    const title = (titles[i] ?? "").trim();
+    const subtitle = (subtitles[i] ?? "").trim();
+    const content = (contents[i] ?? "").trim();
+    if (!title && !subtitle && !content) continue;
+    infoSections.push({ title, subtitle, content });
+  }
+
   const latRaw = String(formData.get("lat") ?? "").trim();
   const lngRaw = String(formData.get("lng") ?? "").trim();
   const lat = latRaw === "" ? null : Number(latRaw);
@@ -60,6 +77,7 @@ async function saveProfile(id: string, formData: FormData) {
       lat: Number.isFinite(lat as number) ? lat : null,
       lng: Number.isFinite(lng as number) ? lng : null,
       coverImages,
+      infoSections,
     },
   });
   revalidatePath(`/partner/stores/${id}`);
@@ -78,6 +96,17 @@ export default async function ProfilePage({
   const store = await requireOwnedStore(params.id);
   const coverImages = Array.isArray(store.coverImages)
     ? (store.coverImages as string[]).filter((u) => typeof u === "string")
+    : [];
+  const infoSections: Array<{
+    title: string;
+    subtitle: string;
+    content: string;
+  }> = Array.isArray(store.infoSections)
+    ? (store.infoSections as Array<Record<string, unknown>>).map((s) => ({
+        title: typeof s?.title === "string" ? s.title : "",
+        subtitle: typeof s?.subtitle === "string" ? s.subtitle : "",
+        content: typeof s?.content === "string" ? s.content : "",
+      }))
     : [];
   const clientId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID ?? null;
 
@@ -100,6 +129,7 @@ export default async function ProfilePage({
           lat: store.lat,
           lng: store.lng,
           coverImages,
+          infoSections,
           rating: store.rating,
           reviewCount: store.reviewCount,
           services: store.services,

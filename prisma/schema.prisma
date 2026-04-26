@@ -126,6 +126,7 @@ model Store {
   reviewCount Int      @default(0)
   open        Boolean  @default(true)
   promo       String?  @db.Text
+  infoSections Json    @default("[]")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { StoreLocationPicker } from "@/components/partner/StoreLocationPicker";
 import { labelServices } from "@/lib/services";
 
+type InfoSection = { title: string; subtitle: string; content: string };
+
 type Defaults = {
   name: string;
   address: string;
@@ -13,10 +15,13 @@ type Defaults = {
   lat: number | null;
   lng: number | null;
   coverImages: string[];
+  infoSections: InfoSection[];
   rating: number;
   reviewCount: number;
   services: string[];
 };
+
+const MAX_INFO_SECTIONS = 5;
 
 // 이미지 슬롯 — 기존 URL 또는 새로 추가된 파일
 type ImageItem =
@@ -50,8 +55,40 @@ export function ProfileEditor({
       url,
     })),
   );
+  const [infoSections, setInfoSections] = useState<InfoSection[]>(
+    () => defaults.infoSections,
+  );
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function addInfoSection() {
+    setInfoSections((cur) =>
+      cur.length >= MAX_INFO_SECTIONS
+        ? cur
+        : [...cur, { title: "", subtitle: "", content: "" }],
+    );
+  }
+  function removeInfoSection(idx: number) {
+    setInfoSections((cur) => cur.filter((_, i) => i !== idx));
+  }
+  function updateInfoSection(
+    idx: number,
+    key: keyof InfoSection,
+    value: string,
+  ) {
+    setInfoSections((cur) =>
+      cur.map((s, i) => (i === idx ? { ...s, [key]: value } : s)),
+    );
+  }
+  function moveInfoSection(idx: number, delta: number) {
+    setInfoSections((cur) => {
+      const next = [...cur];
+      const t = idx + delta;
+      if (t < 0 || t >= next.length) return cur;
+      [next[idx], next[t]] = [next[t], next[idx]];
+      return next;
+    });
+  }
 
   // 파일 ObjectURL 정리
   useEffect(() => {
@@ -296,6 +333,106 @@ export function ProfileEditor({
           }
         />
 
+        {/* 정보 섹션 — 앱 매장 상세 "정보" 탭에 노출 */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[12px] font-bold">
+              정보 섹션{" "}
+              <span className="text-slate font-medium ml-1">
+                (앱 매장 상세 "정보" 탭에 노출 · 최대 {MAX_INFO_SECTIONS}개)
+              </span>
+            </span>
+            <span className="text-[11px] text-slate">
+              {infoSections.length} / {MAX_INFO_SECTIONS}
+            </span>
+          </div>
+          <div className="text-[11px] text-slate mb-3 leading-[1.6]">
+            매장 소식·이벤트·시술 안내 등을 주제 / 서브주제 / 본문 형태로 정리해서 보여줄 수 있어요.
+          </div>
+
+          {infoSections.length > 0 && (
+            <ul className="flex flex-col gap-3 mb-3">
+              {infoSections.map((s, i) => (
+                <li
+                  key={i}
+                  className="rounded-[12px] border border-fog bg-paper p-3 flex flex-col gap-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-brand-deep tracking-[0.05em]">
+                      섹션 {i + 1}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <SmallSquareBtn
+                        disabled={i === 0}
+                        onClick={() => moveInfoSection(i, -1)}
+                        label="위로"
+                      >
+                        ↑
+                      </SmallSquareBtn>
+                      <SmallSquareBtn
+                        disabled={i === infoSections.length - 1}
+                        onClick={() => moveInfoSection(i, 1)}
+                        label="아래로"
+                      >
+                        ↓
+                      </SmallSquareBtn>
+                      <SmallSquareBtn
+                        danger
+                        onClick={() => removeInfoSection(i)}
+                        label="삭제"
+                      >
+                        ×
+                      </SmallSquareBtn>
+                    </div>
+                  </div>
+                  <input
+                    type="text"
+                    name="infoTitle"
+                    value={s.title}
+                    onChange={(e) =>
+                      updateInfoSection(i, "title", e.target.value)
+                    }
+                    placeholder="주제 (예: 여름특가!! 유막제거 + 발수 코팅)"
+                    className={`${inputCls} h-11`}
+                  />
+                  <input
+                    type="text"
+                    name="infoSubtitle"
+                    value={s.subtitle}
+                    onChange={(e) =>
+                      updateInfoSection(i, "subtitle", e.target.value)
+                    }
+                    placeholder="서브 주제 (예: 여름·겨울 한 번씩 추천하는 시술)"
+                    className={`${inputCls} h-11`}
+                  />
+                  <textarea
+                    name="infoContent"
+                    value={s.content}
+                    onChange={(e) =>
+                      updateInfoSection(i, "content", e.target.value)
+                    }
+                    rows={4}
+                    placeholder={
+                      "내용\n예) 중형차 기준 - 실내외세차(79,000) + 전체유막발수(150,000)\n   할인 - 실내외세차(79,000) + 전체유막발수(120,000)"
+                    }
+                    className={`${inputCls} h-auto py-3 resize-none leading-[1.6]`}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {infoSections.length < MAX_INFO_SECTIONS && (
+            <button
+              type="button"
+              onClick={addInfoSection}
+              className="h-10 px-4 rounded-full border-[1.5px] border-dashed border-fog text-[12px] font-bold text-slate hover:border-brand-deep hover:text-brand-deep transition"
+            >
+              + 정보 섹션 추가
+            </button>
+          )}
+        </div>
+
         <div>
           <div className="text-[12px] font-bold mb-[6px]">
             매장 위치 <span className="text-danger">*</span>
@@ -344,6 +481,7 @@ export function ProfileEditor({
           promo={promo}
           open={open}
           coverImages={previewUrls}
+          infoSections={infoSections}
           rating={defaults.rating}
           reviewCount={defaults.reviewCount}
           services={defaults.services}
@@ -444,6 +582,36 @@ function SmallBtn({
   );
 }
 
+function SmallSquareBtn({
+  children,
+  onClick,
+  disabled,
+  danger,
+  label,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  danger?: boolean;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className={`w-7 h-7 rounded-[8px] text-[14px] font-bold transition disabled:opacity-30 ${
+        danger
+          ? "bg-danger/10 text-danger hover:bg-danger/20"
+          : "bg-white border border-fog text-ink hover:border-brand-deep hover:text-brand-deep"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────
 // 우측 미리보기 — 앱의 /app/stores/[id] 매장 상세 화면 단순 재현
 // 가로 스와이프 갤러리 형태
@@ -455,6 +623,7 @@ function AppPreview({
   promo,
   open,
   coverImages,
+  infoSections,
   rating,
   reviewCount,
   services,
@@ -465,11 +634,15 @@ function AppPreview({
   promo: string;
   open: boolean;
   coverImages: string[];
+  infoSections: InfoSection[];
   rating: number;
   reviewCount: number;
   services: string[];
 }) {
   const [activeImg, setActiveImg] = useState(0);
+  const [activeTab, setActiveTab] = useState<"products" | "info" | "reviews">(
+    "info",
+  );
   const labels = labelServices(services);
   const hasImages = coverImages.length > 0;
   const cover = hasImages
@@ -705,38 +878,86 @@ function AppPreview({
 
           {/* 탭 */}
           <div className="grid grid-cols-3 mt-4 border-t border-fog">
-            {["상품", "정보", "리뷰"].map((t, i) => (
-              <div
-                key={t}
-                className={`py-2 text-center text-[11px] font-bold ${
-                  i === 0 ? "text-ink border-b-2 border-ink" : "text-slate"
+            {([
+              { key: "products", label: "상품" },
+              { key: "info", label: "정보" },
+              { key: "reviews", label: "리뷰" },
+            ] as const).map((t) => (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => setActiveTab(t.key)}
+                className={`py-2 text-center text-[11px] font-bold transition ${
+                  activeTab === t.key
+                    ? "text-ink border-b-2 border-ink"
+                    : "text-slate hover:text-graphite"
                 }`}
               >
-                {t}
-              </div>
+                {t.label}
+              </button>
             ))}
           </div>
 
-          {/* 상품 리스트 mock — 실제 앱의 첫 카드 모양 */}
-          <div className="mt-3">
-            <div className="rounded-[12px] border border-fog p-2 flex gap-2">
-              <div className="w-[64px] h-[64px] rounded-[10px] bg-gradient-to-br from-cloud to-fog shrink-0" />
-              <div className="flex-1 min-w-0 py-[2px]">
-                <div className="text-[9px] text-slate font-medium">
-                  60분 소요
-                </div>
-                <div className="text-[12px] font-extrabold tracking-[-0.2px]">
-                  기본(베이직) 디테일링
-                </div>
-                <div className="text-[10px] text-slate truncate">
-                  외부 손세차 + 실내 청소
-                </div>
-                <div className="text-[12px] font-extrabold ww-num mt-[2px]">
-                  55,000원
+          {activeTab === "products" && (
+            <div className="mt-3">
+              <div className="rounded-[12px] border border-fog p-2 flex gap-2">
+                <div className="w-[64px] h-[64px] rounded-[10px] bg-gradient-to-br from-cloud to-fog shrink-0" />
+                <div className="flex-1 min-w-0 py-[2px]">
+                  <div className="text-[9px] text-slate font-medium">
+                    60분 소요
+                  </div>
+                  <div className="text-[12px] font-extrabold tracking-[-0.2px]">
+                    기본(베이직) 디테일링
+                  </div>
+                  <div className="text-[10px] text-slate truncate">
+                    외부 손세차 + 실내 청소
+                  </div>
+                  <div className="text-[12px] font-extrabold ww-num mt-[2px]">
+                    55,000원
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {activeTab === "info" && (
+            <div className="mt-3 flex flex-col gap-3">
+              {infoSections.length === 0 ? (
+                <div className="rounded-[10px] border border-dashed border-fog p-4 text-center text-[11px] text-slate leading-[1.6]">
+                  좌측에서 정보 섹션을 추가하면 여기에 표시돼요.
+                </div>
+              ) : (
+                infoSections.map((s, i) => (
+                  <div
+                    key={i}
+                    className="rounded-[10px] border border-fog bg-white p-3"
+                  >
+                    {s.title && (
+                      <div className="text-[12px] font-extrabold tracking-[-0.2px] text-ink leading-[1.4]">
+                        {s.title}
+                      </div>
+                    )}
+                    {s.subtitle && (
+                      <div className="text-[11px] font-bold text-graphite mt-[3px] leading-[1.4]">
+                        {s.subtitle}
+                      </div>
+                    )}
+                    {s.content && (
+                      <div className="text-[11px] text-slate leading-[1.6] mt-2 whitespace-pre-wrap">
+                        {s.content}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {activeTab === "reviews" && (
+            <div className="mt-3 rounded-[10px] border border-dashed border-fog p-4 text-center text-[11px] text-slate">
+              아직 등록된 리뷰가 없어요.
+            </div>
+          )}
         </div>
       </div>
     </div>
