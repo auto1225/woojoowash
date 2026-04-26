@@ -5,7 +5,7 @@ import { FEATURES, getFlags, setFlag, type FeatureKey } from "@/lib/settings";
 import {
   type SaveActionState,
   withSaveResult,
-} from "@/components/admin/SaveToast";
+} from "@/components/admin/save-action";
 import { SettingsRow } from "./SettingsRow";
 
 export const dynamic = "force-dynamic";

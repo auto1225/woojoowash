@@ -2,42 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { INITIAL_SAVE_STATE, type SaveActionState } from "./save-action";
 
-export type SaveActionState = {
-  ok: boolean;
-  ts: number;
-  error?: string;
-};
-
-export const INITIAL_SAVE_STATE: SaveActionState = { ok: false, ts: 0 };
-
-/**
- * 서버 액션을 try/catch 로 감싸 SaveActionState 를 돌려주는 헬퍼.
- *
- *   async function saveX(_p: SaveActionState, fd: FormData) {
- *     "use server";
- *     return withSaveResult(async () => {
- *       // ...업데이트 + revalidate
- *     });
- *   }
- */
-export async function withSaveResult(
-  work: () => Promise<unknown>,
-): Promise<SaveActionState> {
-  try {
-    await work();
-    return { ok: true, ts: Date.now() };
-  } catch (e) {
-    return {
-      ok: false,
-      ts: Date.now(),
-      error:
-        e instanceof Error
-          ? e.message
-          : "저장 중 알 수 없는 오류가 발생했어요.",
-    };
-  }
-}
+// 클라이언트 컴포넌트 사용처 편의를 위해 type/상수만 그대로 re-export.
+// withSaveResult 는 서버에서만 호출하므로 서버 액션은 ./save-action 에서 직접 import.
+export { INITIAL_SAVE_STATE };
+export type { SaveActionState };
 
 /**
  * 액션 결과 상태를 받아 토스트를 띄움 (성공/실패 자동 분기).

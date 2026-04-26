@@ -7,7 +7,7 @@ import { uploadImage } from "@/lib/storage";
 import {
   type SaveActionState,
   withSaveResult,
-} from "@/components/admin/SaveToast";
+} from "@/components/admin/save-action";
 import { ProductForm } from "../ProductForm";
 
 export const dynamic = "force-dynamic";

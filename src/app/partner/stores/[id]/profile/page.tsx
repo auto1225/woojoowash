@@ -7,7 +7,7 @@ import { SELECTABLE_SERVICES } from "@/lib/services";
 import {
   type SaveActionState,
   withSaveResult,
-} from "@/components/admin/SaveToast";
+} from "@/components/admin/save-action";
 import { ProfileEditor } from "./ProfileEditor";
 
 export const dynamic = "force-dynamic";

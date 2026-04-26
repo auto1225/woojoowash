@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import {
   type SaveActionState,
   withSaveResult,
-} from "@/components/admin/SaveToast";
+} from "@/components/admin/save-action";
 import { MarketProductForm } from "../ProductForm";
 
 export const dynamic = "force-dynamic";
