@@ -24,16 +24,30 @@ const STATUS_META = {
 } as const;
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
+const WEEKDAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
+type DayKey = (typeof WEEKDAY_KEYS)[number];
 
 export function CalendarReservations({
   storeId,
   month, // "YYYY-MM"
   reservations,
+  weeklyClosedDays = [],
+  closedDates = [],
 }: {
   storeId: string;
   month: string;
   reservations: ReservationRow[];
+  weeklyClosedDays?: ReadonlyArray<string>;
+  closedDates?: ReadonlyArray<string>;
 }) {
+  const closedDateSet = useMemo(
+    () => new Set(closedDates),
+    [closedDates],
+  );
+  const weeklyClosedSet = useMemo(
+    () => new Set(weeklyClosedDays),
+    [weeklyClosedDays],
+  );
   const router = useRouter();
   const today = new Date();
   const todayKey = toDateKey(today);
@@ -160,6 +174,11 @@ export function CalendarReservations({
             const dow = i % 7;
             const isSun = dow === 0;
             const isSat = dow === 6;
+            // 휴무 여부 — 별도 지정일 OR 주간 정기 휴무 요일
+            const dayKey: DayKey = WEEKDAY_KEYS[dow];
+            const isClosed =
+              c.inMonth &&
+              (closedDateSet.has(c.key) || weeklyClosedSet.has(dayKey));
 
             return (
               <button
@@ -197,9 +216,22 @@ export function CalendarReservations({
                     </span>
                   )}
                 </div>
-                {c.inMonth && active > 0 && (
+                {c.inMonth && (isClosed || active > 0) && (
                   <div className="mt-2 flex flex-wrap gap-1">
-                    <CountBadge count={active} selected={isSelected} />
+                    {isClosed && (
+                      <span
+                        className={`text-[10px] font-bold px-[8px] py-[3px] rounded-full ${
+                          isSelected
+                            ? "bg-white text-danger"
+                            : "bg-danger text-white"
+                        }`}
+                      >
+                        휴무
+                      </span>
+                    )}
+                    {active > 0 && (
+                      <CountBadge count={active} selected={isSelected} />
+                    )}
                   </div>
                 )}
               </button>

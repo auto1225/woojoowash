@@ -1,6 +1,7 @@
 import { AdminShell } from "@/components/partner/PartnerShell";
 import { requireOwnedStore, requireOwner } from "@/lib/admin";
 import { db } from "@/lib/db";
+import { normalizeHours } from "../schedule/types";
 import { CalendarReservations } from "./CalendarReservations";
 
 export const dynamic = "force-dynamic";
@@ -35,14 +36,28 @@ export default async function ReservationsAdminPage({
   const month = parseMonth(searchParams.month);
   const { start, end } = monthRange(month);
 
-  const reservations = await db.reservation.findMany({
-    where: { storeId: store.id, startAt: { gte: start, lt: end } },
-    orderBy: { startAt: "asc" },
-    include: {
-      user: { select: { name: true, email: true, phone: true } },
-      product: { select: { title: true } },
-      car: { select: { brand: true, model: true, plate: true } },
-    },
+  const [reservations, closedRows] = await Promise.all([
+    db.reservation.findMany({
+      where: { storeId: store.id, startAt: { gte: start, lt: end } },
+      orderBy: { startAt: "asc" },
+      include: {
+        user: { select: { name: true, email: true, phone: true } },
+        product: { select: { title: true } },
+        car: { select: { brand: true, model: true, plate: true } },
+      },
+    }),
+    db.storeClosedDay.findMany({
+      where: { storeId: store.id, date: { gte: start, lt: end } },
+      select: { date: true },
+    }),
+  ]);
+
+  // 휴무 정보 — 주간 정기 + 별도 지정
+  const hours = normalizeHours(store.hours);
+  const weeklyClosedDays = hours.weeklyClosedDays;
+  const closedDates = closedRows.map((r) => {
+    const d = r.date;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   });
 
   const rows = reservations.map((r) => ({
@@ -74,6 +89,8 @@ export default async function ReservationsAdminPage({
         storeId={store.id}
         month={month}
         reservations={rows}
+        weeklyClosedDays={weeklyClosedDays}
+        closedDates={closedDates}
       />
     </AdminShell>
   );
