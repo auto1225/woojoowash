@@ -56,26 +56,10 @@ export function StoreCoverGallery({
       </div>
 
       {images.length > 1 && (
-        <>
-          {/* 우측 하단 카운터 */}
-          <span className="absolute right-4 top-3 text-[10px] font-semibold bg-black/45 text-white rounded-full px-2 py-[3px] ww-num pointer-events-none">
-            {active + 1} / {images.length}
-          </span>
-          {/* 인디케이터 */}
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-[8px] flex gap-1 pointer-events-auto">
-            {images.map((_, i) => (
-              <button
-                type="button"
-                key={i}
-                onClick={() => jump(i)}
-                aria-label={`이미지 ${i + 1}`}
-                className={`h-[6px] rounded-full transition ${
-                  i === active ? "w-[18px] bg-white" : "w-[6px] bg-white/50"
-                }`}
-              />
-            ))}
-          </div>
-        </>
+        /* 우측 하단 카운터 (점 인디케이터는 중복이라 제거) */
+        <span className="absolute right-4 bottom-3 text-[10px] font-semibold bg-black/45 text-white rounded-full px-2 py-[3px] ww-num pointer-events-none">
+          {active + 1} / {images.length}
+        </span>
       )}
     </div>
   );
