@@ -1,8 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { AdminShell } from "@/components/partner/PartnerShell";
 import { requireOwnedStore, requireOwner } from "@/lib/admin";
 import { db } from "@/lib/db";
+import { ProductDeleteButton } from "./ProductDeleteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -60,51 +62,114 @@ export default async function ProductsPage({
               </tr>
             </thead>
             <tbody>
-              {products.map((p) => (
-                <tr key={p.id} className="border-t border-fog">
-                  <Td>
-                    <div className="font-bold">{p.title}</div>
-                    {p.subtitle && (
-                      <div className="text-[12px] text-slate mt-[2px]">
-                        {p.subtitle}
-                      </div>
-                    )}
-                  </Td>
-                  <Td>
-                    <span className="text-[11px] font-bold bg-cloud text-graphite px-2 py-[3px] rounded-full">
-                      {p.type}
-                    </span>
-                  </Td>
-                  <Td>
-                    <span className="ww-num">{p.durationMin}분</span>
-                  </Td>
-                  <Td>
-                    <span className="ww-num font-semibold">
-                      {p.price.toLocaleString("ko-KR")}원
-                    </span>
-                  </Td>
-                  <Td className="text-right">
-                    <div className="flex justify-end gap-2">
+              {products.map((p) => {
+                const imgs = Array.isArray(p.images)
+                  ? (p.images as unknown[]).filter(
+                      (u): u is string => typeof u === "string",
+                    )
+                  : [];
+                const thumb = imgs[0];
+                return (
+                  <tr
+                    key={p.id}
+                    className="border-t border-fog hover:bg-paper/40 transition"
+                  >
+                    <Td>
                       <Link
                         href={`/partner/stores/${store.id}/products/${p.id}`}
-                        className="text-[12px] font-semibold text-accent hover:underline"
+                        className="flex items-center gap-3 group"
                       >
-                        수정
+                        <div className="relative w-14 h-14 rounded-[10px] overflow-hidden bg-cloud border border-fog shrink-0">
+                          {thumb ? (
+                            <Image
+                              src={thumb}
+                              alt={p.title}
+                              fill
+                              className="object-cover"
+                              sizes="56px"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-slate">
+                              <svg
+                                width="22"
+                                height="22"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <rect
+                                  x="3"
+                                  y="3"
+                                  width="18"
+                                  height="18"
+                                  rx="2"
+                                />
+                                <circle cx="9" cy="9" r="2" />
+                                <path d="M21 15l-5-5L5 21" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-bold group-hover:text-accent transition">
+                            {p.title}
+                          </div>
+                          {p.subtitle && (
+                            <div className="text-[12px] text-slate mt-[2px] truncate">
+                              {p.subtitle}
+                            </div>
+                          )}
+                        </div>
                       </Link>
-                      <form
-                        action={deleteProduct.bind(null, store.id, p.id)}
-                      >
-                        <button
-                          type="submit"
-                          className="text-[12px] font-semibold text-danger hover:underline"
+                    </Td>
+                    <Td>
+                      <span className="text-[11px] font-bold bg-cloud text-graphite px-2 py-[3px] rounded-full">
+                        {p.type}
+                      </span>
+                    </Td>
+                    <Td>
+                      <span className="ww-num">{p.durationMin}분</span>
+                    </Td>
+                    <Td>
+                      <span className="ww-num font-semibold">
+                        {p.price.toLocaleString("ko-KR")}원
+                      </span>
+                    </Td>
+                    <Td className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Link
+                          href={`/partner/stores/${store.id}/products/${p.id}`}
+                          className="h-9 px-3 rounded-full border border-fog bg-white text-ink text-[12px] font-bold inline-flex items-center gap-1.5 hover:bg-cloud hover:border-ink/40 transition"
                         >
-                          삭제
-                        </button>
-                      </form>
-                    </div>
-                  </Td>
-                </tr>
-              ))}
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M12 20h9" />
+                            <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" />
+                          </svg>
+                          수정
+                        </Link>
+                        <ProductDeleteButton
+                          storeId={store.id}
+                          productId={p.id}
+                          productName={p.title}
+                          action={deleteProduct.bind(null, store.id, p.id)}
+                        />
+                      </div>
+                    </Td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
