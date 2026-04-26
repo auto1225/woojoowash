@@ -64,8 +64,16 @@ export default async function SchedulePage({
 }) {
   const user = await requireOwner();
   const store = await requireOwnedStore(params.id);
+
+  // 오늘 이전 휴무일은 자동 정리 (보관 의미가 없는 과거 데이터)
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  await db.storeClosedDay.deleteMany({
+    where: { storeId: store.id, date: { lt: todayStart } },
+  });
+
   const closed = await db.storeClosedDay.findMany({
-    where: { storeId: store.id },
+    where: { storeId: store.id, date: { gte: todayStart } },
     orderBy: { date: "asc" },
   });
 
