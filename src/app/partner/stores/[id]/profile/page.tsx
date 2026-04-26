@@ -20,21 +20,72 @@ async function saveProfile(id: string, formData: FormData) {
   const promo = String(formData.get("promo") ?? "").trim() || null;
   const open = formData.get("open") === "on";
 
-  // 정보 섹션 (최대 5) — title/subtitle/content
+  // 정보 섹션 (최대 5) — title/subtitle/content + images (섹션별 최대 6)
   const titles = formData.getAll("infoTitle").map((v) => String(v));
   const subtitles = formData.getAll("infoSubtitle").map((v) => String(v));
   const contents = formData.getAll("infoContent").map((v) => String(v));
+
+  // 평행 배열로 직렬화된 정보 섹션 이미지 메타
+  const imgSecIdxs = formData
+    .getAll("infoImageSectionIdx")
+    .map((v) => Number(v));
+  const imgKinds = formData.getAll("infoImageKind").map((v) => String(v));
+  const imgUrls = formData.getAll("infoImageUrl").map((v) => String(v));
+  const imgFiles = formData
+    .getAll("infoImageFile")
+    .filter((v): v is File => v instanceof File);
+
+  // 섹션별 이미지 url 배열 (업로드 포함)
+  const MAX_INFO_SECTIONS = 5;
+  const MAX_INFO_IMAGES_PER_SECTION = 6;
+  const sectionImages: string[][] = Array.from(
+    { length: MAX_INFO_SECTIONS },
+    () => [],
+  );
+  let infoUrlIdx = 0;
+  let infoFileIdx = 0;
+  for (let i = 0; i < imgKinds.length; i++) {
+    const sec = imgSecIdxs[i];
+    const kind = imgKinds[i];
+    const valid =
+      Number.isInteger(sec) && sec >= 0 && sec < MAX_INFO_SECTIONS;
+    if (kind === "url") {
+      const u = imgUrls[infoUrlIdx++];
+      if (
+        valid &&
+        sectionImages[sec].length < MAX_INFO_IMAGES_PER_SECTION &&
+        u &&
+        u.trim()
+      ) {
+        sectionImages[sec].push(u.trim());
+      }
+    } else if (kind === "file") {
+      const f = imgFiles[infoFileIdx++];
+      if (
+        valid &&
+        sectionImages[sec].length < MAX_INFO_IMAGES_PER_SECTION &&
+        f &&
+        f.size > 0
+      ) {
+        const r = await uploadImage(f, { prefix: `stores/${id}/info` });
+        if (r.ok) sectionImages[sec].push(r.url);
+      }
+    }
+  }
+
   const infoSections: Array<{
     title: string;
     subtitle: string;
     content: string;
+    images: string[];
   }> = [];
-  for (let i = 0; i < titles.length && infoSections.length < 5; i++) {
+  for (let i = 0; i < titles.length && infoSections.length < MAX_INFO_SECTIONS; i++) {
     const title = (titles[i] ?? "").trim();
     const subtitle = (subtitles[i] ?? "").trim();
     const content = (contents[i] ?? "").trim();
-    if (!title && !subtitle && !content) continue;
-    infoSections.push({ title, subtitle, content });
+    const images = sectionImages[i] ?? [];
+    if (!title && !subtitle && !content && images.length === 0) continue;
+    infoSections.push({ title, subtitle, content, images });
   }
 
   const latRaw = String(formData.get("lat") ?? "").trim();
@@ -101,11 +152,17 @@ export default async function ProfilePage({
     title: string;
     subtitle: string;
     content: string;
+    images: string[];
   }> = Array.isArray(store.infoSections)
     ? (store.infoSections as Array<Record<string, unknown>>).map((s) => ({
         title: typeof s?.title === "string" ? s.title : "",
         subtitle: typeof s?.subtitle === "string" ? s.subtitle : "",
         content: typeof s?.content === "string" ? s.content : "",
+        images: Array.isArray(s?.images)
+          ? (s.images as unknown[]).filter(
+              (u): u is string => typeof u === "string",
+            )
+          : [],
       }))
     : [];
   const clientId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID ?? null;

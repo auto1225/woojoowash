@@ -1,11 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import { useState, type ReactNode } from "react";
 
 export type InfoSection = {
   title: string;
   subtitle: string;
   content: string;
+  images: string[];
 };
 
 export function StoreTabs({
@@ -75,6 +77,24 @@ export function StoreTabs({
                 {s.content && (
                   <div className="text-[13px] text-slate leading-[1.7] mt-2 whitespace-pre-wrap">
                     {s.content}
+                  </div>
+                )}
+                {s.images.length > 0 && (
+                  <div className="grid grid-cols-2 gap-2 mt-3">
+                    {s.images.map((url, j) => (
+                      <div
+                        key={j}
+                        className="relative aspect-square w-full rounded-[10px] overflow-hidden bg-cloud"
+                      >
+                        <Image
+                          src={url}
+                          alt=""
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 480px) 50vw, 240px"
+                        />
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

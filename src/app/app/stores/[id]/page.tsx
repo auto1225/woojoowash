@@ -38,6 +38,11 @@ export default async function StoreDetailPage({
         title: typeof s?.title === "string" ? s.title : "",
         subtitle: typeof s?.subtitle === "string" ? s.subtitle : "",
         content: typeof s?.content === "string" ? s.content : "",
+        images: Array.isArray(s?.images)
+          ? (s.images as unknown[]).filter(
+              (u): u is string => typeof u === "string",
+            )
+          : [],
       }))
     : [];
   const defaultTab: "products" | "info" =

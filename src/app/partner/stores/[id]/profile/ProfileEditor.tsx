@@ -4,7 +4,25 @@ import { useEffect, useRef, useState } from "react";
 import { StoreLocationPicker } from "@/components/partner/StoreLocationPicker";
 import { labelServices } from "@/lib/services";
 
-type InfoSection = { title: string; subtitle: string; content: string };
+// DB·미리보기/앱 표시용 — 직렬화 후의 형태
+type InfoSection = {
+  title: string;
+  subtitle: string;
+  content: string;
+  images: string[];
+};
+
+// 에디터 내부 상태 — 신규 파일도 함께 관리
+type InfoImageItem =
+  | { id: string; kind: "url"; url: string }
+  | { id: string; kind: "file"; file: File; previewUrl: string };
+
+type EditorInfoSection = {
+  title: string;
+  subtitle: string;
+  content: string;
+  images: InfoImageItem[];
+};
 
 type Defaults = {
   name: string;
@@ -22,6 +40,7 @@ type Defaults = {
 };
 
 const MAX_INFO_SECTIONS = 5;
+const MAX_INFO_IMAGES_PER_SECTION = 6;
 
 // 이미지 슬롯 — 기존 URL 또는 새로 추가된 파일
 type ImageItem =
@@ -55,25 +74,43 @@ export function ProfileEditor({
       url,
     })),
   );
-  const [infoSections, setInfoSections] = useState<InfoSection[]>(
-    () => defaults.infoSections,
+  const [infoSections, setInfoSections] = useState<EditorInfoSection[]>(() =>
+    defaults.infoSections.map((s) => ({
+      title: s.title,
+      subtitle: s.subtitle,
+      content: s.content,
+      images: s.images.map((url, i) => ({
+        id: `existing-info-${i}-${url}`,
+        kind: "url" as const,
+        url,
+      })),
+    })),
   );
   const [error, setError] = useState<string | null>(null);
+  const [infoError, setInfoError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function addInfoSection() {
     setInfoSections((cur) =>
       cur.length >= MAX_INFO_SECTIONS
         ? cur
-        : [...cur, { title: "", subtitle: "", content: "" }],
+        : [...cur, { title: "", subtitle: "", content: "", images: [] }],
     );
   }
   function removeInfoSection(idx: number) {
-    setInfoSections((cur) => cur.filter((_, i) => i !== idx));
+    setInfoSections((cur) => {
+      const sec = cur[idx];
+      if (sec) {
+        sec.images.forEach((it) => {
+          if (it.kind === "file") URL.revokeObjectURL(it.previewUrl);
+        });
+      }
+      return cur.filter((_, i) => i !== idx);
+    });
   }
   function updateInfoSection(
     idx: number,
-    key: keyof InfoSection,
+    key: "title" | "subtitle" | "content",
     value: string,
   ) {
     setInfoSections((cur) =>
@@ -88,6 +125,73 @@ export function ProfileEditor({
       [next[idx], next[t]] = [next[t], next[idx]];
       return next;
     });
+  }
+
+  function addInfoImages(sectionIdx: number, fileList: FileList | null) {
+    setInfoError(null);
+    const files = Array.from(fileList ?? []);
+    if (files.length === 0) return;
+    setInfoSections((cur) => {
+      const sec = cur[sectionIdx];
+      if (!sec) return cur;
+      const room = MAX_INFO_IMAGES_PER_SECTION - sec.images.length;
+      if (room <= 0) {
+        setInfoError(
+          `이미지는 섹션당 최대 ${MAX_INFO_IMAGES_PER_SECTION}장까지 가능해요.`,
+        );
+        return cur;
+      }
+      const accepted: InfoImageItem[] = [];
+      for (const f of files.slice(0, room)) {
+        if (!ALLOWED_TYPE.test(f.type)) {
+          setInfoError("JPG / PNG / WEBP / GIF 만 업로드 가능해요.");
+          continue;
+        }
+        if (f.size > MAX_BYTES) {
+          setInfoError("5MB 이하의 이미지를 올려주세요.");
+          continue;
+        }
+        accepted.push({
+          id: `info-file-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          kind: "file",
+          file: f,
+          previewUrl: URL.createObjectURL(f),
+        });
+      }
+      if (files.length > room) {
+        setInfoError(
+          `최대 ${MAX_INFO_IMAGES_PER_SECTION}장이라 ${room}개만 추가했어요.`,
+        );
+      }
+      if (accepted.length === 0) return cur;
+      return cur.map((s, i) =>
+        i === sectionIdx ? { ...s, images: [...s.images, ...accepted] } : s,
+      );
+    });
+  }
+  function removeInfoImage(sectionIdx: number, imgIdx: number) {
+    setInfoSections((cur) =>
+      cur.map((s, i) => {
+        if (i !== sectionIdx) return s;
+        const target = s.images[imgIdx];
+        if (target && target.kind === "file") {
+          URL.revokeObjectURL(target.previewUrl);
+        }
+        return { ...s, images: s.images.filter((_, j) => j !== imgIdx) };
+      }),
+    );
+  }
+  function moveInfoImage(sectionIdx: number, imgIdx: number, delta: number) {
+    setInfoSections((cur) =>
+      cur.map((s, i) => {
+        if (i !== sectionIdx) return s;
+        const next = [...s.images];
+        const t = imgIdx + delta;
+        if (t < 0 || t >= next.length) return s;
+        [next[imgIdx], next[t]] = [next[t], next[imgIdx]];
+        return { ...s, images: next };
+      }),
+    );
   }
 
   // 파일 ObjectURL 정리
@@ -417,9 +521,21 @@ export function ProfileEditor({
                     }
                     className={`${inputCls} h-auto py-3 resize-none leading-[1.6]`}
                   />
+
+                  <InfoImagesEditor
+                    section={s}
+                    sectionIdx={i}
+                    onAdd={(files) => addInfoImages(i, files)}
+                    onRemove={(j) => removeInfoImage(i, j)}
+                    onMove={(j, d) => moveInfoImage(i, j, d)}
+                  />
                 </li>
               ))}
             </ul>
+          )}
+
+          {infoError && (
+            <div className="text-[12px] text-danger mb-2">{infoError}</div>
           )}
 
           {infoSections.length < MAX_INFO_SECTIONS && (
@@ -431,6 +547,9 @@ export function ProfileEditor({
               + 정보 섹션 추가
             </button>
           )}
+
+          {/* 폼 제출 — 섹션별 이미지 메타·파일 직렬화 */}
+          <InfoImagePayload sections={infoSections} />
         </div>
 
         <div>
@@ -582,6 +701,167 @@ function SmallBtn({
   );
 }
 
+/**
+ * 한 정보 섹션의 이미지 입력 UI.
+ * 추가 / 삭제 / 순서변경 + 2열 그리드 미리보기.
+ */
+function InfoImagesEditor({
+  section,
+  sectionIdx,
+  onAdd,
+  onRemove,
+  onMove,
+}: {
+  section: EditorInfoSection;
+  sectionIdx: number;
+  onAdd: (files: FileList | null) => void;
+  onRemove: (idx: number) => void;
+  onMove: (idx: number, delta: number) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const total = section.images.length;
+  const room = MAX_INFO_IMAGES_PER_SECTION - total;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[11px] font-bold text-graphite">
+          이미지{" "}
+          <span className="text-slate font-medium ml-1">
+            (섹션당 최대 {MAX_INFO_IMAGES_PER_SECTION}장 · 5MB · JPG/PNG/WEBP)
+          </span>
+        </span>
+        <span className="text-[10px] text-slate ww-num">
+          {total} / {MAX_INFO_IMAGES_PER_SECTION}
+        </span>
+      </div>
+
+      {total > 0 && (
+        <ul className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
+          {section.images.map((it, j) => {
+            const url = it.kind === "url" ? it.url : it.previewUrl;
+            return (
+              <li
+                key={it.id}
+                className="relative group aspect-square rounded-[10px] overflow-hidden border border-fog bg-cloud"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={url}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+                <span className="absolute left-1.5 top-1.5 text-[9px] font-bold bg-ink text-white rounded-full px-[6px] py-[1px] ww-num">
+                  {j + 1}
+                </span>
+                {it.kind === "file" && (
+                  <span className="absolute right-1.5 top-1.5 text-[8px] font-bold bg-brand text-ink rounded-full px-[6px] py-[1px]">
+                    NEW
+                  </span>
+                )}
+                <div className="absolute left-1 right-1 bottom-1 flex gap-[2px] opacity-0 group-hover:opacity-100 transition">
+                  <SmallBtn
+                    disabled={j === 0}
+                    onClick={() => onMove(j, -1)}
+                    label="앞으로"
+                  >
+                    ←
+                  </SmallBtn>
+                  <SmallBtn
+                    disabled={j === total - 1}
+                    onClick={() => onMove(j, 1)}
+                    label="뒤로"
+                  >
+                    →
+                  </SmallBtn>
+                  <SmallBtn danger onClick={() => onRemove(j)} label="삭제">
+                    ×
+                  </SmallBtn>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {room > 0 && (
+        <>
+          <input
+            ref={inputRef}
+            type="file"
+            multiple
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            onChange={(e) => {
+              onAdd(e.target.files);
+              if (e.target) e.target.value = "";
+            }}
+            className="hidden"
+            id={`info-img-input-${sectionIdx}`}
+          />
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="h-9 px-3 rounded-full border-[1.5px] border-dashed border-fog text-[11px] font-bold text-slate hover:border-brand-deep hover:text-brand-deep transition"
+          >
+            + 이미지 추가
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+/**
+ * 정보 섹션 이미지를 폼 제출용 hidden input 으로 직렬화.
+ * 평행 배열: infoImageSectionIdx + infoImageKind ↔ infoImageUrl/infoImageFile
+ */
+function InfoImagePayload({ sections }: { sections: EditorInfoSection[] }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    containerRef.current.innerHTML = "";
+    sections.forEach((sec, sectionIdx) => {
+      sec.images.forEach((img) => {
+        const idxInput = document.createElement("input");
+        idxInput.type = "hidden";
+        idxInput.name = "infoImageSectionIdx";
+        idxInput.value = String(sectionIdx);
+        containerRef.current!.appendChild(idxInput);
+
+        const kindInput = document.createElement("input");
+        kindInput.type = "hidden";
+        kindInput.name = "infoImageKind";
+        kindInput.value = img.kind;
+        containerRef.current!.appendChild(kindInput);
+
+        if (img.kind === "url") {
+          const u = document.createElement("input");
+          u.type = "hidden";
+          u.name = "infoImageUrl";
+          u.value = img.url;
+          containerRef.current!.appendChild(u);
+        } else if (img.kind === "file") {
+          const fi = document.createElement("input");
+          fi.type = "file";
+          fi.name = "infoImageFile";
+          fi.style.display = "none";
+          try {
+            const dt = new DataTransfer();
+            dt.items.add(img.file);
+            fi.files = dt.files;
+            containerRef.current!.appendChild(fi);
+          } catch {
+            // 미지원 브라우저 — 무시
+          }
+        }
+      });
+    });
+  }, [sections]);
+
+  return <div ref={containerRef} className="hidden" />;
+}
+
 function SmallSquareBtn({
   children,
   onClick,
@@ -634,7 +914,7 @@ function AppPreview({
   promo: string;
   open: boolean;
   coverImages: string[];
-  infoSections: InfoSection[];
+  infoSections: EditorInfoSection[];
   rating: number;
   reviewCount: number;
   services: string[];
@@ -927,28 +1207,46 @@ function AppPreview({
                   좌측에서 정보 섹션을 추가하면 여기에 표시돼요.
                 </div>
               ) : (
-                infoSections.map((s, i) => (
-                  <div
-                    key={i}
-                    className="rounded-[10px] border border-fog bg-white p-3"
-                  >
-                    {s.title && (
-                      <div className="text-[12px] font-extrabold tracking-[-0.2px] text-ink leading-[1.4]">
-                        {s.title}
-                      </div>
-                    )}
-                    {s.subtitle && (
-                      <div className="text-[11px] font-bold text-graphite mt-[3px] leading-[1.4]">
-                        {s.subtitle}
-                      </div>
-                    )}
-                    {s.content && (
-                      <div className="text-[11px] text-slate leading-[1.6] mt-2 whitespace-pre-wrap">
-                        {s.content}
-                      </div>
-                    )}
-                  </div>
-                ))
+                infoSections.map((s, i) => {
+                  const urls = s.images
+                    .map((it) => (it.kind === "url" ? it.url : it.previewUrl))
+                    .filter(Boolean);
+                  return (
+                    <div
+                      key={i}
+                      className="rounded-[10px] border border-fog bg-white p-3"
+                    >
+                      {s.title && (
+                        <div className="text-[12px] font-extrabold tracking-[-0.2px] text-ink leading-[1.4]">
+                          {s.title}
+                        </div>
+                      )}
+                      {s.subtitle && (
+                        <div className="text-[11px] font-bold text-graphite mt-[3px] leading-[1.4]">
+                          {s.subtitle}
+                        </div>
+                      )}
+                      {s.content && (
+                        <div className="text-[11px] text-slate leading-[1.6] mt-2 whitespace-pre-wrap">
+                          {s.content}
+                        </div>
+                      )}
+                      {urls.length > 0 && (
+                        <div className="grid grid-cols-2 gap-1 mt-2">
+                          {urls.map((u, j) => (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              key={j}
+                              src={u}
+                              alt=""
+                              className="aspect-square w-full object-cover rounded-[8px] bg-cloud"
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
               )}
             </div>
           )}
