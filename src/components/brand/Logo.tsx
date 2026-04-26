@@ -1,28 +1,26 @@
 import * as React from "react";
+import Image from "next/image";
 
+/**
+ * 브랜드 글리프 — public/brand/logo.png (육각형 + 자동차 + 물보라)
+ * 기존 SVG 글리프를 대체.
+ */
 export function WWGlyph({
   size = 24,
-  color = "currentColor",
 }: {
   size?: number;
+  /** 호환을 위해 받기는 하지만 이미지에는 적용되지 않음 */
   color?: string;
 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <ellipse
-        cx="12"
-        cy="12"
-        rx="10.5"
-        ry="4"
-        stroke={color}
-        strokeWidth="1.4"
-        transform="rotate(-28 12 12)"
-      />
-      <path
-        d="M12 5s-4 4.8-4 8a4 4 0 108 0c0-3.2-4-8-4-8z"
-        fill={color}
-      />
-    </svg>
+    <Image
+      src="/brand/logo.png"
+      alt="우주워시"
+      width={size}
+      height={size}
+      priority
+      style={{ width: size, height: size, objectFit: "contain" }}
+    />
   );
 }
 
@@ -42,7 +40,7 @@ export function WWLogo({
         className="ww-disp inline-flex items-center gap-[6px]"
         style={{ color }}
       >
-        <WWGlyph size={size} color={color} />
+        <WWGlyph size={size} />
         <span
           style={{
             fontSize: size * 0.86,
@@ -60,7 +58,7 @@ export function WWLogo({
       className="inline-flex items-center gap-2"
       style={{ color }}
     >
-      <WWGlyph size={size * 1.2} color={color} />
+      <WWGlyph size={size * 1.2} />
       <span className="flex flex-col leading-none">
         <span
           className="ww-disp"
