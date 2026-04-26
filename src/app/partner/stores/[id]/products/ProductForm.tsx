@@ -282,6 +282,8 @@ export function ProductForm({
         type="number"
         defaultValue={String(d.price ?? 0)}
         required
+        min={0}
+        step={1000}
       />
 
       {/* 상품 이미지 — 다중 업로드 (최대 5장) */}
@@ -467,6 +469,7 @@ export function ProductForm({
                     type="number"
                     inputMode="numeric"
                     min={0}
+                    step={1000}
                     value={o.priceMode === "amount" ? o.price : ""}
                     onChange={(e) => updateOption(i, "price", e.target.value)}
                     disabled={o.priceMode !== "amount"}
@@ -569,6 +572,8 @@ function Field({
   required,
   type = "text",
   className,
+  step,
+  min,
 }: {
   label: string;
   name: string;
@@ -577,6 +582,8 @@ function Field({
   required?: boolean;
   type?: string;
   className?: string;
+  step?: number;
+  min?: number;
 }) {
   return (
     <label className={`block ${className ?? ""}`}>
@@ -590,7 +597,9 @@ function Field({
         defaultValue={defaultValue}
         placeholder={placeholder}
         required={required}
-        className="w-full h-12 px-4 bg-paper border border-fog rounded-[12px] text-[14px] outline-none focus:border-ink"
+        step={step}
+        min={min}
+        className="w-full h-12 px-4 bg-paper border border-fog rounded-[12px] text-[14px] outline-none focus:border-ink ww-num"
       />
     </label>
   );
