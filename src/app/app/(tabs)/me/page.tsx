@@ -60,11 +60,7 @@ export default async function MePage() {
 
   return (
     <>
-      <div className="px-5 pt-4 pb-6">
-        <div className="ww-disp text-[26px] tracking-[-0.02em]">마이</div>
-      </div>
-
-      <section className="px-5 mb-5">
+      <section className="px-5 pt-5 mb-5">
         <div className="flex items-center gap-4">
           <div className="relative w-14 h-14 rounded-full overflow-hidden bg-cloud flex items-center justify-center text-[18px] font-extrabold shrink-0">
             {avatarUrl ? (
@@ -95,17 +91,26 @@ export default async function MePage() {
       <section className="px-5 mb-6">
         <div className="grid grid-cols-3 bg-cloud rounded-[16px] overflow-hidden">
           {[
-            { k: reservationCount, l: "이용 완료" },
-            { k: couponCount, l: "쿠폰" },
-            { k: reviewCount, l: "리뷰" },
+            {
+              k: reservationCount,
+              l: "이용 완료",
+              href: "/app/reservations",
+            },
+            { k: couponCount, l: "쿠폰", href: "/app/me/coupons" },
+            { k: reviewCount, l: "리뷰", href: "/app/me/reviews" },
           ].map((s, i) => (
-            <div
+            <Link
               key={s.l}
-              className={`py-5 text-center ${i !== 2 ? "border-r border-fog" : ""}`}
+              href={s.href}
+              className={`py-3 text-center transition active:bg-fog hover:bg-fog/40 ${
+                i !== 2 ? "border-r border-fog" : ""
+              }`}
             >
-              <div className="ww-disp text-[24px] ww-num">{s.k}</div>
-              <div className="text-[11px] text-slate font-medium mt-1">{s.l}</div>
-            </div>
+              <div className="ww-disp text-[22px] ww-num">{s.k}</div>
+              <div className="text-[11px] text-slate font-medium mt-[2px]">
+                {s.l}
+              </div>
+            </Link>
           ))}
         </div>
       </section>
