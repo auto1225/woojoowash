@@ -7,6 +7,7 @@ import { getProduct } from "@/lib/queries/stores";
 import { IMG } from "@/lib/images";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { BookingControls } from "./BookingControls";
 
 export const dynamic = "force-dynamic";
 
@@ -103,57 +104,18 @@ export default async function ProductDetailPage({
         </div>
       </section>
 
-      {product.options.length > 0 && (
-        <section className="px-5 mt-7">
-          <div className="text-[14px] font-bold mb-3">추가 옵션</div>
-          <div className="flex flex-col rounded-[14px] border border-fog overflow-hidden">
-            {product.options.map((o, i) => {
-              const mode = o.priceMode ?? "amount";
-              // amount 모드에서 가격이 0(혹은 미설정)이면 "무료"
-              const isFree = mode !== "ask" && (!o.price || o.price <= 0);
-              const priceLabel =
-                mode === "ask"
-                  ? "가격 협의"
-                  : isFree
-                    ? "무료"
-                    : `+${o.price.toLocaleString("ko-KR")}원`;
-              return (
-                <div
-                  key={o.id}
-                  className={`flex items-center justify-between px-4 py-4 bg-white ${
-                    i < product.options.length - 1
-                      ? "border-b border-fog"
-                      : ""
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <span className="w-5 h-5 rounded border border-fog shrink-0" />
-                    <div className="min-w-0">
-                      <div className="text-[14px] truncate">{o.label}</div>
-                      {o.durationMin && o.durationMin > 0 && (
-                        <div className="text-[11px] text-slate ww-num mt-[2px]">
-                          소요 +{o.durationMin}분
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div
-                    className={`text-[13px] font-bold ww-num shrink-0 ml-3 ${
-                      mode === "ask"
-                        ? "text-slate"
-                        : isFree
-                          ? "text-success"
-                          : ""
-                    }`}
-                  >
-                    {priceLabel}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
+      <BookingControls
+        storeId={product.store.id}
+        productId={product.id}
+        basePrice={product.price}
+        options={product.options.map((o) => ({
+          id: o.id,
+          label: o.label,
+          price: o.price,
+          priceMode: o.priceMode,
+          durationMin: o.durationMin,
+        }))}
+      />
 
       <section className="px-5 mt-7">
         <div className="flex items-center justify-between mb-3">
@@ -177,23 +139,6 @@ export default async function ProductDetailPage({
           className="w-full min-h-[100px] rounded-[14px] border border-fog bg-white p-4 text-[14px] outline-none resize-none"
         />
       </section>
-
-      <div className="fixed left-0 right-0 bottom-0 z-30 flex justify-center">
-        <div className="w-full max-w-app bg-white border-t border-fog px-4 py-3 flex gap-2">
-          <div className="flex-1 h-14 rounded-full bg-cloud flex items-center justify-between px-5">
-            <span className="text-[12px] text-slate">총 결제금액</span>
-            <span className="ww-disp text-[18px] ww-num">
-              {product.price.toLocaleString("ko-KR")}원
-            </span>
-          </div>
-          <Link
-            href={`/app/booking/payment?store=${product.store.id}&product=${product.id}`}
-            className="h-14 px-7 rounded-full bg-ink text-white font-bold text-[15px] flex items-center hover:bg-accent-deep transition"
-          >
-            예약하기
-          </Link>
-        </div>
-      </div>
     </div>
   );
 }
