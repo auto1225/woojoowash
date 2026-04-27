@@ -11,7 +11,12 @@ export const dynamic = "force-dynamic";
 export default async function PaymentPage({
   searchParams,
 }: {
-  searchParams: { store?: string; product?: string; startAt?: string };
+  searchParams: {
+    store?: string;
+    product?: string;
+    startAt?: string;
+    options?: string;
+  };
 }) {
   const storeId = searchParams.store;
   const productId = searchParams.product;
@@ -31,7 +36,20 @@ export default async function PaymentPage({
     ? new Date(searchParams.startAt)
     : nextHalfHour();
 
-  const total = product.price;
+  // 선택 옵션 — URL 의 ?options=id1,id2 를 product.options 와 매칭
+  const selectedIds = (searchParams.options ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const selectedOptions = product.options.filter((o) =>
+    selectedIds.includes(o.id),
+  );
+  const optionsTotal = selectedOptions.reduce((sum, o) => {
+    const mode = o.priceMode ?? "amount";
+    if (mode === "amount" && o.price > 0) return sum + o.price;
+    return sum;
+  }, 0);
+  const total = product.price + optionsTotal;
 
   return (
     <div className="pb-[130px] bg-paper min-h-screen">
@@ -82,10 +100,46 @@ export default async function PaymentPage({
                 {product.price.toLocaleString("ko-KR")}원
               </span>
             </div>
+            {selectedOptions.length > 0 && (
+              <>
+                <div className="text-[12px] font-bold text-slate pt-2">
+                  추가 옵션 {selectedOptions.length}건
+                </div>
+                {selectedOptions.map((o) => {
+                  const mode = o.priceMode ?? "amount";
+                  const isFree = mode !== "ask" && (!o.price || o.price <= 0);
+                  const priceLabel =
+                    mode === "ask"
+                      ? "가격 협의"
+                      : isFree
+                        ? "무료"
+                        : `+${o.price.toLocaleString("ko-KR")}원`;
+                  return (
+                    <div
+                      key={o.id}
+                      className="flex items-center justify-between text-[13px]"
+                    >
+                      <span className="text-graphite">· {o.label}</span>
+                      <span
+                        className={`ww-num ${
+                          mode === "ask"
+                            ? "text-slate"
+                            : isFree
+                              ? "text-success"
+                              : ""
+                        }`}
+                      >
+                        {priceLabel}
+                      </span>
+                    </div>
+                  );
+                })}
+              </>
+            )}
             <div className="flex items-center justify-between pt-3 border-t border-fog">
               <span className="text-[14px] text-slate">총 상품 가격</span>
               <span className="text-[14px] ww-num font-semibold">
-                {product.price.toLocaleString("ko-KR")}원
+                {total.toLocaleString("ko-KR")}원
               </span>
             </div>
           </div>
@@ -157,9 +211,19 @@ export default async function PaymentPage({
         <div className="bg-white rounded-[20px] border border-fog px-6 py-5">
           <div className="text-[16px] font-extrabold mb-4">결제 정보</div>
           <div className="flex items-center justify-between py-3 border-t border-fog text-[14px]">
-            <span className="text-slate">총 상품 가격</span>
-            <span className="ww-num">{product.price.toLocaleString("ko-KR")}원</span>
+            <span className="text-slate">상품 가격</span>
+            <span className="ww-num">
+              {product.price.toLocaleString("ko-KR")}원
+            </span>
           </div>
+          {optionsTotal > 0 && (
+            <div className="flex items-center justify-between py-3 border-t border-fog text-[14px]">
+              <span className="text-slate">추가 옵션</span>
+              <span className="ww-num">
+                +{optionsTotal.toLocaleString("ko-KR")}원
+              </span>
+            </div>
+          )}
           <div className="flex items-center justify-between py-3 border-t border-fog">
             <span className="text-[14px] text-slate">총 결제금액</span>
             <span className="ww-disp text-[22px] ww-num">
@@ -222,6 +286,7 @@ export default async function PaymentPage({
             storeId={storeId}
             productId={productId}
             startAt={startAt.toISOString()}
+            optionIds={selectedOptions.map((o) => o.id)}
             total={total}
           />
         </div>

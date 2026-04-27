@@ -7,11 +7,13 @@ export function PayButton({
   storeId,
   productId,
   startAt,
+  optionIds = [],
   total,
 }: {
   storeId: string;
   productId: string;
   startAt: string;
+  optionIds?: string[];
   total: number;
 }) {
   const router = useRouter();
@@ -25,12 +27,18 @@ export function PayButton({
       const res = await fetch("/api/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storeId, productId, startAt }),
+        body: JSON.stringify({ storeId, productId, startAt, optionIds }),
       });
       if (res.status === 401) {
+        const callback = new URLSearchParams({
+          store: storeId,
+          product: productId,
+          startAt,
+        });
+        if (optionIds.length > 0) callback.set("options", optionIds.join(","));
         router.push(
           `/app/login?callbackUrl=${encodeURIComponent(
-            `/app/booking/payment?store=${storeId}&product=${productId}&startAt=${startAt}`,
+            `/app/booking/payment?${callback.toString()}`,
           )}`,
         );
         return;

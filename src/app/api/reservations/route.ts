@@ -9,10 +9,11 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const { storeId, productId, startAt } = body as {
+  const { storeId, productId, startAt, optionIds } = body as {
     storeId?: string;
     productId?: string;
     startAt?: string;
+    optionIds?: string[];
   };
 
   if (!storeId || !productId) {
@@ -32,11 +33,42 @@ export async function POST(req: Request) {
     );
   }
 
+  // 상품의 옵션 정의에서 선택된 ID 만 매칭하여 가격·소요시간 합산
+  type OptionDef = {
+    id: string;
+    label: string;
+    price: number;
+    priceMode?: "amount" | "free" | "ask";
+    durationMin?: number;
+  };
+  const productOptions: OptionDef[] = Array.isArray(product.options)
+    ? (product.options as unknown as OptionDef[])
+    : [];
+  const selectedSet = new Set(Array.isArray(optionIds) ? optionIds : []);
+  const chosenOptions: OptionDef[] = productOptions.filter((o) =>
+    selectedSet.has(o.id),
+  );
+
+  let optionsPrice = 0;
+  let optionsDuration = 0;
+  for (const o of chosenOptions) {
+    const mode = o.priceMode ?? "amount";
+    if (mode === "amount" && o.price > 0) optionsPrice += o.price;
+    if (typeof o.durationMin === "number" && o.durationMin > 0) {
+      optionsDuration += o.durationMin;
+    }
+  }
+
+  const finalPrice = product.price + optionsPrice;
+  const finalDuration = product.durationMin + optionsDuration;
+
   const defaultCar = await db.car.findFirst({
     where: { userId: session.user.id, isDefault: true },
   });
 
-  const start = startAt ? new Date(startAt) : new Date(Date.now() + 60 * 60 * 1000);
+  const start = startAt
+    ? new Date(startAt)
+    : new Date(Date.now() + 60 * 60 * 1000);
 
   const reservation = await db.reservation.create({
     data: {
@@ -45,13 +77,14 @@ export async function POST(req: Request) {
       productId,
       carId: defaultCar?.id,
       startAt: start,
-      durationMin: product.durationMin,
-      price: product.price,
+      durationMin: finalDuration,
+      price: finalPrice,
+      options: chosenOptions as unknown as object,
       status: "CONFIRMED",
       payment: {
         create: {
           method: "EASY",
-          amount: product.price,
+          amount: finalPrice,
           status: "DONE",
           paidAt: new Date(),
         },
