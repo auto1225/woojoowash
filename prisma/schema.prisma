@@ -47,6 +47,7 @@ model User {
   addresses     Address[]
   orders        Order[]
   supportTickets SupportTicket[]
+  refreshTokens RefreshToken[]
 
   @@map("users")
 }
@@ -589,4 +590,21 @@ model SiteEvent {
   @@index([kind])
   @@index([createdAt])
   @@map("site_events")
+}
+
+model RefreshToken {
+  id         String    @id @default(cuid())
+  userId     String
+  tokenHash  String    @unique // SHA-256 of raw token
+  device     String?            // user-agent or platform identifier
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
 }
