@@ -25,8 +25,11 @@ export function AppBar({
   return (
     <div
       className={cn(
-        "relative z-20 h-[52px] flex items-center justify-between px-3 shrink-0",
-        dark ? "bg-transparent text-white" : "bg-white text-ink",
+        "h-[52px] flex items-center justify-between px-3 shrink-0",
+        // 일반 모드는 sticky 로 상단 고정, dark 모드(히어로 오버레이) 는 기존 relative 유지
+        dark
+          ? "relative z-20 bg-transparent text-white"
+          : "sticky top-0 z-30 bg-white text-ink",
         border && "border-b border-fog",
       )}
     >
