@@ -23,7 +23,7 @@ export function HeroCarousel({
   }, [idx, n]);
 
   return (
-    <div className="relative w-full aspect-[15/11] bg-ink overflow-hidden">
+    <div className="relative w-full aspect-[3/1] bg-ink overflow-hidden">
       {slides.map((slide, i) => {
         const active = i === idx;
         return (
@@ -42,16 +42,22 @@ export function HeroCarousel({
               className="object-cover"
               sizes="(max-width: 480px) 100vw, 428px"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-            <div className="absolute top-10 left-5 right-5 text-white">
+            {/* 텍스트가 잘 보이도록 위→아래 어둠 + 인디케이터를 위한 아래쪽 어둠 */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/10 to-black/45" />
+            <div className="absolute top-1/2 -translate-y-1/2 left-5 right-5 text-white">
               {slide.subtitle && (
-                <div className="text-[13px] font-bold mb-2 opacity-90">
+                <div className="text-[12px] font-bold mb-1 opacity-90">
                   {slide.subtitle}
                 </div>
               )}
               <div
                 className="ww-disp"
-                style={{ fontSize: 30, lineHeight: 1.1, letterSpacing: "-0.03em" }}
+                style={{
+                  fontSize: 24,
+                  lineHeight: 1.1,
+                  letterSpacing: "-0.03em",
+                  textShadow: "0 1px 6px rgba(0,0,0,0.35)",
+                }}
               >
                 {slide.title}
               </div>
