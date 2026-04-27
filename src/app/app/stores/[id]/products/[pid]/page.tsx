@@ -21,14 +21,18 @@ export default async function ProductDetailPage({
   const product = await getProduct(params.id, params.pid);
   if (!product) return notFound();
 
-  // 날짜 선택 페이지에서 돌아올 때 startAt 쿼리로 받음
+  // 날짜 선택 페이지에서 돌아올 때 startAt 쿼리로 받음 (로컬시간 형식 "YYYY-MM-DDTHH:mm" 또는 ISO)
   const startAtIso = searchParams.startAt ?? null;
   const startAtDate = startAtIso ? new Date(startAtIso) : null;
   const startAtValid =
     startAtDate && Number.isFinite(startAtDate.getTime()) ? startAtDate : null;
-  const startAtLabel = startAtValid
-    ? formatStartAt(startAtValid)
-    : null;
+  const startAtLabel = startAtValid ? formatStartAt(startAtValid) : null;
+
+  // 옵션도 URL 로 round-trip
+  const initialOptionIds =
+    searchParams.options && searchParams.options.length > 0
+      ? searchParams.options.split(",").filter(Boolean)
+      : [];
 
   const session = await auth();
   const myCar = session?.user
@@ -120,6 +124,8 @@ export default async function ProductDetailPage({
         productId={product.id}
         basePrice={product.price}
         startAtIso={startAtIso}
+        startAtLabel={startAtLabel}
+        initialOptionIds={initialOptionIds}
         options={product.options.map((o) => ({
           id: o.id,
           label: o.label,
@@ -128,34 +134,6 @@ export default async function ProductDetailPage({
           durationMin: o.durationMin,
         }))}
       />
-
-      <section className="px-5 mt-7">
-        <div className="flex items-center justify-between mb-3">
-          <div className="text-[14px] font-bold">예약 일시</div>
-          <span
-            className={`text-[12px] font-bold ${
-              startAtLabel ? "text-success" : "text-accent"
-            }`}
-          >
-            {startAtLabel ? "선택 완료" : "선택해 주세요"}
-          </span>
-        </div>
-        <Link
-          href={`/app/stores/${product.store.id}/products/${product.id}/date`}
-          className="block h-14 rounded-[14px] border border-fog bg-white px-4 flex items-center justify-between"
-        >
-          <span
-            className={`text-[14px] ${
-              startAtLabel ? "text-ink font-bold" : "text-slate"
-            }`}
-          >
-            {startAtLabel ?? "원하는 날짜·시간 선택"}
-          </span>
-          <span className="text-[12px] font-bold text-ink">
-            {startAtLabel ? "변경" : "선택"}
-          </span>
-        </Link>
-      </section>
 
       <section className="px-5 mt-7">
         <div className="text-[14px] font-bold mb-3">요청사항 (선택)</div>

@@ -16,15 +16,21 @@ export function BookingControls({
   productId,
   basePrice,
   startAtIso,
+  startAtLabel,
+  initialOptionIds = [],
   options,
 }: {
   storeId: string;
   productId: string;
   basePrice: number;
   startAtIso: string | null;
+  startAtLabel: string | null;
+  initialOptionIds?: string[];
   options: BookingOption[];
 }) {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(
+    () => new Set(initialOptionIds.filter((id) => options.some((o) => o.id === id))),
+  );
 
   function toggle(id: string) {
     setSelectedIds((cur) => {
@@ -57,6 +63,17 @@ export function BookingControls({
     }
     if (startAtIso) params.set("startAt", startAtIso);
     return `/app/booking/payment?${params.toString()}`;
+  }, [storeId, productId, selectedIds, startAtIso]);
+
+  // 일시 선택 페이지로 이동 시 현재 선택한 옵션을 같이 query 로 들고 가서 round-trip
+  const dateLinkHref = useMemo(() => {
+    const params = new URLSearchParams();
+    if (selectedIds.size > 0) {
+      params.set("options", Array.from(selectedIds).join(","));
+    }
+    if (startAtIso) params.set("startAt", startAtIso);
+    const qs = params.toString();
+    return `/app/stores/${storeId}/products/${productId}/date${qs ? `?${qs}` : ""}`;
   }, [storeId, productId, selectedIds, startAtIso]);
 
   return (
@@ -149,6 +166,35 @@ export function BookingControls({
           )}
         </section>
       )}
+
+      {/* 예약 일시 — 옵션 선택 상태를 URL 로 들고 가서 돌아올 때 보존 */}
+      <section className="px-5 mt-7">
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-[14px] font-bold">예약 일시</div>
+          <span
+            className={`text-[12px] font-bold ${
+              startAtLabel ? "text-success" : "text-accent"
+            }`}
+          >
+            {startAtLabel ? "선택 완료" : "선택해 주세요"}
+          </span>
+        </div>
+        <Link
+          href={dateLinkHref}
+          className="block h-14 rounded-[14px] border border-fog bg-white px-4 flex items-center justify-between"
+        >
+          <span
+            className={`text-[14px] ${
+              startAtLabel ? "text-ink font-bold" : "text-slate"
+            }`}
+          >
+            {startAtLabel ?? "원하는 날짜·시간 선택"}
+          </span>
+          <span className="text-[12px] font-bold text-ink">
+            {startAtLabel ? "변경" : "선택"}
+          </span>
+        </Link>
+      </section>
 
       {/* 하단 결제 바 — 옵션 가격 반영된 총 결제금액 */}
       <div className="fixed left-0 right-0 bottom-0 z-30 flex justify-center">

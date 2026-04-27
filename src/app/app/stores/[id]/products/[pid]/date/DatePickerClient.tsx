@@ -154,17 +154,16 @@ export function DatePickerClient({
   function onSelect() {
     if (hour === null || minute === null) return;
     if (!isSlotAvailable(hour, minute).ok) return;
-    const d = new Date(selected.date);
-    d.setHours(hour, minute, 0, 0);
-    const iso = d.toISOString();
+    // 로컬 시간 그대로 보존 (toISOString 은 UTC 변환되어 TZ 다른 환경에서 어긋남)
+    const localStr = formatLocalDateTime(selected.date, hour, minute);
     if (mode === "book") {
       router.replace(
-        `/app/booking/payment?store=${params.id}&product=${params.pid}&startAt=${encodeURIComponent(iso)}`,
+        `/app/booking/payment?store=${params.id}&product=${params.pid}&startAt=${encodeURIComponent(localStr)}`,
       );
     } else {
       const next = new URLSearchParams(search.toString());
       next.delete("mode");
-      next.set("startAt", iso);
+      next.set("startAt", localStr);
       router.replace(
         `/app/stores/${params.id}/products/${params.pid}?${next.toString()}`,
       );
@@ -430,6 +429,16 @@ function toDateKey(d: Date): string {
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
+}
+
+// "YYYY-MM-DDTHH:mm" — TZ 없는 형식. JS `new Date()` 로 파싱하면 로컬 시간으로 해석.
+function formatLocalDateTime(d: Date, hour: number, minute: number): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const h = String(hour).padStart(2, "0");
+  const mm = String(minute).padStart(2, "0");
+  return `${y}-${m}-${day}T${h}:${mm}`;
 }
 
 function parseHM(s: string): number | null {
