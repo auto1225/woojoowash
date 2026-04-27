@@ -191,31 +191,6 @@ export default async function PaymentPage({
         optionIds={selectedOptions.map((o) => o.id)}
         total={total}
       />
-
-      {/* 동의 */}
-      <section className="px-5 pt-3">
-        <div className="bg-white rounded-[20px] border border-fog px-6 py-4 flex items-center gap-2 text-[13px]">
-          <span className="w-5 h-5 rounded-full bg-cloud flex items-center justify-center">
-            <svg width="12" height="12" viewBox="0 0 12 12">
-              <path
-                d="M2 6l3 3 5-5"
-                stroke="#6E6E73"
-                strokeWidth="2"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
-          <span>예약 취소/환불 수수료 결제 진행 동의</span>
-          <span className="text-slate">(필수)</span>
-          <IconChev size={14} stroke={1.8} className="text-ash ml-auto" />
-        </div>
-        <div className="text-[11px] text-slate leading-[1.7] mt-3 px-1">
-          * 주식회사 우주워시는 통신판매중개자로서 통신판매의 당사자가 아니며,
-          입점판매자가 등록한 상품정보 및 거래에 대한 책임을 지지 않습니다.
-        </div>
-      </section>
     </div>
   );
 }
