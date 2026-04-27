@@ -1,17 +1,22 @@
 import { AppBar } from "@/components/app/AppBar";
-import { Chip } from "@/components/ui/Chip";
 import { IconFilter } from "@/components/icons";
 import {
   NaverMapFinder,
   type NearbyStore,
 } from "@/components/app/NaverMapFinder";
 import { db } from "@/lib/db";
+import { StoreTypeFilter } from "./StoreTypeFilter";
 
 export const dynamic = "force-dynamic";
 
-// 초기 렌더: 전체 매장 (지도가 뜨기 전에도 리스트 보임)
-async function loadInitialStores(): Promise<NearbyStore[]> {
+const VALID_TYPES = ["self", "hand", "pickup", "visit"] as const;
+type ServiceType = (typeof VALID_TYPES)[number];
+
+async function loadInitialStores(
+  type: ServiceType | null,
+): Promise<NearbyStore[]> {
   const stores = await db.store.findMany({
+    where: type ? { services: { has: type } } : undefined,
     include: { products: { select: { price: true } } },
     orderBy: { rating: "desc" },
     take: 30,
@@ -36,8 +41,16 @@ async function loadInitialStores(): Promise<NearbyStore[]> {
   }));
 }
 
-export default async function FinderPage() {
-  const initialStores = await loadInitialStores();
+export default async function FinderPage({
+  searchParams,
+}: {
+  searchParams: { type?: string };
+}) {
+  const rawType = searchParams.type ?? "";
+  const type = (VALID_TYPES as readonly string[]).includes(rawType)
+    ? (rawType as ServiceType)
+    : null;
+  const initialStores = await loadInitialStores(type);
   const clientId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID ?? null;
 
   return (
@@ -48,15 +61,13 @@ export default async function FinderPage() {
         border={false}
       />
 
-      <div className="px-4 py-2 flex gap-[6px] overflow-x-auto ww-scroll-x">
-        {["전체", "셀프", "손세차", "배달", "출장", "프리미엄"].map((t, i) => (
-          <Chip key={t} size="sm" active={i === 0}>
-            {t}
-          </Chip>
-        ))}
-      </div>
+      <StoreTypeFilter />
 
-      <NaverMapFinder clientId={clientId} initialStores={initialStores} />
+      <NaverMapFinder
+        clientId={clientId}
+        initialStores={initialStores}
+        key={type ?? "all"}
+      />
     </div>
   );
 }
