@@ -133,22 +133,6 @@ export default async function AppHomePage() {
         </div>
       </section>
 
-      <section className="px-5 pt-5">
-        <Link
-          href="/app/pass"
-          className="block relative rounded-[16px] overflow-hidden ww-gradient-ink text-white px-5 py-5"
-        >
-          <div className="absolute -right-4 -top-4 w-[140px] h-[140px] rounded-full border border-white/10" />
-          <div className="absolute -right-10 -top-10 w-[200px] h-[200px] rounded-full border border-white/5" />
-          <div className="text-[18px] font-extrabold tracking-[-0.02em] leading-[1.3] mb-1">
-            할인패스 구독
-          </div>
-          <div className="text-[12px] opacity-70 mb-3">
-            첫 달 50% 할인 · 월 9,900원부터
-          </div>
-          <GiftSvg />
-        </Link>
-      </section>
 
       <section className="px-5 pt-5">
         <div className="relative rounded-[16px] overflow-hidden bg-[#FFF4E8] p-5">
@@ -324,46 +308,3 @@ export default async function AppHomePage() {
   );
 }
 
-function GiftSvg() {
-  return (
-    <svg
-      width="120"
-      height="90"
-      viewBox="0 0 120 90"
-      className="absolute right-3 -bottom-2"
-      aria-hidden
-    >
-      <rect x="22" y="42" width="52" height="40" rx="4" fill="#FF6F3C" />
-      <rect x="22" y="42" width="52" height="10" fill="#FF4F1F" />
-      <rect x="44" y="42" width="8" height="40" fill="#FFD600" />
-      <rect x="18" y="38" width="60" height="10" rx="3" fill="#FF4F1F" />
-      <rect x="44" y="38" width="8" height="10" fill="#FFD600" />
-      <path
-        d="M48 38 Q40 28 32 32 Q28 36 36 40 Z"
-        fill="#FFD600"
-        stroke="#0A0A0B"
-        strokeWidth="1"
-      />
-      <path
-        d="M48 38 Q56 28 64 32 Q68 36 60 40 Z"
-        fill="#FFD600"
-        stroke="#0A0A0B"
-        strokeWidth="1"
-      />
-      <text
-        x="48"
-        y="68"
-        fontSize="11"
-        fontWeight="800"
-        fill="#fff"
-        textAnchor="middle"
-        fontFamily="Pretendard"
-      >
-        50%
-      </text>
-      <circle cx="90" cy="20" r="3" fill="#fff" opacity="0.8" />
-      <circle cx="104" cy="34" r="2" fill="#fff" opacity="0.6" />
-      <circle cx="10" cy="28" r="2" fill="#fff" opacity="0.5" />
-    </svg>
-  );
-}
