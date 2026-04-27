@@ -5,7 +5,7 @@ import {
   type NearbyStore,
 } from "@/components/app/NaverMapFinder";
 import { db } from "@/lib/db";
-import { StoreTypeFilter } from "./StoreTypeFilter";
+import { StoreTypeFilter, type TypeCounts } from "./StoreTypeFilter";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +50,22 @@ export default async function FinderPage({
   const type = (VALID_TYPES as readonly string[]).includes(rawType)
     ? (rawType as ServiceType)
     : null;
-  const initialStores = await loadInitialStores(type);
+  const [initialStores, allCount, selfCount, handCount, visitCount, pickupCount] =
+    await Promise.all([
+      loadInitialStores(type),
+      db.store.count(),
+      db.store.count({ where: { services: { has: "self" } } }),
+      db.store.count({ where: { services: { has: "hand" } } }),
+      db.store.count({ where: { services: { has: "visit" } } }),
+      db.store.count({ where: { services: { has: "pickup" } } }),
+    ]);
+  const counts: TypeCounts = {
+    all: allCount,
+    self: selfCount,
+    hand: handCount,
+    visit: visitCount,
+    pickup: pickupCount,
+  };
   const clientId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID ?? null;
 
   return (
@@ -61,7 +76,7 @@ export default async function FinderPage({
         border={false}
       />
 
-      <StoreTypeFilter />
+      <StoreTypeFilter counts={counts} />
 
       <NaverMapFinder
         clientId={clientId}
