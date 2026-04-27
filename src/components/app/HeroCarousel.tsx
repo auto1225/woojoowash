@@ -44,7 +44,7 @@ export function HeroCarousel({
             />
             {/* 텍스트가 잘 보이도록 위→아래 어둠 + 인디케이터를 위한 아래쪽 어둠 */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/10 to-black/45" />
-            <div className="absolute top-1/2 -translate-y-1/2 left-5 right-5 text-white">
+            <div className="absolute top-5 left-5 right-5 text-white">
               {slide.subtitle && (
                 <div className="text-[12px] font-bold mb-1 opacity-90">
                   {slide.subtitle}
@@ -66,10 +66,7 @@ export function HeroCarousel({
         );
       })}
 
-      <div className="absolute bottom-3 left-5 bg-black/45 text-white text-[11px] font-semibold px-2 py-[3px] rounded-full ww-num pointer-events-none">
-        {idx + 1} / {n}
-      </div>
-      <div className="absolute bottom-3 right-5 flex gap-[6px]">
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-[6px]">
         {slides.map((_, i) => (
           <button
             key={i}

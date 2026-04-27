@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import { IconCar, IconPin, IconSearch } from "@/components/icons";
+import { IconCar, IconSearch } from "@/components/icons";
 import { HeroCarousel } from "@/components/app/HeroCarousel";
 import {
   getActiveHeroes,
@@ -94,10 +94,6 @@ export default async function AppHomePage() {
       <HeroCarousel slides={heroes.length > 0 ? heroes : FALLBACK_HERO} />
 
       <section className="px-5 pt-6">
-        <div className="flex items-center gap-1 mb-3">
-          <IconPin size={16} stroke={1.8} />
-          <div className="text-[13px] font-semibold">서울 강남구 역삼동</div>
-        </div>
         <Link
           href="/app/stores"
           className="h-12 bg-cloud rounded-[14px] flex items-center gap-[10px] px-4"
