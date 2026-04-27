@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import { AppBar } from "@/components/app/AppBar";
-import { IconCard, IconChev } from "@/components/icons";
+import { IconChev } from "@/components/icons";
 import { getProduct } from "@/lib/queries/stores";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { PayButton } from "./PayButton";
+import { PaymentClient } from "./PaymentClient";
 
 export const dynamic = "force-dynamic";
 
@@ -184,27 +184,13 @@ export default async function PaymentPage({
         </div>
       </section>
 
-      {/* 결제 수단 */}
-      <section className="px-5 pt-3">
-        <div className="bg-white rounded-[20px] border border-fog px-6 py-5">
-          <div className="text-[16px] font-extrabold mb-4">결제 수단</div>
-          <div className="flex items-center gap-3 py-3 border-t border-fog">
-            <span className="w-5 h-5 rounded-full bg-accent flex items-center justify-center shrink-0">
-              <span className="w-[8px] h-[8px] rounded-full bg-white" />
-            </span>
-            <div className="flex-1 text-[14px] font-bold">우주워시 간편결제</div>
-            <span className="text-[10px] font-bold text-white bg-accent rounded-md px-[6px] py-[3px]">
-              1초 결제
-            </span>
-            <span className="text-[12px] font-semibold text-accent">카드 관리</span>
-          </div>
-          <div className="flex items-center gap-3 py-3 border-t border-fog">
-            <span className="w-5 h-5 rounded-full border-[1.5px] border-fog shrink-0" />
-            <div className="flex-1 text-[14px]">카드 결제</div>
-            <IconCard size={20} stroke={1.6} className="text-slate" />
-          </div>
-        </div>
-      </section>
+      <PaymentClient
+        storeId={storeId}
+        productId={productId}
+        startAt={startAt.toISOString()}
+        optionIds={selectedOptions.map((o) => o.id)}
+        total={total}
+      />
 
       {/* 동의 */}
       <section className="px-5 pt-3">
@@ -230,18 +216,6 @@ export default async function PaymentPage({
           입점판매자가 등록한 상품정보 및 거래에 대한 책임을 지지 않습니다.
         </div>
       </section>
-
-      <div className="fixed left-0 right-0 bottom-0 flex justify-center">
-        <div className="w-full max-w-app bg-paper px-4 py-3">
-          <PayButton
-            storeId={storeId}
-            productId={productId}
-            startAt={startAt.toISOString()}
-            optionIds={selectedOptions.map((o) => o.id)}
-            total={total}
-          />
-        </div>
-      </div>
     </div>
   );
 }

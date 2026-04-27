@@ -9,12 +9,15 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const { storeId, productId, startAt, optionIds } = body as {
+  const { storeId, productId, startAt, optionIds, paymentMethod } = body as {
     storeId?: string;
     productId?: string;
     startAt?: string;
     optionIds?: string[];
+    paymentMethod?: "EASY" | "CARD";
   };
+  const method: "EASY" | "CARD" =
+    paymentMethod === "CARD" ? "CARD" : "EASY";
 
   if (!storeId || !productId) {
     return NextResponse.json(
@@ -83,7 +86,7 @@ export async function POST(req: Request) {
       status: "CONFIRMED",
       payment: {
         create: {
-          method: "EASY",
+          method,
           amount: finalPrice,
           status: "DONE",
           paidAt: new Date(),
