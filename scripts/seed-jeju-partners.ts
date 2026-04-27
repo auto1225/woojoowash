@@ -5,47 +5,94 @@ import { randomBytes } from "node:crypto";
 
 const prisma = new PrismaClient();
 
-type Shop = {
-  name: string;
-  address: string;
-  phone: string;
-};
+// slug 는 ASCII 영문 — 이메일·매장 ID 에 사용 (한글 이메일은 NextAuth/URL 인코딩 호환 이슈)
+type Shop = { name: string; slug: string; address: string; phone: string };
 
 const SHOPS: Shop[] = [
-  { name: "부부카워시", address: "제주시 우정로10길 14", phone: "064-743-1118" },
-  { name: "그랜드손세차장", address: "제주시 연동6길 9", phone: "0507-1407-9166" },
+  {
+    name: "부부카워시",
+    slug: "boobu-carwash",
+    address: "제주시 우정로10길 14",
+    phone: "064-743-1118",
+  },
+  {
+    name: "그랜드손세차장",
+    slug: "grand-handwash",
+    address: "제주시 연동6길 9",
+    phone: "0507-1407-9166",
+  },
   {
     name: "마블러스 디테일링",
+    slug: "marvelous-detailing",
     address: "제주시 애월읍 항몽로 48",
     phone: "0507-1353-4504",
   },
-  { name: "노형스팀세차", address: "제주시 광평동로 51", phone: "0507-1332-4557" },
+  {
+    name: "노형스팀세차",
+    slug: "nohyeong-steam",
+    address: "제주시 광평동로 51",
+    phone: "0507-1332-4557",
+  },
   {
     name: "스팀보이 제주노형점",
+    slug: "steamboy-nohyeong",
     address: "제주시 노형9길 16-1",
     phone: "0507-1434-0127",
   },
   {
     name: "제주굿덴트세차",
+    slug: "jeju-gooddent",
     address: "제주시 도남로 107-2",
     phone: "0507-1328-4930",
   },
-  { name: "런던손세차장", address: "제주시 남녕로 47", phone: "0507-1417-3085" },
-  { name: "구남손세차", address: "제주시 중앙로 399", phone: "064-721-2918" },
-  { name: "코리아스팀세차", address: "제주시 연미길 22", phone: "0507-1494-6999" },
-  { name: "디테일링케이", address: "제주시 사장3길 24-1", phone: "0507-1373-5845" },
-  { name: "파파카워시", address: "제주시 과원로 92", phone: "0507-1426-8598" },
+  {
+    name: "런던손세차장",
+    slug: "london-handwash",
+    address: "제주시 남녕로 47",
+    phone: "0507-1417-3085",
+  },
+  {
+    name: "구남손세차",
+    slug: "gunam-handwash",
+    address: "제주시 중앙로 399",
+    phone: "064-721-2918",
+  },
+  {
+    name: "코리아스팀세차",
+    slug: "korea-steam",
+    address: "제주시 연미길 22",
+    phone: "0507-1494-6999",
+  },
+  {
+    name: "디테일링케이",
+    slug: "detailing-k",
+    address: "제주시 사장3길 24-1",
+    phone: "0507-1373-5845",
+  },
+  {
+    name: "파파카워시",
+    slug: "papa-carwash",
+    address: "제주시 과원로 92",
+    phone: "0507-1426-8598",
+  },
   {
     name: "레트로 디테일",
+    slug: "retro-detail",
     address: "제주시 연화남길 26-1",
     phone: "0507-1381-2395",
   },
   {
     name: "공룡스팀세차",
+    slug: "dino-steam",
     address: "제주시 신광로8길 25-1",
     phone: "064-713-5660",
   },
-  { name: "컴인워시 노형점", address: "제주시 노형로 290", phone: "064-753-7634" },
+  {
+    name: "컴인워시 노형점",
+    slug: "comin-wash-nohyeong",
+    address: "제주시 노형로 290",
+    phone: "064-753-7634",
+  },
 ];
 
 // 동/지역별 폴백 좌표 — Nominatim 이 도로명을 못 찾았을 때 동 중심 좌표 사용
@@ -87,13 +134,6 @@ function fallbackByAddress(address: string): [number, number] {
   return [33.4996, 126.5312];
 }
 
-function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/\s+/g, "")
-    .replace(/[^a-z0-9가-힣]/g, "");
-}
-
 function makePassword(): string {
   // 8자 영숫자 — 사람이 읽기 쉽도록 모호한 문자(0/O/1/l) 제외
   const chars = "23456789abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
@@ -129,8 +169,7 @@ async function main() {
     console.log(`  좌표: ${lat.toFixed(4)}, ${lng.toFixed(4)}${geocoded ? "" : " (대략)"}`);
 
     // 2. 사장 계정 생성
-    const slug = slugify(shop.name);
-    const ownerEmail = `${slug}@woojoowash.kr`;
+    const ownerEmail = `${shop.slug}@woojoowash.kr`;
     const ownerName = `${shop.name} 사장님`;
     const password = makePassword();
     const hashed = await bcrypt.hash(password, 10);
@@ -148,7 +187,7 @@ async function main() {
     console.log(`  계정: ${ownerEmail} / ${password}`);
 
     // 3. 매장 생성/갱신
-    const storeId = `jeju-${slug}`;
+    const storeId = `jeju-${shop.slug}`;
     const store = await prisma.store.upsert({
       where: { id: storeId },
       update: {
