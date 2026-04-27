@@ -9,7 +9,6 @@ import {
   getActiveMarketProducts,
 } from "@/lib/queries/content";
 import { getFlag } from "@/lib/settings";
-import { ServiceIllust } from "@/components/illustrations/ServiceIllust";
 import { Card } from "@/components/ui/Card";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
@@ -22,21 +21,39 @@ import { IMG } from "@/lib/images";
 
 export const dynamic = "force-dynamic";
 
-type ServiceKind = "self" | "hand" | "pickup" | "visit" | "auto" | "market";
+type ServiceKind = "self" | "hand" | "visit" | "pickup";
 type ServiceItem = {
   kind: ServiceKind;
   name: string;
-  subtitle?: string;
-  badge?: string;
-  accent?: boolean;
+  iconSrc: string;
   href: string;
 };
 
 const SERVICES: ServiceItem[] = [
-  { kind: "self", name: "셀프세차", href: "/app/stores?type=self" },
-  { kind: "hand", name: "손세차", subtitle: "(배달)", href: "/app/stores?type=hand" },
-  { kind: "visit", name: "출장세차", href: "/app/stores?type=visit" },
-  { kind: "auto", name: "프리미엄\n자동세차", href: "/app/stores?type=premium" },
+  {
+    kind: "self",
+    name: "셀프세차",
+    iconSrc: "/services/self.png",
+    href: "/app/stores?type=self",
+  },
+  {
+    kind: "hand",
+    name: "손세차",
+    iconSrc: "/services/hand.png",
+    href: "/app/stores?type=hand",
+  },
+  {
+    kind: "visit",
+    name: "출장세차",
+    iconSrc: "/services/visit.png",
+    href: "/app/stores?type=visit",
+  },
+  {
+    kind: "pickup",
+    name: "배달세차",
+    iconSrc: "/services/pickup.png",
+    href: "/app/stores?type=pickup",
+  },
 ];
 
 const FALLBACK_HERO = [
@@ -96,20 +113,24 @@ export default async function AppHomePage() {
         <div className="grid grid-cols-2 gap-[10px]">
           {SERVICES.map((s) => (
             <Link
-              key={s.name}
+              key={s.kind}
               href={s.href}
-              className="relative rounded-[18px] p-4 aspect-[1.45/1] flex items-stretch bg-cloud text-ink active:scale-[0.98] transition"
+              className="relative rounded-[18px] p-4 aspect-[1.45/1] flex items-stretch bg-cloud text-ink active:scale-[0.98] transition overflow-hidden"
             >
-              <div className="flex-1 min-w-0">
-                <div className="text-[16px] font-extrabold leading-[1.2] whitespace-pre-line tracking-[-0.02em]">
+              <div className="flex-1 min-w-0 relative z-10">
+                <div className="text-[16px] font-extrabold leading-[1.2] tracking-[-0.02em]">
                   {s.name}
-                  {s.subtitle && (
-                    <span className="text-slate">{s.subtitle}</span>
-                  )}
                 </div>
               </div>
-              <div className="flex items-end justify-end shrink-0">
-                <ServiceIllust kind={s.kind} size={92} />
+              <div className="absolute right-2 bottom-1 w-[96px] h-[96px] pointer-events-none">
+                <Image
+                  src={s.iconSrc}
+                  alt={s.name}
+                  fill
+                  className="object-contain"
+                  sizes="96px"
+                  priority
+                />
               </div>
             </Link>
           ))}
