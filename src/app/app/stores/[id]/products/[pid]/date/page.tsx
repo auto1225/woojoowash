@@ -19,10 +19,15 @@ const DATES = Array.from({ length: 14 }).map((_, i) => {
 });
 
 const HOURS_AM = [8, 9, 10, 11];
-const HOURS_PM = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+const HOURS_PM = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21]; // 12 ~ 21시 (오후 12 ~ 9시)
 const MINUTES = [0, 10, 20, 30, 40, 50];
 
-type AmPm = "am" | "pm";
+function hourLabel(h: number): string {
+  // 24h → 표시용 (오후는 12 외에는 -12)
+  if (h === 0) return "12시";
+  if (h === 12) return "12시";
+  return `${h > 12 ? h - 12 : h}시`;
+}
 
 export default function DatePickerPage() {
   const router = useRouter();
@@ -31,17 +36,15 @@ export default function DatePickerPage() {
   const mode = search.get("mode"); // 'book' → 결제로 바로
 
   const [dateIdx, setDateIdx] = useState(0);
-  const [ampm, setAmPm] = useState<AmPm>("pm");
   const [hour, setHour] = useState<number | null>(14);
   const [minute, setMinute] = useState<number | null>(30);
 
-  const hours = ampm === "am" ? HOURS_AM : HOURS_PM;
   const selected = DATES[dateIdx];
 
   const label = (() => {
     if (hour === null || minute === null) return "";
-    const ampmLabel = ampm === "am" ? "오전" : "오후";
-    const h = String(hour).padStart(2, "0");
+    const ampmLabel = hour < 12 ? "오전" : "오후";
+    const h = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
     const m = String(minute).padStart(2, "0");
     return `${selected.date.getMonth() + 1}월 ${selected.day}일 ${ampmLabel} ${h}시 ${m}분`;
   })();
@@ -148,25 +151,12 @@ export default function DatePickerPage() {
             </div>
           </div>
 
-          <div className="flex gap-2 mb-5">
-            {(["am", "pm"] as AmPm[]).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setAmPm(m)}
-                className={`flex-1 h-11 rounded-full font-bold text-[14px] transition ${
-                  ampm === m
-                    ? "bg-accent text-white"
-                    : "bg-white border border-fog text-ink"
-                }`}
-              >
-                {m === "am" ? "오전" : "오후"}
-              </button>
-            ))}
+          {/* 오전 */}
+          <div className="text-[13px] font-extrabold text-graphite mb-2">
+            오전
           </div>
-
-          <div className="grid grid-cols-5 gap-[10px]">
-            {hours.map((h) => {
+          <div className="grid grid-cols-5 gap-[10px] mb-5">
+            {HOURS_AM.map((h) => {
               const isPast =
                 selected.date.toDateString() === now.toDateString() &&
                 h <= now.getHours();
@@ -185,7 +175,37 @@ export default function DatePickerPage() {
                         : "bg-white border border-fog text-ink"
                   }`}
                 >
-                  {h}시
+                  {hourLabel(h)}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 오후 */}
+          <div className="text-[13px] font-extrabold text-graphite mb-2">
+            오후
+          </div>
+          <div className="grid grid-cols-5 gap-[10px]">
+            {HOURS_PM.map((h) => {
+              const isPast =
+                selected.date.toDateString() === now.toDateString() &&
+                h <= now.getHours();
+              const isSelected = h === hour;
+              return (
+                <button
+                  key={h}
+                  type="button"
+                  onClick={() => !isPast && setHour(h)}
+                  disabled={isPast}
+                  className={`h-11 rounded-full text-[14px] font-bold transition ${
+                    isPast
+                      ? "bg-[#D4D4D9] text-[#98989C]"
+                      : isSelected
+                        ? "bg-accent text-white"
+                        : "bg-white border border-fog text-ink"
+                  }`}
+                >
+                  {hourLabel(h)}
                 </button>
               );
             })}
