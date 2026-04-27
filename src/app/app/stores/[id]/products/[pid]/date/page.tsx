@@ -56,7 +56,13 @@ export default function DatePickerPage() {
         `/app/booking/payment?store=${params.id}&product=${params.pid}&startAt=${encodeURIComponent(iso)}`,
       );
     } else {
-      router.back();
+      // 옵션 등 기존 쿼리 보존하면서 startAt 만 추가
+      const next = new URLSearchParams(search.toString());
+      next.delete("mode");
+      next.set("startAt", iso);
+      router.replace(
+        `/app/stores/${params.id}/products/${params.pid}?${next.toString()}`,
+      );
     }
   }
 

@@ -13,11 +13,22 @@ export const dynamic = "force-dynamic";
 
 export default async function ProductDetailPage({
   params,
+  searchParams,
 }: {
   params: { id: string; pid: string };
+  searchParams: { startAt?: string; options?: string };
 }) {
   const product = await getProduct(params.id, params.pid);
   if (!product) return notFound();
+
+  // 날짜 선택 페이지에서 돌아올 때 startAt 쿼리로 받음
+  const startAtIso = searchParams.startAt ?? null;
+  const startAtDate = startAtIso ? new Date(startAtIso) : null;
+  const startAtValid =
+    startAtDate && Number.isFinite(startAtDate.getTime()) ? startAtDate : null;
+  const startAtLabel = startAtValid
+    ? formatStartAt(startAtValid)
+    : null;
 
   const session = await auth();
   const myCar = session?.user
@@ -108,6 +119,7 @@ export default async function ProductDetailPage({
         storeId={product.store.id}
         productId={product.id}
         basePrice={product.price}
+        startAtIso={startAtIso}
         options={product.options.map((o) => ({
           id: o.id,
           label: o.label,
@@ -120,14 +132,28 @@ export default async function ProductDetailPage({
       <section className="px-5 mt-7">
         <div className="flex items-center justify-between mb-3">
           <div className="text-[14px] font-bold">예약 일시</div>
-          <span className="text-[12px] text-accent font-bold">선택해 주세요</span>
+          <span
+            className={`text-[12px] font-bold ${
+              startAtLabel ? "text-success" : "text-accent"
+            }`}
+          >
+            {startAtLabel ? "선택 완료" : "선택해 주세요"}
+          </span>
         </div>
         <Link
           href={`/app/stores/${product.store.id}/products/${product.id}/date`}
           className="block h-14 rounded-[14px] border border-fog bg-white px-4 flex items-center justify-between"
         >
-          <span className="text-[14px] text-slate">원하는 날짜·시간 선택</span>
-          <span className="text-[12px] font-bold text-ink">변경</span>
+          <span
+            className={`text-[14px] ${
+              startAtLabel ? "text-ink font-bold" : "text-slate"
+            }`}
+          >
+            {startAtLabel ?? "원하는 날짜·시간 선택"}
+          </span>
+          <span className="text-[12px] font-bold text-ink">
+            {startAtLabel ? "변경" : "선택"}
+          </span>
         </Link>
       </section>
 
@@ -141,4 +167,15 @@ export default async function ProductDetailPage({
       </section>
     </div>
   );
+}
+
+function formatStartAt(d: Date): string {
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  const w = ["일", "월", "화", "수", "목", "금", "토"][d.getDay()];
+  const h = d.getHours();
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  const ampm = h < 12 ? "오전" : "오후";
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${m}월 ${day}일 (${w}) ${ampm} ${h12}:${mm}`;
 }

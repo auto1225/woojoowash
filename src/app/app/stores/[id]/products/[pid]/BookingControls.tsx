@@ -15,11 +15,13 @@ export function BookingControls({
   storeId,
   productId,
   basePrice,
+  startAtIso,
   options,
 }: {
   storeId: string;
   productId: string;
   basePrice: number;
+  startAtIso: string | null;
   options: BookingOption[];
 }) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -53,8 +55,9 @@ export function BookingControls({
     if (selectedIds.size > 0) {
       params.set("options", Array.from(selectedIds).join(","));
     }
+    if (startAtIso) params.set("startAt", startAtIso);
     return `/app/booking/payment?${params.toString()}`;
-  }, [storeId, productId, selectedIds]);
+  }, [storeId, productId, selectedIds, startAtIso]);
 
   return (
     <>
