@@ -157,55 +157,6 @@ export default async function PaymentPage({
         </div>
       </section>
 
-      {/* 제휴사 포인트 */}
-      <section className="px-5 pt-3">
-        <div className="bg-white rounded-[20px] border border-fog px-6 py-5">
-          <div className="text-[15px] font-extrabold mb-1">
-            제휴사 <span className="text-ink">Point</span> 사용 & 적립하기
-          </div>
-          <div className="text-[12px] text-slate mb-4">
-            본인인증 후 제휴사 포인트를 적립 및 사용해보세요.
-          </div>
-          <div className="flex flex-col gap-2 mb-4">
-            <div className="rounded-[12px] border border-fog px-4 py-3 flex items-center gap-3">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-pink-400 via-yellow-400 to-cyan-400" />
-              <span className="text-[14px] font-bold flex-1">CJ ONE 포인트</span>
-              <span className="text-[11px] font-bold text-success bg-success/10 px-2 py-[3px] rounded-full">
-                결제시 1% 적립
-              </span>
-            </div>
-            <div className="rounded-[12px] border border-fog px-4 py-3 flex items-center gap-3">
-              <span className="text-[12px] font-black tracking-tight text-[#0B1F8C]">
-                Blue<span className="text-[#FF9100]">members</span>
-              </span>
-              <span className="text-[14px] font-bold flex-1">포인트</span>
-            </div>
-          </div>
-          <label className="flex items-center gap-2 text-[13px]">
-            <span className="w-5 h-5 rounded-full bg-cloud flex items-center justify-center">
-              <svg width="12" height="12" viewBox="0 0 12 12">
-                <path
-                  d="M2 6l3 3 5-5"
-                  stroke="#6E6E73"
-                  strokeWidth="2"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
-            <span>개인 정보 제 3자 제공 동의</span>
-            <span className="text-slate">(필수)</span>
-            <IconChev size={14} stroke={1.8} className="text-ash ml-auto" />
-          </label>
-          <div className="mt-3">
-            <span className="inline-flex text-[13px] font-semibold text-white bg-ash/90 rounded-full px-4 py-[10px]">
-              본인 인증 이후 제휴사 포인트 적립 & 사용 하기
-            </span>
-          </div>
-        </div>
-      </section>
-
       {/* 결제 정보 */}
       <section className="px-5 pt-3">
         <div className="bg-white rounded-[20px] border border-fog px-6 py-5">
