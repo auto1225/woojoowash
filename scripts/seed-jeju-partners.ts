@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { randomBytes } from "node:crypto";
 
 const prisma = new PrismaClient();
