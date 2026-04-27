@@ -33,8 +33,8 @@ export default async function MePage() {
       : []),
     { I: IconMsg, label: "1:1 문의", href: "/app/support" },
     { I: IconHelp, label: "자주 묻는 질문", href: "/app/me/faq" },
-    { I: IconShield, label: "이용약관·개인정보처리방침", href: "#" },
-    { I: IconInfo, label: "서비스 정보", href: "#" },
+    { I: IconShield, label: "이용약관·개인정보처리방침", href: "/app/me/legal" },
+    { I: IconInfo, label: "서비스 정보", href: "/app/me/service-info" },
     { I: IconSettings, label: "설정", href: "#" },
   ];
 

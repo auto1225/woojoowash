@@ -592,6 +592,16 @@ model SiteEvent {
   @@map("site_events")
 }
 
+model LegalDoc {
+  slug      String   @id // 'terms' | 'privacy' | 'service-info'
+  title     String
+  body      String   @db.Text
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@map("legal_docs")
+}
+
 model RefreshToken {
   id         String    @id @default(cuid())
   userId     String

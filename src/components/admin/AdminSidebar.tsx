@@ -64,7 +64,10 @@ const GROUPS: Group[] = [
   {
     id: "settings",
     label: "설정",
-    items: [{ label: "사이트 설정", href: "/admin/settings" }],
+    items: [
+      { label: "사이트 설정", href: "/admin/settings" },
+      { label: "약관·정책 관리", href: "/admin/legal" },
+    ],
   },
 ];
 
