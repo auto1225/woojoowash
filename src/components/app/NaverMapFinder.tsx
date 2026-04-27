@@ -193,7 +193,7 @@ export function NaverMapFinder({
         onLoad={() => setReady(true)}
       />
 
-      <div className="relative h-[340px] bg-cloud shrink-0">
+      <div className="relative h-[340px] bg-cloud shrink-0 isolate z-0 overflow-hidden">
         <div ref={mapEl} className="w-full h-full" />
         {!ready && (
           <div className="absolute inset-0 flex items-center justify-center text-slate text-[13px]">

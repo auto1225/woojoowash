@@ -26,10 +26,11 @@ export function AppBar({
     <div
       className={cn(
         "h-[52px] flex items-center justify-between px-3 shrink-0",
-        // 일반 모드는 sticky 로 상단 고정, dark 모드(히어로 오버레이) 는 기존 relative 유지
+        // 일반 모드는 sticky 로 상단 고정, dark 모드(히어로 오버레이) 는 기존 relative 유지.
+        // Naver/Kakao 지도 컨트롤이 z-index ~100 이라 그 위에 떠 있도록 z-[1000].
         dark
           ? "relative z-20 bg-transparent text-white"
-          : "sticky top-0 z-30 bg-white text-ink",
+          : "sticky top-0 z-[1000] bg-white text-ink",
         border && "border-b border-fog",
       )}
     >
