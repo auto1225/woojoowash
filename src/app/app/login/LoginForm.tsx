@@ -146,10 +146,11 @@ export function LoginForm() {
         <div className="flex-1 h-px bg-fog" />
       </div>
 
-      <div className="grid grid-cols-3 gap-2 mb-8 opacity-50 pointer-events-none">
-        <Social label="카카오" bg="#FEE500" fg="#1A1A1A" />
-        <Social label="Apple" bg="#000" fg="#fff" />
-        <Social label="Google" bg="#fff" fg="#000" border />
+      <div className="grid grid-cols-4 gap-2 mb-8 opacity-50 pointer-events-none">
+        <SocialIcon kind="naver" />
+        <SocialIcon kind="kakao" />
+        <SocialIcon kind="google" />
+        <SocialIcon kind="apple" />
       </div>
 
       <div className="text-center mb-12">
@@ -161,27 +162,78 @@ export function LoginForm() {
   );
 }
 
-function Social({
-  label,
-  bg,
-  fg,
-  border,
-}: {
-  label: string;
-  bg: string;
-  fg: string;
-  border?: boolean;
-}) {
+type SocialKind = "naver" | "kakao" | "google" | "apple";
+
+function SocialIcon({ kind }: { kind: SocialKind }) {
+  const meta: Record<
+    SocialKind,
+    { bg: string; border?: boolean; aria: string }
+  > = {
+    naver: { bg: "#03C75A", aria: "네이버 로그인" },
+    kakao: { bg: "#FEE500", aria: "카카오 로그인" },
+    google: { bg: "#fff", border: true, aria: "Google 로그인" },
+    apple: { bg: "#000", aria: "Apple 로그인" },
+  };
+  const m = meta[kind];
   return (
-    <div
-      className="h-12 rounded-[14px] flex items-center justify-center text-[13px] font-bold"
+    <button
+      type="button"
+      aria-label={m.aria}
+      className="h-12 rounded-[14px] flex items-center justify-center"
       style={{
-        background: bg,
-        color: fg,
-        border: border ? "1px solid var(--ww-fog)" : undefined,
+        background: m.bg,
+        border: m.border ? "1px solid var(--ww-fog)" : undefined,
       }}
     >
-      {label}
-    </div>
+      {kind === "naver" && <NaverGlyph />}
+      {kind === "kakao" && <KakaoGlyph />}
+      {kind === "google" && <GoogleGlyph />}
+      {kind === "apple" && <AppleGlyph />}
+    </button>
+  );
+}
+
+/* ── 브랜드 글리프 ── */
+function NaverGlyph() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff">
+      <path d="M16.273 12.845L7.376 0H0v24h7.726V11.155L16.624 24H24V0h-7.727z" />
+    </svg>
+  );
+}
+function KakaoGlyph() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="#1A1A1A">
+      <path d="M12 3C6.48 3 2 6.7 2 11.16c0 2.86 1.86 5.36 4.66 6.79l-1.18 4.3c-.1.36.3.64.62.45L11.4 19.5c.2.02.4.03.6.03 5.52 0 10-3.7 10-8.16S17.52 3 12 3z" />
+    </svg>
+  );
+}
+function GoogleGlyph() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24">
+      <path
+        fill="#4285F4"
+        d="M21.6 12.227c0-.709-.064-1.39-.182-2.045H12v3.868h5.382a4.6 4.6 0 0 1-1.995 3.018v2.51h3.232c1.891-1.742 2.981-4.305 2.981-7.351z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 22c2.7 0 4.964-.895 6.619-2.422l-3.232-2.51c-.895.6-2.04.955-3.387.955-2.605 0-4.81-1.76-5.595-4.123H3.064v2.59A9.997 9.997 0 0 0 12 22z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M6.405 13.9a6 6 0 0 1-.314-1.9c0-.66.114-1.3.314-1.9V7.51H3.064A10 10 0 0 0 2 12c0 1.614.386 3.14 1.064 4.49l3.34-2.59z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 5.977c1.469 0 2.787.505 3.823 1.495l2.868-2.868C16.96 2.99 14.696 2 12 2A9.997 9.997 0 0 0 3.064 7.51l3.34 2.59C7.19 7.736 9.395 5.977 12 5.977z"
+      />
+    </svg>
+  );
+}
+function AppleGlyph() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff">
+      <path d="M17.05 12.04c-.03-2.92 2.39-4.32 2.5-4.39-1.36-1.99-3.48-2.26-4.24-2.29-1.8-.18-3.52 1.06-4.43 1.06-.93 0-2.33-1.04-3.83-1.01-1.97.03-3.79 1.15-4.81 2.91-2.05 3.55-.52 8.8 1.48 11.69.98 1.41 2.14 3 3.66 2.94 1.47-.06 2.02-.95 3.79-.95 1.77 0 2.27.95 3.81.92 1.58-.03 2.58-1.43 3.55-2.85 1.12-1.63 1.58-3.21 1.61-3.29-.04-.02-3.09-1.18-3.12-4.74zM14.13 3.79c.81-.99 1.36-2.36 1.21-3.73-1.17.05-2.59.78-3.43 1.76-.75.87-1.41 2.27-1.23 3.61 1.31.1 2.65-.66 3.45-1.64z" />
+    </svg>
   );
 }
