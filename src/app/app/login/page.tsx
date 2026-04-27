@@ -10,8 +10,8 @@ export default function LoginPage() {
         <WWLogo size={20} />
       </header>
 
-      {/* 본문 컨텐츠 — 위로 붙이기 위해 pt 만 살짝 */}
-      <div className="px-5 pt-5 flex-1 flex flex-col">
+      {/* 본문 컨텐츠 — 헤더와 타이틀 사이 여백 30px (이전 20px 의 1.5배) */}
+      <div className="px-5 pt-[30px] flex-1 flex flex-col">
         <Suspense
           fallback={
             <div className="mt-12 text-slate text-center">불러오는 중…</div>
