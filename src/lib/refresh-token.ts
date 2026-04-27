@@ -1,4 +1,5 @@
-import { createHash, randomBytes } from "node:crypto";
+import "server-only";
+import { createHash, randomBytes } from "crypto";
 import { db } from "@/lib/db";
 
 /** 30일 유효 리프레시 토큰 */
