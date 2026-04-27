@@ -42,8 +42,8 @@ export function HeroCarousel({
               className="object-cover"
               sizes="(max-width: 480px) 100vw, 428px"
             />
-            {/* 텍스트가 잘 보이도록 위→아래 어둠 + 인디케이터를 위한 아래쪽 어둠 */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/10 to-black/45" />
+            {/* 위 80% → 아래 20% 검정 그라데이션 — 흰 글씨 가독성 확보 */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-black/20" />
             <div className="absolute top-5 left-5 right-5 text-white">
               {slide.subtitle && (
                 <div className="text-[12px] font-bold mb-1 opacity-90">
