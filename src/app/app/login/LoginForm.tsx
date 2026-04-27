@@ -53,7 +53,7 @@ export function LoginForm() {
 
   return (
     <>
-      <div className="mt-auto mb-8">
+      <div className="mb-6">
         <div className="ww-disp text-[32px] leading-[1.15] tracking-[-0.03em] mb-2">
           세차의 모든 순간,
           <br />
