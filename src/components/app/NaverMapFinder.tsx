@@ -31,9 +31,15 @@ const DEFAULT_CENTER = { lat: 37.4979, lng: 127.0276 }; // 강남역
 export function NaverMapFinder({
   clientId,
   initialStores,
+  selectedType,
+  onStoresChange,
 }: {
   clientId: string | null;
   initialStores: NearbyStore[];
+  /** 지도/리스트 표시를 카테고리로 필터 — null/"" 이면 전체 */
+  selectedType?: string | null;
+  /** 가시 영역 내 매장(전체 카테고리)이 바뀔 때마다 호출 */
+  onStoresChange?: (stores: NearbyStore[]) => void;
 }) {
   const mapEl = useRef<HTMLDivElement>(null);
   const mapRef = useRef<NaverMap | null>(null);
@@ -44,6 +50,16 @@ export function NaverMapFinder({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showReSearch, setShowReSearch] = useState(false);
+
+  // 부모에 가시 매장 알림
+  useEffect(() => {
+    onStoresChange?.(stores);
+  }, [stores, onStoresChange]);
+
+  // 카테고리 필터 적용 (마커·리스트 둘 다)
+  const visibleStores = selectedType
+    ? stores.filter((s) => s.services.includes(selectedType))
+    : stores;
 
   // SDK 스크립트 onload → setReady
   useEffect(() => {
@@ -112,7 +128,7 @@ export function NaverMapFinder({
 
     const next = new Map<string, NaverMarker>();
 
-    stores.forEach((s) => {
+    visibleStores.forEach((s) => {
       if (s.lat == null || s.lng == null) return;
       const existing = markersRef.current.get(s.id);
       const position = new naver.maps.LatLng(s.lat, s.lng);
@@ -144,7 +160,7 @@ export function NaverMapFinder({
       if (!next.has(id)) m.setMap(null);
     });
     markersRef.current = next;
-  }, [stores, selectedId]);
+  }, [visibleStores, selectedId]);
 
   async function fetchByBounds() {
     const map = mapRef.current;
@@ -202,18 +218,18 @@ export function NaverMapFinder({
             지도 영역 내
           </div>
           <div className="text-[18px] font-extrabold tracking-[-0.4px] ww-num">
-            {stores.length}개 매장
+            {visibleStores.length}개 매장
           </div>
         </div>
       </div>
 
       <div className="px-5 flex flex-col gap-3 pb-4">
-        {stores.length === 0 ? (
+        {visibleStores.length === 0 ? (
           <div className="py-10 text-center text-slate text-[13px]">
             이 지역에는 등록된 매장이 없어요.
           </div>
         ) : (
-          stores.map((s) => (
+          visibleStores.map((s) => (
             <StoreCard
               key={s.id}
               store={s}

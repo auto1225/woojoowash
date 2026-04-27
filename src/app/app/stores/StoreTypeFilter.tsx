@@ -57,13 +57,15 @@ export function StoreTypeFilter({ counts }: { counts: TypeCounts }) {
           >
             <Chip size="sm" active={active}>
               <span>{t.label}</span>
-              <span
-                className={`ml-1.5 ww-num text-[11px] font-semibold ${
-                  active ? "text-white/70" : "text-slate"
-                }`}
-              >
-                {countFor(t.value)}
-              </span>
+              {countFor(t.value) > 0 && (
+                <span
+                  className={`ml-1.5 ww-num text-[11px] font-semibold ${
+                    active ? "text-white/70" : "text-slate"
+                  }`}
+                >
+                  {countFor(t.value)}
+                </span>
+              )}
             </Chip>
           </button>
         );

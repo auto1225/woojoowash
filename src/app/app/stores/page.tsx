@@ -1,25 +1,17 @@
 import { AppBar } from "@/components/app/AppBar";
 import { IconFilter } from "@/components/icons";
-import {
-  NaverMapFinder,
-  type NearbyStore,
-} from "@/components/app/NaverMapFinder";
+import { type NearbyStore } from "@/components/app/NaverMapFinder";
 import { db } from "@/lib/db";
-import { StoreTypeFilter, type TypeCounts } from "./StoreTypeFilter";
+import { StoreFinderClient } from "./StoreFinderClient";
 
 export const dynamic = "force-dynamic";
 
-const VALID_TYPES = ["self", "hand", "pickup", "visit"] as const;
-type ServiceType = (typeof VALID_TYPES)[number];
-
-async function loadInitialStores(
-  type: ServiceType | null,
-): Promise<NearbyStore[]> {
+// 초기 렌더 — 전체 카테고리 매장 (카테고리 필터는 클라이언트에서 가시 영역 기준)
+async function loadInitialStores(): Promise<NearbyStore[]> {
   const stores = await db.store.findMany({
-    where: type ? { services: { has: type } } : undefined,
     include: { products: { select: { price: true } } },
     orderBy: { rating: "desc" },
-    take: 30,
+    take: 60,
   });
   return stores.map((s) => ({
     id: s.id,
@@ -41,31 +33,8 @@ async function loadInitialStores(
   }));
 }
 
-export default async function FinderPage({
-  searchParams,
-}: {
-  searchParams: { type?: string };
-}) {
-  const rawType = searchParams.type ?? "";
-  const type = (VALID_TYPES as readonly string[]).includes(rawType)
-    ? (rawType as ServiceType)
-    : null;
-  const [initialStores, allCount, selfCount, handCount, visitCount, pickupCount] =
-    await Promise.all([
-      loadInitialStores(type),
-      db.store.count(),
-      db.store.count({ where: { services: { has: "self" } } }),
-      db.store.count({ where: { services: { has: "hand" } } }),
-      db.store.count({ where: { services: { has: "visit" } } }),
-      db.store.count({ where: { services: { has: "pickup" } } }),
-    ]);
-  const counts: TypeCounts = {
-    all: allCount,
-    self: selfCount,
-    hand: handCount,
-    visit: visitCount,
-    pickup: pickupCount,
-  };
+export default async function FinderPage() {
+  const initialStores = await loadInitialStores();
   const clientId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID ?? null;
 
   return (
@@ -75,14 +44,7 @@ export default async function FinderPage({
         right={<IconFilter size={22} stroke={1.7} />}
         border={false}
       />
-
-      <StoreTypeFilter counts={counts} />
-
-      <NaverMapFinder
-        clientId={clientId}
-        initialStores={initialStores}
-        key={type ?? "all"}
-      />
+      <StoreFinderClient clientId={clientId} initialStores={initialStores} />
     </div>
   );
 }
